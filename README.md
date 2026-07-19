@@ -1,14 +1,14 @@
-from pathlib import Path
+# AETHER
 
-content = """# AETHER
-
-AETHER is an all-in-one student productivity and life-management application built with Flutter.
+AETHER is an all-in-one student productivity and life-management app built with Flutter.
 
 Designed around a minimal dark aesthetic with subtle glassmorphism, AETHER combines study planning, habit tracking, health monitoring, routines, and academic management into a single cross-platform experience.
 
-## Features
+---
 
-### Dashboard
+## ✨ Features
+
+### 📊 Dashboard
 
 - Daily overview
 - Progress tracking
@@ -16,14 +16,18 @@ Designed around a minimal dark aesthetic with subtle glassmorphism, AETHER combi
 - Schedule preview
 - Quick statistics
 
-### Daily Planner
+---
+
+### ✅ Daily Planner
 
 - Create tasks and notes
 - Organize days, weeks, and months
 - Set priorities and deadlines
 - Filter tasks by category
 
-### Routine Builder
+---
+
+### ⏰ Routine Builder
 
 Create reusable templates such as:
 
@@ -41,7 +45,9 @@ Templates can repeat on:
 - Specific days
 - Custom tags
 
-### Academics
+---
+
+### 🎓 Academics
 
 Manage your academic life through course cards.
 
@@ -54,7 +60,9 @@ Each course includes:
 - Syllabus tracking
 - Projects and exams
 
-### Habits
+---
+
+### 🔥 Habits
 
 Track habits and hobbies with:
 
@@ -63,7 +71,9 @@ Track habits and hobbies with:
 - Categories
 - Completion statistics
 
-### Health
+---
+
+### ❤️ Health
 
 - Calorie tracking
 - Meal logging
@@ -72,7 +82,9 @@ Track habits and hobbies with:
 - Water intake
 - Fitness analytics
 
-## Tech Stack
+---
+
+## 🛠 Tech Stack
 
 ### Frontend
 
@@ -98,9 +110,9 @@ Track habits and hobbies with:
 
 - Firebase Cloud Messaging
 
-## Offline First
+---
 
-AETHER is designed with an offline-first architecture.
+## 📦 Offline-First Architecture
 
 ```text
 Device
@@ -110,3 +122,61 @@ Local Database
 Sync Engine
    ↓
 Cloud Backend
+```
+
+Changes are saved locally and synchronized automatically whenever an internet connection becomes available.
+
+---
+
+## 🌍 Supported Platforms
+
+- Android
+- iOS
+- Windows
+- Linux
+- macOS
+- Web
+
+---
+
+## 📁 Project Structure
+
+```text
+lib/
+├── core/
+│   ├── theme/
+│   ├── utils/
+│   └── constants/
+│
+├── features/
+│   ├── dashboard/
+│   ├── planner/
+│   ├── academics/
+│   ├── habits/
+│   ├── health/
+│   └── routines/
+│
+├── widgets/
+├── services/
+├── models/
+└── main.dart
+```
+
+---
+
+## 🎨 Design Philosophy
+
+AETHER focuses on:
+
+- Simplicity
+- Speed
+- Offline usability
+- Cross-platform support
+- Long-term planning
+- Minimal distractions
+
+Because apparently managing studies, habits, workouts, deadlines, classes, sleep, food, and life itself now requires its own operating system.
+
+---
+
+Built with Flutter ❤️
