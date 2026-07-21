@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:aether/screens/schedule/schedule_screen.dart';
 /// ---------------------------------------------------------------------
 /// AETHER — Dashboard content
 /// ---------------------------------------------------------------------
@@ -268,9 +268,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _onViewAllSchedule() {
-    // TODO: navigate to full schedule view
-    print('View all schedule tapped');
-  }
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => const ScheduleScreen(),
+    ),
+  );
+}
 
   void _onViewAllTasks() {
     // TODO: navigate to full tasks view

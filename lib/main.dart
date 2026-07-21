@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:aether/widgets/bottom_navbar.dart';
 import 'package:aether/widgets/dashboard_top_bar.dart';
 import 'package:aether/screens/dashboard/dashboard_screen.dart';
-
+import 'package:aether/screens/academics/academics_screen.dart';
 void main() {
   runApp(const AetherApp());
 }
@@ -19,12 +19,7 @@ class _AetherAppState extends State<AetherApp> {
 
   static const List<Widget> _screens = [
     DashboardScreen(),
-    Center(
-      child: Text(
-        'Academics',
-        style: TextStyle(color: Colors.white, fontSize: 32),
-      ),
-    ),
+    AcademicsScreen(),
     Center(
       child: Text(
         'Habits',
