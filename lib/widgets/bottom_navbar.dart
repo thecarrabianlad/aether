@@ -55,15 +55,15 @@ class BottomNavbar extends StatelessWidget {
                 filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: _bgColor.withOpacity(0.65),
+                    color: _bgColor.withValues(alpha: 0.65),
                     borderRadius: BorderRadius.circular(30),
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.08),
+                      color: Colors.white.withValues(alpha: 0.08),
                       width: 1,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.4),
+                        color: Colors.black.withValues(alpha: 0.4),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),
@@ -130,7 +130,7 @@ class BottomNavbar extends StatelessWidget {
                 color: _accentRed,
                 boxShadow: [
                   BoxShadow(
-                    color: _accentRed.withOpacity(0.8),
+                    color: _accentRed.withValues(alpha: 0.8),
                     blurRadius: 6,
                     spreadRadius: 1,
                   ),
@@ -155,12 +155,12 @@ class BottomNavbar extends StatelessWidget {
           border: Border.all(color: _accentRed, width: 2),
           boxShadow: [
             BoxShadow(
-              color: _accentRed.withOpacity(0.7),
+              color: _accentRed.withValues(alpha: 0.7),
               blurRadius: 20,
               spreadRadius: 2,
             ),
             BoxShadow(
-              color: _accentRed.withOpacity(0.4),
+              color: _accentRed.withValues(alpha: 0.4),
               blurRadius: 35,
               spreadRadius: 6,
             ),

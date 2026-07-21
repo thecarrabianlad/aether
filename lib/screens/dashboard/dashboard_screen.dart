@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 /// bar are assumed to already exist elsewhere in the app — this widget
 /// is meant to be dropped straight into the `body:` of that Scaffold.
 /// ---------------------------------------------------------------------
+import 'dart:async';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -27,6 +28,7 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  Timer? _timer;
   // ---------------------------------------------------------------------
   // State
   // ---------------------------------------------------------------------
@@ -34,10 +36,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // Reference date lines up with the original "Tuesday, 12th August 2025"
   // mock. `_dayOffset` tracks how many days the user has navigated away
   // from it via the date navigator.
-  static final DateTime _referenceDate = DateTime(2025, 8, 12);
+  // static final DateTime _referenceDate = DateTime(2025, 8, 12);
+
+  @override
+  void initState() {
+    super.initState();
+
+    _timer = Timer.periodic(const Duration(minutes: 1), (_) {
+      setState(() {});
+    });
+  }
+
+  // DateTime _referenceDate = DateTime.now();
   int _dayOffset = 0;
 
-  final TimeOfDay _currentTime = const TimeOfDay(hour: 7, minute: 42);
+  // final TimeOfDay _currentTime = const TimeOfDay(hour: 7, minute: 42);
   final double _progressPercent = 0.625;
 
   final int _tasksPending = 6;
@@ -81,34 +94,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
       subtitle: 'JEE Main 2024',
       flagged: true,
     ),
-    _TaskItemData(
-      title: 'Workout',
-      subtitle: 'Completed',
-      completed: true,
-    ),
+    _TaskItemData(title: 'Workout', subtitle: 'Completed', completed: true),
   ];
 
   final List<_HabitItemData> _habits = const [
     _HabitItemData(
-        icon: Icons.menu_book_outlined,
-        title: 'Study',
-        fraction: '5/7',
-        progress: 5 / 7),
+      icon: Icons.menu_book_outlined,
+      title: 'Study',
+      fraction: '5/7',
+      progress: 5 / 7,
+    ),
     _HabitItemData(
-        icon: Icons.self_improvement,
-        title: 'Meditation',
-        fraction: '4/7',
-        progress: 4 / 7),
+      icon: Icons.self_improvement,
+      title: 'Meditation',
+      fraction: '4/7',
+      progress: 4 / 7,
+    ),
     _HabitItemData(
-        icon: Icons.water_drop_outlined,
-        title: 'No Sugar',
-        fraction: '5/7',
-        progress: 5 / 7),
+      icon: Icons.water_drop_outlined,
+      title: 'No Sugar',
+      fraction: '5/7',
+      progress: 5 / 7,
+    ),
     _HabitItemData(
-        icon: Icons.nightlight_outlined,
-        title: 'Sleep Early',
-        fraction: '3/7',
-        progress: 3 / 7),
+      icon: Icons.nightlight_outlined,
+      title: 'Sleep Early',
+      fraction: '3/7',
+      progress: 3 / 7,
+    ),
   ];
 
   final _UpcomingEventData _upcomingEvent = const _UpcomingEventData(
@@ -123,7 +136,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // Derived getters
   // ---------------------------------------------------------------------
 
-  DateTime get _selectedDate => _referenceDate.add(Duration(days: _dayOffset));
+  DateTime get _selectedDate => DateTime.now().add(Duration(days: _dayOffset));
 
   static const _weekdayNames = [
     'Monday',
@@ -150,10 +163,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
     'December',
   ];
 
-  String get _timeText =>
-      '${_currentTime.hourOfPeriod == 0 ? 12 : _currentTime.hourOfPeriod}:${_currentTime.minute.toString().padLeft(2, '0')}';
+  String get _timeText {
+    final now = DateTime.now();
 
-  String get _periodText => _currentTime.period == DayPeriod.am ? 'AM' : 'PM';
+    final hour = now.hour % 12 == 0 ? 12 : now.hour % 12;
+
+    return '$hour:${now.minute.toString().padLeft(2, '0')}';
+  }
+
+  String get _periodText {
+    final now = DateTime.now();
+
+    return now.hour >= 12 ? 'PM' : 'AM';
+  }
 
   String get _weekdayLabel => _weekdayNames[_selectedDate.weekday - 1];
 
@@ -190,31 +212,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String get _healthScoreLabel => '$_healthScore%';
 
   List<_GlanceItemData> get _glanceItems => [
-        _GlanceItemData(
-          icon: Icons.assignment_outlined,
-          iconColor: DashboardScreen.red,
-          value: '$_tasksPending',
-          label: 'Tasks pending',
-        ),
-        _GlanceItemData(
-          icon: Icons.menu_book_outlined,
-          iconColor: DashboardScreen.purple,
-          value: '$_classesToday',
-          label: 'Classes today',
-        ),
-        _GlanceItemData(
-          icon: Icons.check_circle_outline,
-          iconColor: DashboardScreen.green,
-          value: _habitsCompletedFraction,
-          label: 'Habits completed',
-        ),
-        _GlanceItemData(
-          icon: Icons.favorite_border,
-          iconColor: DashboardScreen.red,
-          value: _healthScoreLabel,
-          label: 'Health score',
-        ),
-      ];
+    _GlanceItemData(
+      icon: Icons.assignment_outlined,
+      iconColor: DashboardScreen.red,
+      value: '$_tasksPending',
+      label: 'Tasks pending',
+    ),
+    _GlanceItemData(
+      icon: Icons.menu_book_outlined,
+      iconColor: DashboardScreen.purple,
+      value: '$_classesToday',
+      label: 'Classes today',
+    ),
+    _GlanceItemData(
+      icon: Icons.check_circle_outline,
+      iconColor: DashboardScreen.green,
+      value: _habitsCompletedFraction,
+      label: 'Habits completed',
+    ),
+    _GlanceItemData(
+      icon: Icons.favorite_border,
+      iconColor: DashboardScreen.red,
+      value: _healthScoreLabel,
+      label: 'Health score',
+    ),
+  ];
 
   // ---------------------------------------------------------------------
   // Helper methods
@@ -328,6 +350,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
+
+  @override
+void dispose() {
+  _timer?.cancel();
+  super.dispose();
+}
 }
 
 // ---------------------------------------------------------------------
@@ -435,7 +463,7 @@ class _ProgressRing extends StatelessWidget {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: DashboardScreen.red.withOpacity(0.55),
+                      color: DashboardScreen.red.withValues(alpha: 0.55),
                       blurRadius: 20,
                       spreadRadius: 1,
                     ),
@@ -449,8 +477,9 @@ class _ProgressRing extends StatelessWidget {
                   value: percent,
                   strokeWidth: 6,
                   backgroundColor: const Color(0xFF3A3A3C),
-                  valueColor:
-                      const AlwaysStoppedAnimation<Color>(DashboardScreen.red),
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                    DashboardScreen.red,
+                  ),
                   strokeCap: StrokeCap.round,
                 ),
               ),
@@ -508,8 +537,11 @@ class _DateNavigator extends StatelessWidget {
         children: [
           GestureDetector(
             onTap: onPrevious,
-            child: const Icon(Icons.chevron_left,
-                color: DashboardScreen.grey, size: 22),
+            child: const Icon(
+              Icons.chevron_left,
+              color: DashboardScreen.grey,
+              size: 22,
+            ),
           ),
           Text(
             label,
@@ -521,8 +553,11 @@ class _DateNavigator extends StatelessWidget {
           ),
           GestureDetector(
             onTap: onNext,
-            child: const Icon(Icons.chevron_right,
-                color: DashboardScreen.grey, size: 22),
+            child: const Icon(
+              Icons.chevron_right,
+              color: DashboardScreen.grey,
+              size: 22,
+            ),
           ),
         ],
       ),
@@ -606,7 +641,7 @@ class _GlanceCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: DashboardScreen.card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: iconColor.withOpacity(0.4)),
+        border: Border.all(color: iconColor.withValues(alpha: 0.4)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -733,7 +768,10 @@ class _ScheduleRow extends StatelessWidget {
               padding: const EdgeInsets.only(top: 4),
               child: Text(
                 item.time,
-                style: const TextStyle(color: DashboardScreen.grey, fontSize: 12),
+                style: const TextStyle(
+                  color: DashboardScreen.grey,
+                  fontSize: 12,
+                ),
               ),
             ),
           ),
@@ -776,8 +814,10 @@ class _ScheduleRow extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     item.subtitle,
-                    style:
-                        const TextStyle(color: DashboardScreen.grey, fontSize: 12),
+                    style: const TextStyle(
+                      color: DashboardScreen.grey,
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),
@@ -787,7 +827,7 @@ class _ScheduleRow extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: item.color.withOpacity(0.15),
+              color: item.color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(item.icon, color: item.color, size: 18),
@@ -853,11 +893,18 @@ class _TasksCard extends StatelessWidget {
                 onTap: onViewAll,
                 child: const Row(
                   children: [
-                    Text('View All',
-                        style:
-                            TextStyle(color: DashboardScreen.grey, fontSize: 11)),
-                    Icon(Icons.chevron_right,
-                        color: DashboardScreen.grey, size: 14),
+                    Text(
+                      'View All',
+                      style: TextStyle(
+                        color: DashboardScreen.grey,
+                        fontSize: 11,
+                      ),
+                    ),
+                    Icon(
+                      Icons.chevron_right,
+                      color: DashboardScreen.grey,
+                      size: 14,
+                    ),
                   ],
                 ),
               ),
@@ -878,8 +925,11 @@ class _TasksCard extends StatelessWidget {
                         ? const CircleAvatar(
                             radius: 9,
                             backgroundColor: DashboardScreen.red,
-                            child: Icon(Icons.check,
-                                size: 12, color: Colors.white),
+                            child: Icon(
+                              Icons.check,
+                              size: 12,
+                              color: Colors.white,
+                            ),
                           )
                         : Container(
                             width: 18,
@@ -887,7 +937,9 @@ class _TasksCard extends StatelessWidget {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                  color: DashboardScreen.grey, width: 1.4),
+                                color: DashboardScreen.grey,
+                                width: 1.4,
+                              ),
                             ),
                           ),
                     const SizedBox(width: 10),
@@ -912,14 +964,19 @@ class _TasksCard extends StatelessWidget {
                           Text(
                             t.subtitle,
                             style: const TextStyle(
-                                color: DashboardScreen.grey, fontSize: 11),
+                              color: DashboardScreen.grey,
+                              fontSize: 11,
+                            ),
                           ),
                         ],
                       ),
                     ),
                     if (t.flagged)
-                      const Icon(Icons.flag,
-                          size: 14, color: DashboardScreen.red),
+                      const Icon(
+                        Icons.flag,
+                        size: 14,
+                        color: DashboardScreen.red,
+                      ),
                   ],
                 ),
               ),
@@ -981,57 +1038,69 @@ class _HabitTrackerCard extends StatelessWidget {
                 onTap: onViewAll,
                 child: const Row(
                   children: [
-                    Text('View All',
-                        style:
-                            TextStyle(color: DashboardScreen.grey, fontSize: 11)),
-                    Icon(Icons.chevron_right,
-                        color: DashboardScreen.grey, size: 14),
+                    Text(
+                      'View All',
+                      style: TextStyle(
+                        color: DashboardScreen.grey,
+                        fontSize: 11,
+                      ),
+                    ),
+                    Icon(
+                      Icons.chevron_right,
+                      color: DashboardScreen.grey,
+                      size: 14,
+                    ),
                   ],
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          ...habits.map((h) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 7),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(h.icon, size: 14, color: DashboardScreen.grey),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            h.title,
-                            style: const TextStyle(
-                              color: DashboardScreen.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
+          ...habits.map(
+            (h) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 7),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(h.icon, size: 14, color: DashboardScreen.grey),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          h.title,
+                          style: const TextStyle(
+                            color: DashboardScreen.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                        Text(
-                          h.fraction,
-                          style: const TextStyle(
-                              color: DashboardScreen.grey, fontSize: 11),
+                      ),
+                      Text(
+                        h.fraction,
+                        style: const TextStyle(
+                          color: DashboardScreen.grey,
+                          fontSize: 11,
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: h.progress,
-                        minHeight: 3,
-                        backgroundColor: const Color(0xFF2A2A2A),
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                            DashboardScreen.red),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: h.progress,
+                      minHeight: 3,
+                      backgroundColor: const Color(0xFF2A2A2A),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        DashboardScreen.red,
                       ),
                     ),
-                  ],
-                ),
-              )),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -1121,7 +1190,10 @@ class _UpcomingCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   event.subtitle,
-                  style: const TextStyle(color: DashboardScreen.grey, fontSize: 12),
+                  style: const TextStyle(
+                    color: DashboardScreen.grey,
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),

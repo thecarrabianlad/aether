@@ -55,15 +55,15 @@ class DashboardDateSelector extends StatelessWidget {
           height: 48,
           padding: const EdgeInsets.symmetric(horizontal: 4),
           decoration: BoxDecoration(
-            color: _cardColor.withOpacity(0.52),
+            color: _cardColor.withValues(alpha: 0.52),
             borderRadius: BorderRadius.circular(15),
             border: Border.all(
-              color: Colors.white.withOpacity(0.07),
+              color: Colors.white.withValues(alpha: 0.07),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.15),
+                color: Colors.black.withValues(alpha: 0.15),
                 blurRadius: 6,
                 offset: const Offset(0, 2),
               ),
@@ -84,7 +84,7 @@ class DashboardDateSelector extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
-                    color: Colors.white.withOpacity(0.82),
+                    color: Colors.white.withValues(alpha: 0.82),
                     
                   ),
                 ),
@@ -122,7 +122,7 @@ class _ChevronButton extends StatelessWidget {
           child: Icon(
             icon,
             size: 22,
-            color: Colors.white.withOpacity(0.92),
+            color: Colors.white.withValues(alpha: 0.92),
           ),
         ),
       ),

@@ -22,10 +22,10 @@ class DashboardTopBar extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
           decoration: BoxDecoration(
-            color: _bgColor.withOpacity(0.65),
+            color: _bgColor.withValues(alpha: 0.65),
             border: Border(
               bottom: BorderSide(
-                color: Colors.white.withOpacity(0.08),
+                color: Colors.white.withValues(alpha: 0.08),
                 width: 1,
               ),
             ),
@@ -47,7 +47,7 @@ class DashboardTopBar extends StatelessWidget {
                       fontSize: 20,
                       fontWeight: FontWeight.w400,
                       letterSpacing: 4,
-                      color: Colors.white.withOpacity(0.85),
+                      color: Colors.white.withValues(alpha: 0.85),
                     ),
                   ),
                 ),
@@ -85,7 +85,7 @@ class _TopBarIconButton extends StatelessWidget {
           child: Icon(
             icon,
             size: 24,
-            color: Colors.white.withOpacity(0.75),
+            color: Colors.white.withValues(alpha: 0.75),
           ),
         ),
       ),

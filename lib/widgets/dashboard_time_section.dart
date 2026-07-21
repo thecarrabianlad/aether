@@ -45,7 +45,7 @@ final VoidCallback onNextDay;
                       fontSize: 46,
                       fontWeight: FontWeight.w300,
                       height: 1,
-                      color: Colors.white.withOpacity(0.95),
+                      color: Colors.white.withValues(alpha: 0.95),
                     ),
                   ),
                   if (period.isNotEmpty)
@@ -57,7 +57,7 @@ final VoidCallback onNextDay;
                           fontSize: 18,
                           fontWeight: FontWeight.w400,
                           height: 1,
-                          color: Colors.white.withOpacity(0.75),
+                          color: Colors.white.withValues(alpha: 0.75),
                         ),
                       ),
                     ),
@@ -69,7 +69,7 @@ final VoidCallback onNextDay;
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
-                  color: Colors.white.withOpacity(0.85),
+                  color: Colors.white.withValues(alpha: 0.85),
                 ),
               ),
               const SizedBox(height: 4),
@@ -78,7 +78,7 @@ final VoidCallback onNextDay;
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: Colors.white.withOpacity(0.55),
+                  color: Colors.white.withValues(alpha: 0.55),
                 ),
               ),
               DashboardDateSelector(

@@ -33,15 +33,15 @@ class DashboardProgressCard extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
             decoration: BoxDecoration(
-              color: _cardColor.withOpacity(0.52),
+              color: _cardColor.withValues(alpha: 0.52),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: Colors.white.withOpacity(0.07),
+                color: Colors.white.withValues(alpha: 0.07),
                 width: 1,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.18),
+                  color: Colors.black.withValues(alpha: 0.18),
                   blurRadius: 8,
                   offset: const Offset(0, 3),
                 ),
@@ -81,7 +81,7 @@ class DashboardProgressCard extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w400,
-                              color: Colors.white.withOpacity(0.55),
+                              color: Colors.white.withValues(alpha: 0.55),
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -90,7 +90,7 @@ class DashboardProgressCard extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
-                              color: Colors.white.withOpacity(0.88),
+                              color: Colors.white.withValues(alpha: 0.88),
                             ),
                           ),
                         ],
@@ -140,7 +140,7 @@ class _ProgressRingPainter extends CustomPainter {
     final sweepAngle = math.pi * 2 * progress;
 
     final glowPaint = Paint()
-      ..color = activeColor.withOpacity(0.28)
+      ..color = activeColor.withValues(alpha: 0.28)
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth + 2
       ..strokeCap = StrokeCap.round
