@@ -1,0 +1,1 @@
+export 'package:aether/features/academics/screens/academics_screen.dart';
