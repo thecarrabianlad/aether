@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+export 'package:aether/features/academics/screens/academics_screen.dart';import 'package:flutter/material.dart';
 
 class Course {
   final String name;
