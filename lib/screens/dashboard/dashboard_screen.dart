@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:aether/screens/schedule/schedule_screen.dart';
+import 'package:aether/screens/tasks/daily_tasks_screen.dart';
 /// ---------------------------------------------------------------------
 /// AETHER — Dashboard content
 /// ---------------------------------------------------------------------
@@ -276,9 +277,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 }
 
   void _onViewAllTasks() {
-    // TODO: navigate to full tasks view
-    print('View all tasks tapped');
-  }
+  Navigator.of(context).push(
+    MaterialPageRoute(builder: (_) => const DailyTasksScreen()),
+  );
+}
 
   void _onViewAllHabits() {
     // TODO: navigate to full habits view
