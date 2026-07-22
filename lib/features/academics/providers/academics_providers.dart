@@ -13,28 +13,26 @@ final academicsServiceProvider = Provider<AcademicsService>((ref) {
   return AcademicsService(db);
 });
 
-/// Courses stream from local DB. Triggers a background sync on first listen.
+/// Courses stream from local DB — pure, no side effects.
+/// Sync is triggered from the widget lifecycle (initState → addPostFrameCallback).
 final coursesProvider = StreamProvider<List<Course>>((ref) {
   final service = ref.watch(academicsServiceProvider);
-  service.syncCourses();
   return service.watchCourses();
 });
 
 final selectedCourseProvider = StateProvider<Course?>((ref) => null);
 
-/// Lectures stream for a course. Triggers a background sync on first listen.
+/// Lectures stream for a course — pure, no side effects.
 final lecturesProvider =
     StreamProvider.family<List<Lecture>, String>((ref, courseId) {
   final service = ref.watch(academicsServiceProvider);
-  service.syncLectures(courseId);
   return service.watchLectures(courseId);
 });
 
-/// Assignments stream for a course. Triggers a background sync on first listen.
+/// Assignments stream for a course — pure, no side effects.
 final assignmentsProvider =
     StreamProvider.family<List<Assignment>, String>((ref, courseId) {
   final service = ref.watch(academicsServiceProvider);
-  service.syncAssignments(courseId);
   return service.watchAssignments(courseId);
 });
 

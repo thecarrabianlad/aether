@@ -6,24 +6,24 @@ import 'package:aether/features/auth/screens/signup_screen.dart';
 import 'package:aether/core/services/auth_service.dart';
 import 'package:aether/screens/home_screen.dart';
 import 'package:aether/features/academics/screens/academics_screen.dart';
-import 'package:aether/screens/habits/habits_screen.dart';
+import 'package:aether/features/habits/screens/habits_screen.dart';
 import 'package:aether/screens/health/health_screen.dart';
-import 'package:aether/widgets/bottom_navbar.dart';
-import 'package:aether/main.dart'; // To get MainScaffold
+import 'package:aether/main.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authService = AuthService.instance;
+  final isLoggedIn = authService.isLoggedIn;
 
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: isLoggedIn ? '/' : '/login',
     refreshListenable: _GoRouterRefreshStream(authService.onAuthStateChange),
     redirect: (BuildContext context, GoRouterState state) {
-      final isLoggedIn = authService.isLoggedIn;
-      final isAuthenticating =
+      final loggedIn = authService.isLoggedIn;
+      final authenticating =
           state.matchedLocation == '/login' || state.matchedLocation == '/signup';
 
-      if (!isLoggedIn && !isAuthenticating) return '/login';
-      if (isLoggedIn && isAuthenticating) return '/';
+      if (!loggedIn && !authenticating) return '/login';
+      if (loggedIn && authenticating) return '/';
 
       return null;
     },
@@ -65,7 +65,6 @@ final routerProvider = Provider<GoRouter>((ref) {
 
 class _GoRouterRefreshStream extends ChangeNotifier {
   _GoRouterRefreshStream(Stream<dynamic> stream) {
-    notifyListeners();
     stream.asBroadcastStream().listen((_) => notifyListeners());
   }
 }

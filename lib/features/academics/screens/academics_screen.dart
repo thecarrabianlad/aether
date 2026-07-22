@@ -28,6 +28,16 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
   static const _blue = Color(0xFF3B82F6);
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(academicsServiceProvider).syncCourses();
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final coursesAsync = ref.watch(coursesProvider);
     return Container(
@@ -139,8 +149,12 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
                       final c = courses[index];
                       return _CourseCardWithProgress(
                         course: c,
-                        onTap: () =>
-                            ref.read(selectedCourseProvider.notifier).state = c,
+                        onTap: () {
+                          final service = ref.read(academicsServiceProvider);
+                          service.syncLectures(c.id);
+                          service.syncAssignments(c.id);
+                          ref.read(selectedCourseProvider.notifier).state = c;
+                        },
                       );
                     },
                   ),
@@ -684,15 +698,6 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
 
   Color _hexToColor(String hex) =>
       Color(int.parse(hex.replaceFirst('#', '0xFF')));
-
-  static final List<Color> _colorOptions = [
-    const Color(0xFF8B5CF6),
-    const Color(0xFFE8443F),
-    const Color(0xFF34C759),
-    const Color(0xFFE08A2E),
-    const Color(0xFF3B82F6),
-    const Color(0xFF0A84FF),
-  ];
 }
 
 // ── Extracted Widgets ────────────────────────────────
@@ -756,19 +761,19 @@ class _ColorPicker extends StatelessWidget {
   final ValueChanged<Color> onChanged;
   const _ColorPicker({required this.selectedColor, required this.onChanged});
 
-  static const _colorOptions = [
-    Color(0xFF8B5CF6), Color(0xFFE8443F), Color(0xFF34C759),
-    Color(0xFFE08A2E), Color(0xFF3B82F6), Color(0xFF0A84FF),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final colorOptions = [
+      const Color(0xFF8B5CF6), const Color(0xFFE8443F), const Color(0xFF34C759),
+      const Color(0xFFE08A2E), const Color(0xFF3B82F6), const Color(0xFF0A84FF),
+    ];
+
     return Row(
       children: [
         const Text('Color:',
             style: TextStyle(color: Color(0xFF9A9A9E))),
         const SizedBox(width: 12),
-        ..._colorOptions
+        ...colorOptions
             .map((c) => Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: GestureDetector(

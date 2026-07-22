@@ -4,7 +4,6 @@ import 'package:aether/widgets/bottom_navbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,7 +23,6 @@ class AetherApp extends ConsumerWidget {
       title: 'AETHER',
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: Colors.black,
-        // You can add more theme customizations here to match your design
       ),
       routerConfig: router,
     );
@@ -49,16 +47,12 @@ class MainScaffold extends StatelessWidget {
     switch (index) {
       case 0:
         GoRouter.of(context).go('/');
-        break;
       case 1:
         GoRouter.of(context).go('/academics');
-        break;
       case 2:
         GoRouter.of(context).go('/habits');
-        break;
       case 3:
         GoRouter.of(context).go('/health');
-        break;
     }
   }
 
@@ -69,9 +63,7 @@ class MainScaffold extends StatelessWidget {
       bottomNavigationBar: BottomNavbar(
         selectedIndex: _calculateSelectedIndex(context),
         onItemTapped: (index) => _onItemTapped(index, context),
-        onAddTapped: () {
-          // TODO: Handle Add button tap, maybe show a modal
-        },
+        onAddTapped: () => GoRouter.of(context).go('/academics'),
       ),
     );
   }
