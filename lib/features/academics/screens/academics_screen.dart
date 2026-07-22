@@ -367,20 +367,23 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
                 child: const Text('Cancel')),
             TextButton(
               onPressed: () async {
-                if (!formKey.currentState!.validate()) return;
-                await ref.read(academicsServiceProvider).createCourse(
-                      name: nameCtrl.text,
-                      code: codeCtrl.text.isEmpty ? null : codeCtrl.text,
-                      professor:
-                          profCtrl.text.isEmpty ? null : profCtrl.text,
-                      location:
-                          locCtrl.text.isEmpty ? null : locCtrl.text,
-                      semester:
-                          semCtrl.text.isEmpty ? null : semCtrl.text,
-                      color:
-                          '#${selectedColor.value.toRadixString(16).substring(2)}',
-                    );
-                if (mounted) Navigator.pop(context);
+                if (nameCtrl.text.trim().isEmpty) {
+                  if (mounted) _showSnack('Course name is required.');
+                  return;
+                }
+                try {
+                  await ref.read(academicsServiceProvider).createCourse(
+                        name: nameCtrl.text.trim(),
+                        code: codeCtrl.text.trim().isEmpty ? null : codeCtrl.text.trim(),
+                        professor: profCtrl.text.trim().isEmpty ? null : profCtrl.text.trim(),
+                        location: locCtrl.text.trim().isEmpty ? null : locCtrl.text.trim(),
+                        semester: semCtrl.text.trim().isEmpty ? null : semCtrl.text.trim(),
+                        color: '#${selectedColor.value.toRadixString(16).substring(2).padLeft(6, '0').toUpperCase()}',
+                      );
+                  if (mounted) Navigator.pop(context);
+                } catch (e) {
+                  if (mounted) _showSnack('Failed to add course: $e');
+                }
               },
               child:
                   const Text('Add', style: TextStyle(color: _red)),
@@ -498,68 +501,159 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
 
   void _showAddLectureDialog(String courseId) {
     final titleCtrl = TextEditingController();
+    final chapterCtrl = TextEditingController();
     final formKey = GlobalKey<FormState>();
+    DateTime? scheduledAt;
 
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: const Color(0xFF1C1C1E),
-        title:
-            const Text('Add Lecture', style: TextStyle(color: Colors.white)),
-        content: Form(
-          key: formKey,
-          child: _buildField('Lecture Title *', titleCtrl, required: true),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel')),
-          TextButton(
-            onPressed: () async {
-              if (!formKey.currentState!.validate()) return;
-              await ref
-                  .read(academicsServiceProvider)
-                  .createLecture(courseId, titleCtrl.text);
-              if (mounted) Navigator.pop(context);
-            },
-            child: const Text('Add', style: TextStyle(color: _red)),
+      builder: (_) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: const Color(0xFF1C1C1E),
+          title:
+              const Text('Add Lecture', style: TextStyle(color: Colors.white)),
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildField('Lecture Title *', titleCtrl, required: true),
+                _buildField('Chapter', chapterCtrl),
+                _DateTimeField(
+                  label: 'Scheduled Date & Time',
+                  value: scheduledAt,
+                  onPick: () async {
+                    final picked = await _pickDateTime(context, scheduledAt);
+                    if (picked != null) setDialogState(() => scheduledAt = picked);
+                  },
+                ),
+              ],
+            ),
           ),
-        ],
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel')),
+            TextButton(
+              onPressed: () async {
+                if (!formKey.currentState!.validate()) return;
+                try {
+                  await ref.read(academicsServiceProvider).createLecture(
+                        courseId,
+                        titleCtrl.text.trim(),
+                        chapter: chapterCtrl.text.isEmpty ? null : chapterCtrl.text.trim(),
+                        scheduledAt: scheduledAt,
+                      );
+                  if (mounted) Navigator.pop(context);
+                } catch (e) {
+                  if (mounted) _showSnack('Failed to add lecture: $e');
+                }
+              },
+              child: const Text('Add', style: TextStyle(color: _red)),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   void _showAddAssignmentDialog(String courseId) {
     final titleCtrl = TextEditingController();
+    final descCtrl = TextEditingController();
     final formKey = GlobalKey<FormState>();
+    DateTime? dueDate;
 
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: const Color(0xFF1C1C1E),
-        title: const Text('Add Assignment',
-            style: TextStyle(color: Colors.white)),
-        content: Form(
-          key: formKey,
-          child: _buildField('Assignment Title *', titleCtrl, required: true),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel')),
-          TextButton(
-            onPressed: () async {
-              if (!formKey.currentState!.validate()) return;
-              await ref
-                  .read(academicsServiceProvider)
-                  .createAssignment(courseId, titleCtrl.text);
-              if (mounted) Navigator.pop(context);
-            },
-            child: const Text('Add', style: TextStyle(color: _red)),
+      builder: (_) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: const Color(0xFF1C1C1E),
+          title: const Text('Add Assignment',
+              style: TextStyle(color: Colors.white)),
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildField('Assignment Title *', titleCtrl, required: true),
+                _buildField('Description', descCtrl),
+                _DateTimeField(
+                  label: 'Due Date',
+                  value: dueDate,
+                  dateOnly: true,
+                  onPick: () async {
+                    final picked = await _pickDate(context, dueDate);
+                    if (picked != null) setDialogState(() => dueDate = picked);
+                  },
+                ),
+              ],
+            ),
           ),
-        ],
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel')),
+            TextButton(
+              onPressed: () async {
+                if (!formKey.currentState!.validate()) return;
+                try {
+                  await ref.read(academicsServiceProvider).createAssignment(
+                        courseId,
+                        titleCtrl.text.trim(),
+                        description: descCtrl.text.isEmpty ? null : descCtrl.text.trim(),
+                        dueDate: dueDate,
+                      );
+                  if (mounted) Navigator.pop(context);
+                } catch (e) {
+                  if (mounted) _showSnack('Failed to add assignment: $e');
+                }
+              },
+              child: const Text('Add', style: TextStyle(color: _red)),
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  Future<DateTime?> _pickDate(BuildContext context, DateTime? initial) async {
+    return showDatePicker(
+      context: context,
+      initialDate: initial ?? DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2030),
+      builder: (context, child) => Theme(
+        data: ThemeData.dark().copyWith(
+          colorScheme: const ColorScheme.dark(primary: _red),
+        ),
+        child: child!,
+      ),
+    );
+  }
+
+  Future<DateTime?> _pickDateTime(BuildContext context, DateTime? initial) async {
+    final date = await _pickDate(context, initial);
+    if (date == null || !context.mounted) return null;
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(initial ?? DateTime.now()),
+      builder: (context, child) => Theme(
+        data: ThemeData.dark().copyWith(
+          colorScheme: const ColorScheme.dark(primary: _red),
+        ),
+        child: child!,
+      ),
+    );
+    if (time == null) return date;
+    return DateTime(date.year, date.month, date.day, time.hour, time.minute);
+  }
+
+  void _showSnack(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+      backgroundColor: const Color(0xFFE8443F),
+      behavior: SnackBarBehavior.floating,
+    ));
   }
 
   Widget _buildField(String label, TextEditingController ctrl,
@@ -602,6 +696,60 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
 }
 
 // ── Extracted Widgets ────────────────────────────────
+
+class _DateTimeField extends StatelessWidget {
+  final String label;
+  final DateTime? value;
+  final VoidCallback onPick;
+  final bool dateOnly;
+
+  const _DateTimeField({
+    required this.label,
+    required this.value,
+    required this.onPick,
+    this.dateOnly = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final text = value == null
+        ? label
+        : dateOnly
+            ? '${value!.day}/${value!.month}/${value!.year}'
+            : '${value!.day}/${value!.month}/${value!.year}  '
+                '${value!.hour.toString().padLeft(2, '0')}:'
+                '${value!.minute.toString().padLeft(2, '0')}';
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        onTap: onPick,
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF2C2C2E),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.calendar_today, color: Color(0xFF9A9A9E), size: 16),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(text,
+                    style: TextStyle(
+                        color: value == null
+                            ? const Color(0xFF9A9A9E)
+                            : Colors.white,
+                        fontSize: 14)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class _ColorPicker extends StatelessWidget {
   final Color selectedColor;

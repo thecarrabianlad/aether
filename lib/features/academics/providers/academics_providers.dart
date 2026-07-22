@@ -1,45 +1,56 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:aether/core/database/database.dart';
 import 'package:aether/core/services/academics_service.dart';
-import 'package:aether/core/database/tables/courses.dart';
-import 'package:aether/core/database/tables/lectures.dart';
-import 'package:aether/core/database/tables/assignments.dart';
 
-final databaseProvider = Provider<AppDatabase>((ref) => AppDatabase());
+final databaseProvider = Provider<AppDatabase>((ref) {
+  final db = AppDatabase();
+  ref.onDispose(db.close);
+  return db;
+});
 
 final academicsServiceProvider = Provider<AcademicsService>((ref) {
   final db = ref.watch(databaseProvider);
   return AcademicsService(db);
 });
 
+/// Courses stream from local DB. Triggers a background sync on first listen.
 final coursesProvider = StreamProvider<List<Course>>((ref) {
   final service = ref.watch(academicsServiceProvider);
+  service.syncCourses();
   return service.watchCourses();
 });
 
 final selectedCourseProvider = StateProvider<Course?>((ref) => null);
 
+/// Lectures stream for a course. Triggers a background sync on first listen.
 final lecturesProvider =
-    FutureProvider.family<List<Lecture>, String>((ref, courseId) async {
+    StreamProvider.family<List<Lecture>, String>((ref, courseId) {
   final service = ref.watch(academicsServiceProvider);
-  return service.getLectures(courseId: courseId);
+  service.syncLectures(courseId);
+  return service.watchLectures(courseId);
 });
 
+/// Assignments stream for a course. Triggers a background sync on first listen.
 final assignmentsProvider =
-    FutureProvider.family<List<Assignment>, String>((ref, courseId) async {
+    StreamProvider.family<List<Assignment>, String>((ref, courseId) {
   final service = ref.watch(academicsServiceProvider);
-  return service.watchAssignments(courseId: courseId);
+  service.syncAssignments(courseId);
+  return service.watchAssignments(courseId);
 });
 
+/// Live progress (0..1) for a course = completed / total items.
 final courseProgressProvider =
-    FutureProvider.family<double, String>((ref, courseId) async {
-  final lectures = await ref.watch(lecturesProvider(courseId).future);
-  final assignments = await ref.watch(assignmentsProvider(courseId).future);
+    StreamProvider.family<double, String>((ref, courseId) {
+  final lecturesAsync = ref.watch(lecturesProvider(courseId));
+  final assignmentsAsync = ref.watch(assignmentsProvider(courseId));
+
+  final lectures = lecturesAsync.valueOrNull ?? [];
+  final assignments = assignmentsAsync.valueOrNull ?? [];
 
   final total = lectures.length + assignments.length;
-  if (total == 0) return 0.0;
+  if (total == 0) return Stream.value(0.0);
 
   final done = lectures.where((l) => l.isCompleted).length +
       assignments.where((a) => a.isCompleted).length;
-  return done / total;
+  return Stream.value(done / total);
 });
