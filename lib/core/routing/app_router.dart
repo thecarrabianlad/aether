@@ -7,8 +7,8 @@ import 'package:aether/core/services/auth_service.dart';
 import 'package:aether/screens/home_screen.dart';
 import 'package:aether/features/academics/screens/academics_screen.dart';
 import 'package:aether/features/habits/screens/habits_screen.dart';
-import 'package:aether/screens/health/health_screen.dart';
-import 'package:aether/main.dart';
+import 'package:aether/features/health/screens/health_screen.dart';
+import 'package:aether/widgets/main_scaffold.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authService = AuthService.instance;

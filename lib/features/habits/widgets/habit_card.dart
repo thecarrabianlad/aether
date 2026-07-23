@@ -5,13 +5,15 @@ import 'package:aether/features/habits/models/habit_repository.dart';
 class HabitCard extends StatelessWidget {
   final Habit habit;
   final VoidCallback onToggle;
-  final VoidCallback onMenuTap;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
   const HabitCard({
     super.key,
     required this.habit,
     required this.onToggle,
-    required this.onMenuTap,
+    required this.onEdit,
+    required this.onDelete,
   });
 
   static const _dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -184,13 +186,45 @@ class HabitCard extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           // 3-dot menu
-          GestureDetector(
-            onTap: onMenuTap,
-            child: const Padding(
-              padding: EdgeInsets.all(4),
-              child: Icon(Icons.more_vert,
-                  color: HabitRepository.greyText, size: 18),
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'edit') onEdit();
+              if (value == 'delete') onDelete();
+            },
+            color: const Color(0xFF1C1C1E),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: HabitRepository.cardBorder),
             ),
+            offset: const Offset(-12, 0),
+            icon: const Icon(Icons.more_vert,
+                color: HabitRepository.greyText, size: 18),
+            itemBuilder: (_) => const [
+              PopupMenuItem(
+                value: 'edit',
+                child: Row(
+                  children: [
+                    Icon(Icons.edit_outlined,
+                        color: HabitRepository.greyText, size: 16),
+                    SizedBox(width: 8),
+                    Text('Edit',
+                        style: TextStyle(color: HabitRepository.whiteText, fontSize: 14)),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    Icon(Icons.delete_outline,
+                        color: HabitRepository.redAccent, size: 16),
+                    SizedBox(width: 8),
+                    Text('Delete',
+                        style: TextStyle(color: HabitRepository.redAccent, fontSize: 14)),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:drift/drift.dart' show Value;
+import 'package:aether/core/providers.dart';
 import 'package:aether/features/academics/providers/academics_providers.dart';
 import 'package:aether/features/academics/widgets/course_summary_card.dart';
 import 'package:aether/features/academics/widgets/upcoming_lecture_tile.dart';
@@ -11,9 +12,8 @@ import 'package:aether/core/database/database.dart';
 import 'package:aether/widgets/dashboard_top_bar.dart';
 
 class AcademicsScreen extends ConsumerStatefulWidget {
-  final VoidCallback? onMenuTap;
   final VoidCallback? onProfileTap;
-  const AcademicsScreen({super.key, this.onMenuTap, this.onProfileTap});
+  const AcademicsScreen({super.key, this.onProfileTap});
 
   @override
   ConsumerState<AcademicsScreen> createState() => _AcademicsScreenState();
@@ -21,6 +21,7 @@ class AcademicsScreen extends ConsumerStatefulWidget {
 
 class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
   int _selectedTab = 0;
+  bool _isSyncing = false;
 
   static const _red = Color(0xFFE8443F);
   static const _green = Color(0xFF34C759);
@@ -32,9 +33,18 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        ref.read(academicsServiceProvider).syncCourses();
+        _startSync();
       }
     });
+  }
+
+  Future<void> _startSync() async {
+    setState(() => _isSyncing = true);
+    try {
+      await ref.read(academicsServiceProvider).syncCourses();
+    } finally {
+      if (mounted) setState(() => _isSyncing = false);
+    }
   }
 
   @override
@@ -48,30 +58,34 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
         child: Column(
           children: [
             DashboardTopBar(
-              onMenuTap: widget.onMenuTap ?? () {},
+              onMenuTap: () => ref.read(drawerProvider.notifier).state = true,
               onProfileTap: widget.onProfileTap ?? () {},
             ),
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildHeader(),
-                    const SizedBox(height: 20),
-                    _buildCourseCards(coursesAsync),
-                    const SizedBox(height: 20),
-                    _buildTabSelector(),
-                    const SizedBox(height: 20),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      child: _selectedTab == 0
-                          ? _buildMyCoursesView()
-                          : _buildTimetableView(),
-                    ),
-                    const SizedBox(height: 24),
-                    _buildQuickAccessBar(),
-                  ],
+              child: RefreshIndicator(
+                onRefresh: _startSync,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildHeader(),
+                      const SizedBox(height: 20),
+                      _buildCourseCards(coursesAsync),
+                      const SizedBox(height: 20),
+                      _buildTabSelector(),
+                      const SizedBox(height: 20),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        child: _selectedTab == 0
+                            ? _buildMyCoursesView()
+                            : _buildTimetableView(),
+                      ),
+                      const SizedBox(height: 24),
+                      _buildQuickAccessBar(),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -84,14 +98,29 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
   Widget _buildHeader() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
-        Text('Academics',
-            style: TextStyle(
-                color: Colors.white,
-                fontSize: 26,
-                fontWeight: FontWeight.w700)),
-        SizedBox(height: 6),
-        Text('Manage courses, lectures & assignments.',
+      children: [
+        Row(
+          children: [
+            const Expanded(
+              child: Text('Academics',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w700)),
+            ),
+            if (_isSyncing)
+              const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: _red,
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        const Text('Manage courses, lectures & assignments.',
             style: TextStyle(color: Color(0xFF9A9A9E), fontSize: 14)),
       ],
     );
@@ -268,28 +297,187 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
   }
 
   Widget _buildTimetableView() {
+    final coursesAsync = ref.watch(coursesProvider);
+    final daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
     return Container(
-      height: 400,
-      alignment: Alignment.center,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.calendar_month_outlined,
-              color: Color(0xFF5A5A5E), size: 48),
-          const SizedBox(height: 16),
-          const Text('Timetable view coming soon.',
-              style: TextStyle(color: Color(0xFF9A9A9E), fontSize: 16)),
-        ],
+      key: const ValueKey('timetable'),
+      child: coursesAsync.when(
+        data: (courses) {
+          final scheduled = courses.where((c) => c.scheduleDays != null && c.scheduleDays!.isNotEmpty).toList();
+          if (scheduled.isEmpty) {
+            return Container(
+              height: 300,
+              alignment: Alignment.center,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.calendar_month_outlined,
+                      color: Color(0xFF5A5A5E), size: 48),
+                  const SizedBox(height: 16),
+                  const Text('No courses with schedule set.',
+                      style: TextStyle(color: Color(0xFF9A9A9E), fontSize: 16)),
+                  const SizedBox(height: 8),
+                  Text('Edit a course to add schedule days.',
+                      style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13)),
+                ],
+              ),
+            );
+          }
+
+          final timeSlots = <String>[];
+          for (final c in scheduled) {
+            if (c.scheduleStart != null && !timeSlots.contains(c.scheduleStart)) {
+              timeSlots.add(c.scheduleStart!);
+            }
+            if (c.scheduleEnd != null && !timeSlots.contains(c.scheduleEnd)) {
+              timeSlots.add(c.scheduleEnd!);
+            }
+          }
+          timeSlots.sort();
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Weekly Schedule',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600)),
+              const SizedBox(height: 12),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: SizedBox(
+                  width: 120 + daysOfWeek.length * 100.0,
+                  child: Column(
+                    children: [
+                      // Header row
+                      Row(
+                        children: [
+                          const SizedBox(
+                            width: 120,
+                            child: Padding(
+                              padding: EdgeInsets.all(8),
+                              child: Text('Time',
+                                  style: TextStyle(
+                                      color: Color(0xFF9A9A9E),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600)),
+                            ),
+                          ),
+                          ...daysOfWeek.map((d) => SizedBox(
+                                width: 100,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8),
+                                  child: Text(d,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                          color: Color(0xFF9A9A9E),
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600)),
+                                ),
+                              )),
+                        ],
+                      ),
+                      const Divider(color: Color(0xFF2C2C2E), height: 1),
+                      // Time rows
+                      ...timeSlots.map((time) {
+                        final rowCourses = scheduled.where((c) =>
+                            c.scheduleStart == time ||
+                            c.scheduleEnd == time);
+                        return Column(
+                          children: [
+                            Row(
+                              children: [
+                                SizedBox(
+                                  width: 120,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8),
+                                    child: Text(time,
+                                        style: const TextStyle(
+                                            color: Color(0xFF9A9A9E),
+                                            fontSize: 11)),
+                                  ),
+                                ),
+                                ...daysOfWeek.map((d) {
+                                  final dayMatch = rowCourses.where((c) =>
+                                      c.scheduleDays!
+                                          .split(',')
+                                          .map((s) => s.trim().toLowerCase())
+                                          .any((sd) => sd.startsWith(d.toLowerCase())));
+                                  final course = dayMatch.isNotEmpty
+                                      ? dayMatch.first
+                                      : null;
+                                  return SizedBox(
+                                    width: 100,
+                                    child: course != null
+                                        ? Container(
+                                            margin:
+                                                const EdgeInsets.all(3),
+                                            padding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 6,
+                                                    vertical: 8),
+                                            decoration: BoxDecoration(
+                                              color: Color(int.parse(
+                                                      course.color
+                                                          .replaceFirst(
+                                                              '#', '0xFF')))
+                                                  .withValues(alpha: 0.2),
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              border: Border.all(
+                                                color: Color(int.parse(
+                                                        course.color
+                                                            .replaceFirst(
+                                                                '#', '0xFF')))
+                                                    .withValues(alpha: 0.3),
+                                              ),
+                                            ),
+                                            child: Text(
+                                              course.name,
+                                              textAlign: TextAlign.center,
+                                              maxLines: 2,
+                                              overflow:
+                                                  TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 10),
+                                            ),
+                                          )
+                                        : const SizedBox.shrink(),
+                                  );
+                                }),
+                              ],
+                            ),
+                            const Divider(
+                                color: Color(0xFF2C2C2E), height: 1),
+                          ],
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+        loading: () => const SizedBox(
+          height: 300,
+          child: Center(
+              child: CircularProgressIndicator(color: _red)),
+        ),
+        error: (e, _) => _buildError('Error loading courses: $e'),
       ),
     );
   }
 
   Widget _buildQuickAccessBar() {
     final actions = [
-      (Icons.notes_rounded, 'All Notes', _green),
-      (Icons.assignment_rounded, 'Past Papers', _orange),
-      (Icons.timer_rounded, 'Pomodoro', _red),
-      (Icons.auto_stories_rounded, 'Flashcards', _blue),
+      (Icons.notes_rounded, 'All Notes', _green, 'Notes coming soon'),
+      (Icons.assignment_rounded, 'Past Papers', _orange, 'Past papers coming soon'),
+      (Icons.timer_rounded, 'Pomodoro', _red, 'Pomodoro timer coming soon'),
+      (Icons.auto_stories_rounded, 'Flashcards', _blue, 'Flashcards coming soon'),
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -309,7 +497,7 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
                         icon: a.$1,
                         label: a.$2,
                         color: a.$3,
-                        onTap: () {},
+                        onTap: () => _showSnack(a.$4),
                       ),
                     ),
                   ))
@@ -468,7 +656,7 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
                           ? const Value.absent()
                           : Value(semCtrl.text),
                       color:
-                          '#${selectedColor.value.toRadixString(16).substring(2)}',
+                      '#${selectedColor.value.toRadixString(16).substring(2).padLeft(6, '0').toUpperCase()}',
                     ));
                 if (mounted) Navigator.pop(context);
               },
@@ -567,6 +755,193 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showEditLectureDialog(Lecture lecture) {
+    final titleCtrl = TextEditingController(text: lecture.title);
+    final chapterCtrl = TextEditingController(text: lecture.chapter ?? '');
+    final formKey = GlobalKey<FormState>();
+    DateTime? scheduledAt = lecture.scheduledAt;
+
+    showDialog(
+      context: context,
+      builder: (_) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: const Color(0xFF1C1C1E),
+          title: const Text('Edit Lecture',
+              style: TextStyle(color: Colors.white)),
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildField('Lecture Title *', titleCtrl, required: true),
+                _buildField('Chapter', chapterCtrl),
+                _DateTimeField(
+                  label: 'Scheduled Date & Time',
+                  value: scheduledAt,
+                  onPick: () async {
+                    final picked = await _pickDateTime(context, scheduledAt);
+                    if (picked != null) setDialogState(() => scheduledAt = picked);
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel')),
+            TextButton(
+              onPressed: () async {
+                if (!formKey.currentState!.validate()) return;
+                try {
+                  final now = DateTime.now();
+                  await ref.read(academicsServiceProvider).updateLecture(
+                        lecture.copyWith(
+                          title: titleCtrl.text.trim(),
+                          chapter: chapterCtrl.text.isEmpty
+                              ? const Value.absent()
+                              : Value(chapterCtrl.text.trim()),
+                          scheduledAt: scheduledAt != null
+                              ? Value(scheduledAt)
+                              : const Value.absent(),
+                          updatedAt: now,
+                        ),
+                      );
+                  if (mounted) Navigator.pop(context);
+                } catch (e) {
+                  if (mounted) _showSnack('Failed to update lecture: $e');
+                }
+              },
+              child: const Text('Save', style: TextStyle(color: _red)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _confirmDeleteLecture(Lecture lecture) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFF1C1C1E),
+        title: const Text('Delete Lecture',
+            style: TextStyle(color: Colors.white)),
+        content: Text('Delete "${lecture.title}"?',
+            style: const TextStyle(color: Color(0xFF9A9A9E))),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel')),
+          TextButton(
+            onPressed: () async {
+              await ref
+                  .read(academicsServiceProvider)
+                  .deleteLecture(lecture.id);
+              if (mounted) Navigator.pop(context);
+            },
+            child: const Text('Delete',
+                style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEditAssignmentDialog(Assignment assignment) {
+    final titleCtrl = TextEditingController(text: assignment.title);
+    final descCtrl = TextEditingController(text: assignment.description ?? '');
+    final formKey = GlobalKey<FormState>();
+    DateTime? dueDate = assignment.dueDate;
+
+    showDialog(
+      context: context,
+      builder: (_) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: const Color(0xFF1C1C1E),
+          title: const Text('Edit Assignment',
+              style: TextStyle(color: Colors.white)),
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildField('Assignment Title *', titleCtrl, required: true),
+                _buildField('Description', descCtrl),
+                _DateTimeField(
+                  label: 'Due Date',
+                  value: dueDate,
+                  dateOnly: true,
+                  onPick: () async {
+                    final picked = await _pickDate(context, dueDate);
+                    if (picked != null) setDialogState(() => dueDate = picked);
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel')),
+            TextButton(
+              onPressed: () async {
+                if (!formKey.currentState!.validate()) return;
+                try {
+                  final now = DateTime.now();
+                  await ref.read(academicsServiceProvider).updateAssignment(
+                        assignment.copyWith(
+                          title: titleCtrl.text.trim(),
+                          description: descCtrl.text.isEmpty
+                              ? const Value.absent()
+                              : Value(descCtrl.text.trim()),
+                          dueDate: dueDate != null
+                              ? Value(dueDate)
+                              : const Value.absent(),
+                          updatedAt: now,
+                        ),
+                      );
+                  if (mounted) Navigator.pop(context);
+                } catch (e) {
+                  if (mounted) _showSnack('Failed to update assignment: $e');
+                }
+              },
+              child: const Text('Save', style: TextStyle(color: _red)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _confirmDeleteAssignment(Assignment assignment) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFF1C1C1E),
+        title: const Text('Delete Assignment',
+            style: TextStyle(color: Colors.white)),
+        content: Text('Delete "${assignment.title}"?',
+            style: const TextStyle(color: Color(0xFF9A9A9E))),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel')),
+          TextButton(
+            onPressed: () async {
+              await ref
+                  .read(academicsServiceProvider)
+                  .deleteAssignment(assignment.id);
+              if (mounted) Navigator.pop(context);
+            },
+            child: const Text('Delete',
+                style: TextStyle(color: Colors.red)),
+          ),
+        ],
       ),
     );
   }
@@ -696,8 +1071,11 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
 
   // ── Helpers ───────────────────────────────────────
 
-  Color _hexToColor(String hex) =>
-      Color(int.parse(hex.replaceFirst('#', '0xFF')));
+  Color _hexToColor(String hex) {
+    final sanitized = hex.replaceFirst('#', '');
+    final padded = sanitized.length == 6 ? 'FF$sanitized' : sanitized;
+    return Color(int.parse(padded, radix: 16));
+  }
 }
 
 // ── Extracted Widgets ────────────────────────────────
@@ -840,6 +1218,26 @@ class _CourseDetailView extends ConsumerWidget {
     required this.onAddAssignment,
   });
 
+  void _editLecture(BuildContext context, WidgetRef ref, Lecture lecture) {
+    final screen = context.findAncestorStateOfType<_AcademicsScreenState>();
+    screen?._showEditLectureDialog(lecture);
+  }
+
+  void _deleteLecture(BuildContext context, WidgetRef ref, Lecture lecture) {
+    final screen = context.findAncestorStateOfType<_AcademicsScreenState>();
+    screen?._confirmDeleteLecture(lecture);
+  }
+
+  void _editAssignment(BuildContext context, WidgetRef ref, Assignment assignment) {
+    final screen = context.findAncestorStateOfType<_AcademicsScreenState>();
+    screen?._showEditAssignmentDialog(assignment);
+  }
+
+  void _deleteAssignment(BuildContext context, WidgetRef ref, Assignment assignment) {
+    final screen = context.findAncestorStateOfType<_AcademicsScreenState>();
+    screen?._confirmDeleteAssignment(assignment);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final color = Color(int.parse(course.color.replaceFirst('#', '0xFF')));
@@ -934,6 +1332,8 @@ class _CourseDetailView extends ConsumerWidget {
                             onCompletionChanged: (val) => ref
                                 .read(academicsServiceProvider)
                                 .toggleLectureCompletion(l.id, val),
+                            onEdit: () => _editLecture(context, ref, l),
+                            onDelete: () => _deleteLecture(context, ref, l),
                           ))
                       .toList(),
                 ),
@@ -989,6 +1389,8 @@ class _CourseDetailView extends ConsumerWidget {
                             onCompletionChanged: (val) => ref
                                 .read(academicsServiceProvider)
                                 .toggleAssignmentCompletion(a.id, val),
+                            onEdit: () => _editAssignment(context, ref, a),
+                            onDelete: () => _deleteAssignment(context, ref, a),
                           ))
                       .toList(),
                 ),

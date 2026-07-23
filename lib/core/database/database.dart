@@ -10,15 +10,27 @@ import 'package:uuid/uuid.dart';
 import 'tables/courses.dart';
 import 'tables/lectures.dart';
 import 'tables/assignments.dart';
+import 'tables/habits.dart';
 
 part 'database.g.dart';
 
-@DriftDatabase(tables: [Courses, Lectures, Assignments])
+@DriftDatabase(tables: [Courses, Lectures, Assignments, Habits, HabitLogs])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (m) => m.createAll(),
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            await m.createTable(habits);
+            await m.createTable(habitLogs);
+          }
+        },
+      );
 }
 
 LazyDatabase _openConnection() {

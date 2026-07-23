@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "habits-preview",
+      "runtimeExecutable": "flutter",
+      "runtimeArgs": ["run", "-d", "web-server", "--web-port", "8099", "-t", "lib/habits_preview.dart"],
+      "port": 8099,
+      "url": "http://localhost:8099"
+    }
+  ]
+}

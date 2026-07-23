@@ -1,6 +1,8 @@
 import 'package:aether/core/database/database.dart';
 import 'package:aether/core/services/supabase_service.dart';
 import 'package:drift/drift.dart';
+import 'package:gotrue/gotrue.dart' show AuthException;
+import 'package:postgrest/postgrest.dart' show PostgrestException;
 import 'package:uuid/uuid.dart';
 
 /// Offline-first academics data layer.
@@ -150,6 +152,15 @@ class AcademicsService {
         }).eq('id', lectureId));
   }
 
+  Future<void> updateLecture(Lecture lecture) async {
+    final updated = lecture.copyWith(updatedAt: DateTime.now());
+    await (_db.update(_db.lectures)..where((l) => l.id.equals(lecture.id))).replace(updated);
+    await _push(() => _supabase
+        .from('lectures')
+        .update(_lectureToRow(updated))
+        .eq('id', updated.id));
+  }
+
   Future<void> deleteLecture(String lectureId) async {
     await (_db.delete(_db.lectures)..where((l) => l.id.equals(lectureId))).go();
     await _push(() => _supabase.from('lectures').delete().eq('id', lectureId));
@@ -217,6 +228,15 @@ class AcademicsService {
         }).eq('id', assignmentId));
   }
 
+  Future<void> updateAssignment(Assignment assignment) async {
+    final updated = assignment.copyWith(updatedAt: DateTime.now());
+    await (_db.update(_db.assignments)..where((a) => a.id.equals(assignment.id))).replace(updated);
+    await _push(() => _supabase
+        .from('assignments')
+        .update(_assignmentToRow(updated))
+        .eq('id', updated.id));
+  }
+
   Future<void> deleteAssignment(String assignmentId) async {
     await (_db.delete(_db.assignments)..where((a) => a.id.equals(assignmentId))).go();
     await _push(() => _supabase.from('assignments').delete().eq('id', assignmentId));
@@ -225,11 +245,15 @@ class AcademicsService {
   // ── Helpers ──────────────────────────────────────────
 
   /// Runs a remote push, swallowing network errors so the local-first
-  /// write still stands (offline-first). Rethrows only auth errors.
+  /// write still stands (offline-first). Rethrows auth errors so they
+  /// can be surfaced to the user.
   Future<void> _push(Future<void> Function() op) async {
     try {
       await op();
-    } catch (_) {
+    } catch (e) {
+      if (e is AuthException || (e is PostgrestException && e.code == 'PGRST301')) {
+        rethrow;
+      }
       // Offline or transient error — local DB is source of truth until
       // the next successful sync. Intentionally ignored.
     }
