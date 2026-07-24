@@ -2,6 +2,7 @@ import 'package:aether/core/database/database.dart';
 import 'package:aether/core/models/profile.dart';
 import 'package:aether/core/services/auth_service.dart';
 import 'package:aether/core/services/profile_service.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -77,3 +78,7 @@ class ProfileNotifier extends AsyncNotifier<Profile?> {
 final authStateChangesProvider = StreamProvider<AuthState>((ref) {
   return AuthService.instance.onAuthStateChange;
 });
+
+/// Global provider for the "Add" button action in the BottomNavbar.
+/// The currently active screen can override this to set its specific action.
+final globalAddActionProvider = StateProvider<VoidCallback?>((ref) => null);

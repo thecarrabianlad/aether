@@ -11,6 +11,8 @@ import 'package:aether/features/academics/widgets/quick_access_button.dart';
 import 'package:aether/core/database/database.dart';
 import 'package:aether/widgets/dashboard_top_bar.dart';
 
+import 'package:aether/core/providers.dart'; // Add this import
+
 class AcademicsScreen extends ConsumerStatefulWidget {
   final VoidCallback? onProfileTap;
   const AcademicsScreen({super.key, this.onProfileTap});
@@ -34,8 +36,19 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _startSync();
+        // Register the academics add action for the global Add button
+        ref.read(globalAddActionProvider.notifier).state = () => _showAddCourseDialog();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    // Clear the action when leaving the screen if it's still this screen's action
+    if (ref.read(globalAddActionProvider) == _showAddCourseDialog) {
+      ref.read(globalAddActionProvider.notifier).state = null;
+    }
+    super.dispose();
   }
 
   Future<void> _startSync() async {

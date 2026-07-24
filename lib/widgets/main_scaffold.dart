@@ -3,13 +3,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:aether/widgets/bottom_navbar.dart';
 import 'package:aether/widgets/side_drawer.dart';
+import 'package:aether/widgets/first_login_dialog.dart';
 import 'package:aether/core/providers.dart';
 import 'package:aether/core/models/profile.dart';
+import 'package:aether/core/services/profile_service.dart';
 
 /// Main scaffold with bottom navbar wrapping all authenticated routes.
-class MainScaffold extends ConsumerWidget {
+class MainScaffold extends ConsumerStatefulWidget {
   final Widget child;
   const MainScaffold({required this.child, super.key});
+
+  @override
+  ConsumerState<MainScaffold> createState() => _MainScaffoldState();
+}
+
+class _MainScaffoldState extends ConsumerState<MainScaffold> {
+  bool _hasCheckedFirstLogin = false;
 
   int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).matchedLocation;
@@ -57,9 +66,53 @@ class MainScaffold extends ConsumerWidget {
     // GoRouter.of(context).go('/login'); // Handled by router refresh listener
   }
 
+  /// Check if this is a first-time login and prompt for username.
+  Future<void> _checkFirstLogin(Profile? profile) async {
+    if (_hasCheckedFirstLogin) return;
+    _hasCheckedFirstLogin = true;
+
+    // If no profile exists, this is a first login
+    if (profile == null) {
+      // Show the first login dialog
+      final name = await showFirstLoginDialog(context);
+
+      // Create/update profile with the entered name or default
+      final service = ref.read(profileServiceProvider);
+      final defaultName = ref.read(authProvider).currentUser?.email?.split('@').first ?? 'User';
+
+      await service.upsertProfile(
+        name: name ?? defaultName,
+        avatarUrl: ProfileService.generateRandomAvatarUrl(),
+      );
+
+      // Refresh the profile provider
+      ref.read(profileProvider.notifier).refresh();
+
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Logged in successfully!'),
+            backgroundColor: const Color(0xFF34C759),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final isDrawerOpen = ref.watch(drawerProvider);
+    final profileAsync = ref.watch(profileProvider);
+
+    // Check for first login when profile loads
+    profileAsync.when(
+      data: (profile) => _checkFirstLogin(profile),
+      loading: () {},
+      error: (_, _) {},
+    );
 
     // Default menu items
     const menuItems = [
@@ -67,8 +120,6 @@ class MainScaffold extends ConsumerWidget {
       DrawerMenuItem(id: 'premium', label: 'Premium', icon: Icons.diamond_outlined),
       DrawerMenuItem(id: 'settings', label: 'Settings', icon: Icons.settings_outlined),
     ];
-
-    final profileAsync = ref.watch(profileProvider);
 
     final DrawerUserData userData;
     if (profileAsync is AsyncData && profileAsync.value != null) {
@@ -90,11 +141,11 @@ class MainScaffold extends ConsumerWidget {
     return Stack(
       children: [
         Scaffold(
-          body: child,
+          body: widget.child,
           bottomNavigationBar: BottomNavbar(
             selectedIndex: _calculateSelectedIndex(context),
             onItemTapped: (index) => _onItemTapped(index, context),
-            onAddTapped: () => GoRouter.of(context).go('/academics'),
+            onAddTapped: ref.watch(globalAddActionProvider) ?? () {},
           ),
         ),
         // Side drawer overlay
@@ -111,5 +162,3 @@ class MainScaffold extends ConsumerWidget {
     );
   }
 }
-
-

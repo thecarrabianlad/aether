@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:aether/core/models/profile.dart';
 
@@ -23,6 +24,15 @@ class ProfileService {
     if (response == null) return null;
 
     return Profile.fromJson(response);
+  }
+
+  /// Generate a random DiceBear avatar URL.
+  static String generateRandomAvatarUrl() {
+    final random = Random();
+    final styles = ['adventurer', 'avataaars', 'big-ears', 'bottts', 'fun-emoji', 'lorelei', 'micah'];
+    final style = styles[random.nextInt(styles.length)];
+    final seed = random.nextInt(1000000);
+    return 'https://api.dicebear.com/9.x/$style/svg?seed=$seed';
   }
 
   /// Stream profile changes in real-time.
@@ -78,7 +88,7 @@ class ProfileService {
   }
 
   /// Upsert profile (create if not exists, update if exists).
-  Future<Profile> upsertProfile({String? name, String? role}) async {
+  Future<Profile> upsertProfile({String? name, String? role, String? avatarUrl}) async {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) throw Exception('Not authenticated');
 
@@ -88,11 +98,28 @@ class ProfileService {
           'id': userId,
           'name': name ?? _client.auth.currentUser?.email?.split('@').first ?? 'User',
           'role': role ?? 'Student',
+          'avatar_url': avatarUrl ?? generateRandomAvatarUrl(),
           'updated_at': DateTime.now().toIso8601String(),
         })
         .select()
         .single();
 
     return Profile.fromJson(response);
+  }
+
+  /// Ensure profile exists for current user (creates with default values if missing).
+  Future<Profile> ensureProfileExists({String? name, String? role}) async {
+    // First try to get existing profile
+    final existingProfile = await getProfile();
+    if (existingProfile != null) {
+      return existingProfile;
+    }
+
+    // If not exists, create one
+    return await upsertProfile(
+      name: name,
+      role: role,
+      avatarUrl: generateRandomAvatarUrl(),
+    );
   }
 }

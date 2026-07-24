@@ -187,6 +187,7 @@ class _SideDrawerState extends State<SideDrawer>
       builder: (context, child) {
         return Semantics(
           scopesRoute: true,
+          explicitChildNodes: true,
           label: 'Navigation drawer',
           child: Material(
             color: Colors.transparent,

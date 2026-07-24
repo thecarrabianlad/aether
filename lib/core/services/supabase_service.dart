@@ -1,3 +1,4 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseService {
@@ -7,9 +8,16 @@ class SupabaseService {
   final SupabaseClient client = Supabase.instance.client;
 
   static Future<void> initialize() async {
-    await Supabase.initialize(
-      url: 'https://tqyapdjqrgktxlexiqpx.supabase.co',
-      anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRxeWFwZGpxcmdrdHhsZXhpcXB4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ2NDMwMDksImV4cCI6MjEwMDIxOTAwOX0.Z_9nb1ibz3EvQNHZhYpXGxQzHIqcaI-wujdBproM3Dw',
-    );
+    final url = dotenv.env['SUPABASE_URL'];
+    final anonKey = dotenv.env['SUPABASE_ANON_KEY'];
+
+    if (url == null || url.isEmpty) {
+      throw Exception('SUPABASE_URL is missing from .env');
+    }
+    if (anonKey == null || anonKey.isEmpty) {
+      throw Exception('SUPABASE_ANON_KEY is missing from .env');
+    }
+
+    await Supabase.initialize(url: url, publishableKey: anonKey);
   }
 }
