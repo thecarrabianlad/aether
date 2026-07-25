@@ -36,7 +36,7 @@ class SyncQueueService {
           operation: operation.toString().split('.').last,
           entityId: entityId,
           payload: Value(payloadJson),
-          createdAt: DateTime.now(),
+          createdAt: Value(DateTime.now()),
         ));
   }
 

@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart'; // Added for debugPrint
 import 'dart:async';
 import 'package:aether/screens/schedule/schedule_screen.dart';
-import 'package:aether/screens/tasks/daily_tasks_screen.dart';
+import 'package:aether/features/tasks/screens/daily_tasks_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:aether/features/academics/providers/academics_providers.dart';
 import 'package:aether/widgets/common/glass_card.dart';
 
+import 'package:aether/core/database/database.dart' show Task;
+import 'package:aether/features/tasks/providers/task_providers.dart';
+import 'package:aether/widgets/dashboard_top_bar.dart';
 /// ---------------------------------------------------------------------
 /// AETHER — Dashboard content
 /// ---------------------------------------------------------------------
@@ -17,8 +21,15 @@ import 'package:aether/widgets/common/glass_card.dart';
 /// is meant to be dropped straight into the `body:` of that Scaffold.
 /// ---------------------------------------------------------------------
 
-class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+class DashboardScreen extends ConsumerStatefulWidget {
+  final VoidCallback? onMenuTap;
+  final VoidCallback? onProfileTap;
+
+  const DashboardScreen({
+    super.key,
+    this.onMenuTap,
+    this.onProfileTap,
+  });
 
   // Palette
   static const bg = Color(0xFF000000);
@@ -31,11 +42,32 @@ class DashboardScreen extends StatefulWidget {
   static const white = Color(0xFFF5F5F5);
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Timer? _timer;
+  // Reference date lines up with the original "Tuesday, 12th August 2025"
+  // mock. `_dayOffset` tracks how many days the user has navigated away
+  // from it via the date navigator.
+  // static final DateTime _referenceDate = DateTime(2025, 8, 12);
+
+  @override
+  void initState() {
+    super.initState();
+
+    _timer = Timer.periodic(const Duration(minutes: 1), (_) {
+      setState(() {});
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => _syncTasks());
+  }
+
+  void _syncTasks() {
+    ref.read(taskServiceProvider).syncTasksForDate(_dateKey);
+  }
+
+  // DateTime _referenceDate = DateTime.now();
   int _dayOffset = 0;
 
   // Static mock defaults for loading / initial state
@@ -84,7 +116,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _TaskItemData(title: 'Workout', subtitle: 'Completed', completed: true),
   ];
 
-  static const List<_HabitItemData> _habits = [
+  final List<_HabitItemData> _habits = const [
     _HabitItemData(
       icon: Icons.menu_book_outlined,
       title: 'Study',
@@ -120,14 +152,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   );
 
   @override
-  void initState() {
-    super.initState();
-    _timer = Timer.periodic(const Duration(minutes: 1), (_) {
-      setState(() {});
-    });
-  }
-
-  @override
   void dispose() {
     _timer?.cancel();
     super.dispose();
@@ -138,6 +162,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // ---------------------------------------------------------------------
 
   DateTime get _selectedDate => DateTime.now().add(Duration(days: _dayOffset));
+
+  /// 'YYYY-MM-DD' — matches the `date` column in the tasks table.
+  String get _dateKey {
+    final d = _selectedDate;
+    final m = d.month.toString().padLeft(2, '0');
+    final day = d.day.toString().padLeft(2, '0');
+    return '${d.year}-$m-$day';
+  }
 
   static const _weekdayNames = [
     'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
@@ -217,20 +249,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // Helper methods
   // ---------------------------------------------------------------------
 
-  void _goToPreviousDay() => setState(() => _dayOffset -= 1);
-  void _goToNextDay() => setState(() => _dayOffset += 1);
-
-  void _toggleTask(int index) {
+  void _goToPreviousDay() {
     setState(() {
-      final t = _tasks[index];
-      _tasks = List.of(_tasks)
-        ..[index] = _TaskItemData(
-          title: t.title,
-          subtitle: t.subtitle,
-          completed: !t.completed,
-          flagged: t.flagged,
-        );
+      _dayOffset -= 1;
     });
+    _syncTasks();
+  }
+
+  void _goToNextDay() {
+    setState(() {
+      _dayOffset += 1;
+    });
+    _syncTasks();
+  }
+
+  /// Top 3 tasks for the preview card: incomplete tasks first (so the
+  /// most actionable items surface), completed ones fill any remaining
+  /// slots, most recently created first.
+  List<Task> _previewTasks(List<Task> tasks) {
+    final sorted = [...tasks]..sort((a, b) {
+        final aDone = a.status == 'Completed';
+        final bDone = b.status == 'Completed';
+        if (aDone != bDone) return aDone ? 1 : -1;
+        return b.createdAt.compareTo(a.createdAt);
+      });
+    return sorted.take(3).toList();
+  }
+
+  void _cycleTaskStatus(Task task) {
+    final next = switch (task.status) {
+      'Pending' => 'InProgress',
+      'InProgress' => 'Completed',
+      _ => 'Pending',
+    };
+    ref.read(taskServiceProvider).updateTaskStatus(task.id, next);
   }
 
   void _onViewAllSchedule() {
@@ -255,6 +307,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tasksAsync = ref.watch(tasksForDateProvider(_dateKey));
+    final allTasks = tasksAsync.value ?? const <Task>[];
+    final previewTasks = _previewTasks(allTasks);
+
     return Container(
       color: DashboardScreen.bg,
       child: SafeArea(
@@ -265,6 +321,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              DashboardTopBar(
+      onMenuTap: widget.onMenuTap ?? () {},
+      onProfileTap: widget.onProfileTap ?? () {},
+    ),
               _HeaderRow(
                 timeText: _timeText,
                 periodText: _periodText,
@@ -293,9 +353,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   Expanded(
                     child: _TasksCard(
-                      tasks: _tasks,
+                      tasks: previewTasks,
                       onViewAll: _onViewAllTasks,
-                      onToggleTask: _toggleTask,
+                      onToggleTask: _cycleTaskStatus,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -903,11 +963,10 @@ class _TaskItemData {
     this.flagged = false,
   });
 }
-
 class _TasksCard extends StatelessWidget {
-  final List<_TaskItemData> tasks;
+  final List<Task> tasks;
   final VoidCallback onViewAll;
-  final ValueChanged<int> onToggleTask;
+  final ValueChanged<Task> onToggleTask;
 
   const _TasksCard({
     required this.tasks,
@@ -960,77 +1019,108 @@ class _TasksCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          ...List.generate(tasks.length, (i) {
-            final t = tasks[i];
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 7),
-              child: GestureDetector(
-                onTap: () => onToggleTask(i),
-                behavior: HitTestBehavior.opaque,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    t.completed
-                        ? const CircleAvatar(
-                            radius: 9,
-                            backgroundColor: DashboardScreen.red,
-                            child: Icon(
-                              Icons.check,
-                              size: 12,
-                              color: Colors.white,
-                            ),
-                          )
-                        : Container(
-                            width: 18,
-                            height: 18,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: DashboardScreen.grey,
-                                width: 1.4,
-                              ),
-                            ),
-                          ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            t.title,
-                            style: TextStyle(
-                              color: t.completed
-                                  ? DashboardScreen.grey
-                                  : DashboardScreen.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              decoration: t.completed
-                                  ? TextDecoration.lineThrough
-                                  : null,
-                            ),
-                          ),
-                          const SizedBox(height: 1),
-                          Text(
-                            t.subtitle,
-                            style: const TextStyle(
-                              color: DashboardScreen.grey,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
+          if (tasks.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'No tasks added yet',
+                    style: TextStyle(
+                      color: DashboardScreen.grey,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  GestureDetector(
+                    onTap: onViewAll,
+                    child: const Text(
+                      'Tap View All to add a task',
+                      style: TextStyle(
+                        color: DashboardScreen.grey,
+                        fontSize: 11,
                       ),
                     ),
-                    if (t.flagged)
-                      const Icon(
-                        Icons.flag,
-                        size: 14,
-                        color: DashboardScreen.red,
-                      ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            );
-          }),
+            )
+          else
+            ...tasks.map((t) {
+              final completed = t.status == 'Completed';
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 7),
+                child: GestureDetector(
+                  onTap: () => onToggleTask(t),
+                  behavior: HitTestBehavior.opaque,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      completed
+                          ? const CircleAvatar(
+                              radius: 9,
+                              backgroundColor: DashboardScreen.red,
+                              child: Icon(
+                                Icons.check,
+                                size: 12,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Container(
+                              width: 18,
+                              height: 18,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: t.status == 'InProgress'
+                                      ? const Color(0xFFE08A2E)
+                                      : DashboardScreen.grey,
+                                  width: 1.4,
+                                ),
+                              ),
+                            ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              t.title,
+                              style: TextStyle(
+                                color: completed
+                                    ? DashboardScreen.grey
+                                    : DashboardScreen.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                decoration: completed
+                                    ? TextDecoration.lineThrough
+                                    : null,
+                              ),
+                            ),
+                            const SizedBox(height: 1),
+                            Text(
+                              t.category,
+                              style: const TextStyle(
+                                color: DashboardScreen.grey,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (t.priority == 'High')
+                        const Icon(
+                          Icons.flag,
+                          size: 14,
+                          color: DashboardScreen.red,
+                        ),
+                    ],
+                  ),
+                ),
+              );
+            }),
         ],
       ),
     );
