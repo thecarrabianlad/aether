@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart'; // Added for debugPrint
 import 'dart:async';
 import 'package:aether/screens/schedule/schedule_screen.dart';
@@ -55,8 +54,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-
+    debugPrint('DashboardScreen: initState called');
     _timer = Timer.periodic(const Duration(minutes: 1), (_) {
+      debugPrint('DashboardScreen: timer tick, calling setState');
       setState(() {});
     });
 
@@ -152,19 +152,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   );
 
   @override
-<<<<<<< Updated upstream
-=======
-  void initState() {
-    super.initState();
-    debugPrint('DashboardScreen: initState called');
-    _timer = Timer.periodic(const Duration(minutes: 1), (_) {
-      debugPrint('DashboardScreen: timer tick, calling setState');
-      setState(() {});
-    });
-  }
-
-  @override
->>>>>>> Stashed changes
   void dispose() {
     _timer?.cancel();
     super.dispose();
