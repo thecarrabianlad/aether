@@ -9,6 +9,7 @@ import 'package:aether/features/academics/screens/academics_screen.dart';
 import 'package:aether/features/habits/screens/habits_screen.dart';
 import 'package:aether/screens/health/health_screen.dart';
 import 'package:aether/main.dart';
+import 'package:flutter/foundation.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authService = AuthService.instance;
@@ -18,9 +19,10 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: isLoggedIn ? '/' : '/login',
     refreshListenable: _GoRouterRefreshStream(authService.onAuthStateChange),
     redirect: (BuildContext context, GoRouterState state) {
+      debugPrint('GoRouter: redirecting from ${state.matchedLocation}');
       final loggedIn = authService.isLoggedIn;
-      final authenticating =
-          state.matchedLocation == '/login' || state.matchedLocation == '/signup';
+      final authenticating = state.matchedLocation == '/login' || state.matchedLocation == '/signup';
+      debugPrint('GoRouter Redirect: loggedIn=$loggedIn, authenticating=$authenticating, matchedLocation=${state.matchedLocation}');
 
       if (!loggedIn && !authenticating) return '/login';
       if (loggedIn && authenticating) return '/';
@@ -38,12 +40,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       ShellRoute(
         builder: (context, state, child) {
+          debugPrint('GoRouter: Building ShellRoute for ${state.matchedLocation}');
           return MainScaffold(child: child);
         },
         routes: [
           GoRoute(
             path: '/',
-            builder: (context, state) => const HomeScreen(),
+            builder: (context, state) {
+              debugPrint('GoRouter: Building HomeScreen for /');
+              return const HomeScreen();
+            },
           ),
           GoRoute(
             path: '/academics',

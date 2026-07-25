@@ -46,3 +46,10 @@ final courseProgressProvider =
       assignments.where((a) => a.isCompleted).length;
   return Stream.value(done / total);
 });
+
+/// Grades stream for a course — pure, no side effects.
+// TODO: Uncomment when Grade model and AcademicsService.watchGrades are implemented.
+// final gradesProvider = StreamProvider.family<List<Grade>, String>((ref, courseId) {
+//   final service = ref.watch(academicsServiceProvider);
+//   return service.watchGrades(courseId);
+// });
