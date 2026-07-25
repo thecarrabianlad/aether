@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:aether/core/database/database.dart';
 import 'package:aether/core/providers.dart'; // For habitsServiceProvider
 import 'package:aether/features/habits/models/habit.dart';

@@ -13,9 +13,9 @@ import 'package:aether/features/habits/widgets/habit_card.dart';
 import 'package:aether/features/habits/widgets/weekly_chart.dart';
 import 'package:aether/features/habits/widgets/category_stats.dart';
 import 'package:aether/features/habits/widgets/add_habit_tile.dart';
-import 'package:aether/features/habits/widgets/add_habit_dialog.dart'; // Re-added dialog
+import 'package:aether/features/habits/widgets/add_habit_dialog.dart';
 import 'package:aether/features/habits/widgets/empty_habits.dart';
-
+import 'package:aether/features/habits/models/habit_codec.dart'; // New import
 
 class HabitsScreen extends ConsumerStatefulWidget {
   final VoidCallback? onMenuTap;
@@ -34,11 +34,11 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
   Future<void> _showAddHabitDialog() async {
     final result = await showAddHabitDialog(context);
     if (result == null || !mounted) return;
-    final iconString = _iconToString(result.icon); // Convert IconData to String
-    final colorString = _colorToString(result.color); // Convert Color to String
+    final iconString = HabitCodec.iconToString(result.icon);
+    final colorString = HabitCodec.colorToString(result.color);
     await ref.read(habitsServiceProvider).createHabit(
           name: result.name,
-          category: result.category.name, // Pass category name
+          category: result.category.name,
           icon: iconString,
           color: colorString,
         );
@@ -51,8 +51,8 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
       currentCategory: habit.category,
     );
     if (result == null || !mounted) return;
-    final iconString = _iconToString(result.icon); // Convert IconData to String
-    final colorString = _colorToString(result.color); // Convert Color to String
+    final iconString = HabitCodec.iconToString(result.icon);
+    final colorString = HabitCodec.colorToString(result.color);
     await ref.read(habitsServiceProvider).updateHabit(
           HabitEntry(
             id: habit.id,
@@ -265,26 +265,5 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
         ),
       ),
     );
-  }
-
-  // Helper to convert IconData to String for HabitEntry storage
-  String _iconToString(IconData icon) {
-    // This is a simplified conversion. A more robust solution would use a map
-    // or a dedicated utility for IconData serialization.
-    if (icon == Icons.menu_book_outlined) return 'menu_book_outlined';
-    if (icon == Icons.favorite_border) return 'favorite_border';
-    if (icon == Icons.self_improvement) return 'self_improvement';
-    if (icon == Icons.directions_run) return 'directions_run';
-    if (icon == Icons.spa_outlined) return 'spa_outlined';
-    if (icon == Icons.water_drop_outlined) return 'water_drop_outlined';
-    if (icon == Icons.calculate_outlined) return 'calculate_outlined';
-    if (icon == Icons.medication_outlined) return 'medication_outlined';
-    if (icon == Icons.nightlight_outlined) return 'nightlight_outlined';
-    return 'help_outline'; // Default for unknown
-  }
-
-  // Helper to convert Color to String for HabitEntry storage
-  String _colorToString(Color color) {
-    return '#${color.value.toRadixString(16).substring(2).toUpperCase()}';
   }
 }

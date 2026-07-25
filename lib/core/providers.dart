@@ -7,7 +7,7 @@ import 'package:aether/core/services/sync_queue_service.dart'; // New SyncQueueS
 import 'package:aether/core/services/sync_service.dart';
 import 'package:aether/features/habits/services/habits_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/material.dart'; // Added for VoidCallback
 

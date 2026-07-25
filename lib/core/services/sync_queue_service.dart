@@ -3,6 +3,7 @@ import 'package:aether/core/database/database.dart';
 import 'package:aether/core/services/academics_service.dart';
 import 'package:aether/features/habits/services/habits_service.dart';
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 
 enum SyncOperation { insert, update, delete, upsert } // Added upsert
 enum SyncEntityType { course, lecture, assignment, habit, habitLog }
@@ -75,7 +76,7 @@ class SyncQueueService {
       } catch (e, st) {
         errorMessage = e.toString();
         // Log the error and stack trace for debugging
-        print('Error processing sync queue item ${item.id}: $e\n$st'); // TODO: Replace with proper logging
+        debugPrint('Error processing sync queue item ${item.id}: $e\n$st');
       }
 
       if (success) {

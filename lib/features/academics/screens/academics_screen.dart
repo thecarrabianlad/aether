@@ -393,6 +393,7 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
                 child: const Text('Cancel')),
             TextButton(
               onPressed: () async {
+                if (!mounted) return;
                 if (nameCtrl.text.trim().isEmpty) {
                   if (mounted) _showSnack('Course name is required.');
                   return;
@@ -462,6 +463,7 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
                 child: const Text('Cancel')),
             TextButton(
               onPressed: () async {
+                if (!mounted) return;
                 if (!formKey.currentState!.validate()) return;
                 await ref
                     .read(academicsServiceProvider)
@@ -562,6 +564,7 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
                 child: const Text('Cancel')),
             TextButton(
               onPressed: () async {
+                if (!mounted) return;
                 if (!formKey.currentState!.validate()) return;
                 try {
                   await ref.read(academicsServiceProvider).createLecture(
@@ -621,6 +624,7 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
                 child: const Text('Cancel')),
             TextButton(
               onPressed: () async {
+                if (!mounted) return;
                 if (!formKey.currentState!.validate()) return;
                 try {
                   await ref.read(academicsServiceProvider).createAssignment(

@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart'; // Added for debugPrint
 import 'dart:async';
-import 'package:aether/screens/schedule/schedule_screen.dart'; // Corrected import
-import 'package:aether/screens/tasks/daily_tasks_screen.dart'; // Corrected import
+import 'package:aether/screens/schedule/schedule_screen.dart';
+import 'package:aether/screens/tasks/daily_tasks_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import 'package:aether/features/academics/providers/academics_providers.dart';
+import 'package:aether/widgets/common/glass_card.dart';
 
 /// ---------------------------------------------------------------------
 /// AETHER — Dashboard content
@@ -31,37 +36,17 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   Timer? _timer;
-  // ---------------------------------------------------------------------
-  // State
-  // ---------------------------------------------------------------------
-
-  // Reference date lines up with the original "Tuesday, 12th August 2025"
-  // mock. `_dayOffset` tracks how many days the user has navigated away
-  // from it via the date navigator.
-  // static final DateTime _referenceDate = DateTime(2025, 8, 12);
-
-  @override
-  void initState() {
-    super.initState();
-
-    _timer = Timer.periodic(const Duration(minutes: 1), (_) {
-      setState(() {});
-    });
-  }
-
-  // DateTime _referenceDate = DateTime.now();
   int _dayOffset = 0;
 
-  // final TimeOfDay _currentTime = const TimeOfDay(hour: 7, minute: 42);
-  final double _progressPercent = 0.625;
+  // Static mock defaults for loading / initial state
+  static const double _progressPercent = 0.625;
+  static const int _tasksPending = 6;
+  static const int _classesToday = 3;
+  static const int _habitsCompleted = 4;
+  static const int _habitsTotal = 7;
+  static const int _healthScore = 72;
 
-  final int _tasksPending = 6;
-  final int _classesToday = 3;
-  final int _habitsCompleted = 4;
-  final int _habitsTotal = 7;
-  final int _healthScore = 72;
-
-  final List<_ScheduleItemData> _scheduleItems = const [
+  static const List<_ScheduleItemData> _scheduleItems = [
     _ScheduleItemData(
       time: '9:00 AM',
       title: 'Physics Class',
@@ -99,7 +84,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _TaskItemData(title: 'Workout', subtitle: 'Completed', completed: true),
   ];
 
-  final List<_HabitItemData> _habits = const [
+  static const List<_HabitItemData> _habits = [
     _HabitItemData(
       icon: Icons.menu_book_outlined,
       title: 'Study',
@@ -126,13 +111,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ),
   ];
 
-  final _UpcomingEventData _upcomingEvent = const _UpcomingEventData(
+  static const _UpcomingEventData _upcomingEvent = _UpcomingEventData(
     day: '18',
     month: 'AUG',
     title: 'Maths Test',
     subtitle: 'Calculus • 5 Chapters',
     daysLeftLabel: '6 Days Left',
   );
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(minutes: 1), (_) {
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
 
   // ---------------------------------------------------------------------
   // Derived getters
@@ -141,57 +140,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
   DateTime get _selectedDate => DateTime.now().add(Duration(days: _dayOffset));
 
   static const _weekdayNames = [
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
+    'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
     'Sunday',
   ];
 
   static const _monthNames = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
   ];
 
   String get _timeText {
     final now = DateTime.now();
-
     final hour = now.hour % 12 == 0 ? 12 : now.hour % 12;
-
     return '$hour:${now.minute.toString().padLeft(2, '0')}';
   }
 
-  String get _periodText {
-    final now = DateTime.now();
-
-    return now.hour >= 12 ? 'PM' : 'AM';
-  }
+  String get _periodText => DateTime.now().hour >= 12 ? 'PM' : 'AM';
 
   String get _weekdayLabel => _weekdayNames[_selectedDate.weekday - 1];
 
   String _ordinalSuffix(int day) {
     if (day >= 11 && day <= 13) return 'th';
     switch (day % 10) {
-      case 1:
-        return 'st';
-      case 2:
-        return 'nd';
-      case 3:
-        return 'rd';
-      default:
-        return 'th';
+      case 1: return 'st';
+      case 2: return 'nd';
+      case 3: return 'rd';
+      default: return 'th';
     }
   }
 
@@ -210,7 +184,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   String get _habitsCompletedFraction => '$_habitsCompleted/$_habitsTotal';
-
   String get _healthScoreLabel => '$_healthScore%';
 
   List<_GlanceItemData> get _glanceItems => [
@@ -244,17 +217,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // Helper methods
   // ---------------------------------------------------------------------
 
-  void _goToPreviousDay() {
-    setState(() {
-      _dayOffset -= 1;
-    });
-  }
-
-  void _goToNextDay() {
-    setState(() {
-      _dayOffset += 1;
-    });
-  }
+  void _goToPreviousDay() => setState(() => _dayOffset -= 1);
+  void _goToNextDay() => setState(() => _dayOffset += 1);
 
   void _toggleTask(int index) {
     setState(() {
@@ -270,22 +234,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _onViewAllSchedule() {
-  Navigator.of(context).push(
-    MaterialPageRoute(
-      builder: (_) => const ScheduleScreen(),
-    ),
-  );
-}
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const ScheduleScreen()),
+    );
+  }
 
   void _onViewAllTasks() {
-  Navigator.of(context).push(
-    MaterialPageRoute(builder: (_) => const DailyTasksScreen()),
-  );
-}
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const DailyTasksScreen()),
+    );
+  }
 
   void _onViewAllHabits() {
-    // TODO: navigate to full habits view
-    print('View all habits tapped');
+    debugPrint('View all habits tapped');
   }
 
   // ---------------------------------------------------------------------
@@ -321,11 +282,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               _GlanceRow(items: _glanceItems),
               const SizedBox(height: 24),
               _SectionHeader(
-                title: 'Today\'s Schedule',
+                title: "Today's Schedule",
                 onViewAll: _onViewAllSchedule,
               ),
               const SizedBox(height: 12),
-              _ScheduleCard(items: _scheduleItems),
+              const _ScheduleCard(items: _scheduleItems),
               const SizedBox(height: 20),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -356,17 +317,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
-
-  @override
-void dispose() {
-  _timer?.cancel();
-  super.dispose();
-}
 }
 
-// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 // Header: time / date + progress ring
-// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+
 class _HeaderRow extends StatelessWidget {
   final String timeText;
   final String periodText;
@@ -436,18 +392,38 @@ class _HeaderRow extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 16),
-        _ProgressRing(percent: progressPercent),
+        const _ProgressRing(),
       ],
     );
   }
 }
 
-class _ProgressRing extends StatelessWidget {
-  final double percent; // 0..1
-  const _ProgressRing({required this.percent});
+class _ProgressRing extends ConsumerWidget {
+  const _ProgressRing({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final coursesAsync = ref.watch(coursesProvider);
+    final calculatedProgress = coursesAsync.when(
+      data: (courses) {
+        if (courses.isEmpty) return 0.0;
+        double totalProgress = 0;
+        int count = 0;
+        for (final c in courses) {
+          final pAsync = ref.watch(courseProgressProvider(c.id));
+          if (pAsync.value != null) {
+            totalProgress += pAsync.value!;
+            count++;
+          }
+        }
+        return count > 0 ? totalProgress / count : 0.0;
+      },
+      loading: () => 0.0,
+      error: (_, __) => 0.0,
+    );
+
+    final displayPercent = calculatedProgress;
+
     return Container(
       width: 140,
       height: 128,
@@ -480,7 +456,7 @@ class _ProgressRing extends StatelessWidget {
                 width: 96,
                 height: 96,
                 child: CircularProgressIndicator(
-                  value: percent,
+                  value: displayPercent,
                   strokeWidth: 6,
                   backgroundColor: const Color(0xFF3A3A3C),
                   valueColor: const AlwaysStoppedAnimation<Color>(
@@ -498,7 +474,7 @@ class _ProgressRing extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${(percent * 100).toStringAsFixed(1)}%',
+                    '${(displayPercent * 100).toStringAsFixed(1)}%',
                     style: const TextStyle(
                       color: DashboardScreen.white,
                       fontSize: 16,
@@ -515,9 +491,10 @@ class _ProgressRing extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 // Date navigator: "< Today >"
-// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+
 class _DateNavigator extends StatelessWidget {
   final String label;
   final VoidCallback onPrevious;
@@ -571,9 +548,10 @@ class _DateNavigator extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 // "Today at a glance" — 4 stat cards
-// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+
 class _GlanceItemData {
   final IconData icon;
   final Color iconColor;
@@ -673,9 +651,10 @@ class _GlanceCard extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 // Shared "section header" row (title + View All)
-// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+
 class _SectionHeader extends StatelessWidget {
   final String title;
   final VoidCallback onViewAll;
@@ -712,9 +691,10 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 // Today's Schedule — timeline list
-// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+
 class _ScheduleItemData {
   final String time;
   final String title;
@@ -731,13 +711,75 @@ class _ScheduleItemData {
   });
 }
 
-class _ScheduleCard extends StatelessWidget {
+class _ScheduleCard extends ConsumerWidget {
   final List<_ScheduleItemData> items;
 
-  const _ScheduleCard({required this.items});
+  const _ScheduleCard({super.key, required this.items});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final coursesAsync = ref.watch(coursesProvider);
+    final today = DateTime.now();
+    final todayName = DateFormat('EEEE').format(today);
+
+    final todayItems = <_ScheduleItemData>[];
+
+    for (final c in coursesAsync.value ?? []) {
+      final lectures = ref.watch(lecturesProvider(c.id)).value ?? [];
+      for (final l in lectures) {
+        if (l.scheduledAt != null &&
+            l.scheduledAt!.year == today.year &&
+            l.scheduledAt!.month == today.month &&
+            l.scheduledAt!.day == today.day) {
+          final color = Color(int.parse(c.color.replaceFirst('#', '0xFF')));
+          todayItems.add(_ScheduleItemData(
+            time: DateFormat('h:mm a').format(l.scheduledAt!.toLocal()),
+            title: l.title,
+            subtitle: c.name,
+            icon: Icons.menu_book_outlined,
+            color: color,
+          ));
+        }
+      }
+
+      if (c.scheduleDays != null && c.scheduleStart != null) {
+        final days =
+            c.scheduleDays!.split(',').map((s) => s.trim().toLowerCase()).toList();
+        if (days.any((d) => d.startsWith(todayName.substring(0, 3).toLowerCase()))) {
+          if (!todayItems.any((i) => i.title == c.name)) {
+            final color = Color(int.parse(c.color.replaceFirst('#', '0xFF')));
+            todayItems.add(_ScheduleItemData(
+              time: c.scheduleStart!,
+              title: c.name,
+              subtitle: c.professor ?? 'No instructor',
+              icon: Icons.menu_book_outlined,
+              color: color,
+            ));
+          }
+        }
+      }
+    }
+
+    // Fall back to static items if no dynamic data
+    final displayItems = todayItems.isNotEmpty ? todayItems : items;
+
+    if (displayItems.isEmpty) {
+      return GlassCard(
+        padding: const EdgeInsets.all(20),
+        borderRadius: BorderRadius.circular(16),
+        child: const Center(
+          child: Column(
+            children: [
+              Icon(Icons.event_busy, color: DashboardScreen.grey, size: 32),
+              SizedBox(height: 8),
+              Text('No classes scheduled today',
+                  style: TextStyle(color: DashboardScreen.grey, fontSize: 14)),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -746,9 +788,9 @@ class _ScheduleCard extends StatelessWidget {
         border: Border.all(color: DashboardScreen.cardBorder),
       ),
       child: Column(
-        children: List.generate(items.length, (i) {
-          final item = items[i];
-          final isLast = i == items.length - 1;
+        children: List.generate(displayItems.length, (i) {
+          final item = displayItems[i];
+          final isLast = i == displayItems.length - 1;
           return _ScheduleRow(item: item, showLine: !isLast);
         }),
       ),
@@ -844,9 +886,10 @@ class _ScheduleRow extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 // Tasks card
-// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+
 class _TaskItemData {
   final String title;
   final String subtitle;
@@ -994,9 +1037,10 @@ class _TasksCard extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 // Habit Tracker card
-// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+
 class _HabitItemData {
   final IconData icon;
   final String title;
@@ -1113,9 +1157,10 @@ class _HabitTrackerCard extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 // Upcoming card
-// ---------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+
 class _UpcomingEventData {
   final String day;
   final String month;

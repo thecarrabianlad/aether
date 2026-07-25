@@ -1,7 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
-import 'package:aether/core/database/database.dart'; // Still needed for Course, Lecture, Assignment types
-import 'package:aether/core/providers.dart'; // Import central providers
+import 'package:aether/core/database/database.dart';
+import 'package:aether/core/providers.dart';
+
+// academicsServiceProvider lives in core/providers.dart — it is wired there with
+// the sync queue so offline writes can be replayed. Re-exported here so existing
+// imports of this file keep working.
+export 'package:aether/core/providers.dart' show academicsServiceProvider;
 
 /// Courses stream from local DB — pure, no side effects.
 /// Sync is triggered from the widget lifecycle (initState → addPostFrameCallback).
