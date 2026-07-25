@@ -1,10 +1,15 @@
 import 'package:aether/core/database/database.dart';
-import 'package:aether/core/services/auth_service.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:aether/core/models/profile.dart';
+import 'package:aether/core/services/academics_service.dart';
+import 'package:aether/core/services/auth_service.dart';
 import 'package:aether/core/services/profile_service.dart';
+import 'package:aether/core/services/sync_queue_service.dart'; // New SyncQueueService
+import 'package:aether/core/services/sync_service.dart';
+import 'package:aether/features/habits/services/habits_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/material.dart'; // Added for VoidCallback
 
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase();
@@ -14,7 +19,45 @@ final databaseProvider = Provider<AppDatabase>((ref) {
 
 final authProvider = Provider<AuthService>((ref) => AuthService.instance);
 
-/// Global drawer state provider shared by screens.
+// Providers for other services (Academics, Habits)
+// NOTE: These three providers form a dependency cycle (academics/habits need the
+// sync queue to enqueue work; the queue needs them to replay it). The cycle is
+// broken at runtime by the lazy callbacks passed to SyncQueueService, but Dart's
+// top-level type inference still can't resolve it — so the variable types are
+// written out explicitly rather than left to inference.
+final Provider<AcademicsService> academicsServiceProvider =
+    Provider<AcademicsService>((ref) {
+  final db = ref.watch(databaseProvider);
+  final syncQueueService = ref.watch(syncQueueServiceProvider);
+  return AcademicsService(db, syncQueueService);
+});
+
+final Provider<HabitsService> habitsServiceProvider =
+    Provider<HabitsService>((ref) {
+  final db = ref.watch(databaseProvider);
+  final syncQueueService = ref.watch(syncQueueServiceProvider);
+  return HabitsService(db, syncQueueService);
+});
+
+/// Service provider for sync queue operations
+final Provider<SyncQueueService> syncQueueServiceProvider =
+    Provider<SyncQueueService>((ref) {
+  final db = ref.watch(databaseProvider);
+  return SyncQueueService(
+    db,
+    () => ref.read(academicsServiceProvider),
+    () => ref.read(habitsServiceProvider),
+  );
+});
+
+/// Service provider for sync operations
+final syncServiceProvider = Provider<SyncService>((ref) {
+  final academicsService = ref.watch(academicsServiceProvider);
+  final habitsService = ref.watch(habitsServiceProvider);
+  return SyncService(academicsService, habitsService);
+});
+
+/// Global drawer state provider
 final drawerProvider = StateProvider<bool>((ref) => false);
 
 /// Profile service provider
@@ -35,7 +78,7 @@ class ProfileNotifier extends AsyncNotifier<Profile?> {
       (previous, next) {
         // Only invalidate if the auth state actually changed (e.g., logged in/out)
         // This prevents unnecessary reloads on transient AsyncValue states
-        if (previous?.valueOrNull?.event != next.valueOrNull?.event) {
+        if (previous?.value?.event != next.value?.event) {
           ref.invalidateSelf();
         }
       },
@@ -80,7 +123,7 @@ final authStateChangesProvider = StreamProvider<AuthState>((ref) {
 });
 
 /// Global provider for the "Add" button action in the BottomNavbar.
-/// Each screen sets this to its own add action when it mounts.
+/// The currently active screen can override this to set its specific action.
 final globalAddActionProvider = StateProvider<VoidCallback?>((ref) => _defaultAddAction);
 
 void _defaultAddAction() {

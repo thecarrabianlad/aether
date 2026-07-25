@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:aether/features/habits/models/habit_repository.dart';
+import 'package:aether/core/providers.dart';
+import 'package:aether/features/habits/models/habit.dart';
+import 'package:aether/features/habits/models/habit_repository.dart'; // For constants like colors
 import 'package:aether/features/habits/providers/habits_providers.dart';
+import 'package:aether/core/database/database.dart'; // For HabitEntry
 import 'package:aether/features/habits/widgets/habits_app_bar.dart';
 import 'package:aether/features/habits/widgets/date_navigator.dart';
 import 'package:aether/features/habits/widgets/overview_metrics.dart';
@@ -10,6 +13,9 @@ import 'package:aether/features/habits/widgets/habit_card.dart';
 import 'package:aether/features/habits/widgets/weekly_chart.dart';
 import 'package:aether/features/habits/widgets/category_stats.dart';
 import 'package:aether/features/habits/widgets/add_habit_tile.dart';
+import 'package:aether/features/habits/widgets/add_habit_dialog.dart'; // Re-added dialog
+import 'package:aether/features/habits/widgets/empty_habits.dart';
+
 
 class HabitsScreen extends ConsumerStatefulWidget {
   final VoidCallback? onMenuTap;
@@ -25,10 +31,77 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
   static final DateTime _referenceDate = DateTime(2025, 8, 12);
   int _dayOffset = 0;
 
+  Future<void> _showAddHabitDialog() async {
+    final result = await showAddHabitDialog(context);
+    if (result == null || !mounted) return;
+    final iconString = _iconToString(result.icon); // Convert IconData to String
+    final colorString = _colorToString(result.color); // Convert Color to String
+    await ref.read(habitsServiceProvider).createHabit(
+          name: result.name,
+          category: result.category.name, // Pass category name
+          icon: iconString,
+          color: colorString,
+        );
+  }
+
+  Future<void> _showEditHabitDialog(Habit habit) async {
+    final result = await showEditHabitDialog(
+      context,
+      currentName: habit.name,
+      currentCategory: habit.category,
+    );
+    if (result == null || !mounted) return;
+    final iconString = _iconToString(result.icon); // Convert IconData to String
+    final colorString = _colorToString(result.color); // Convert Color to String
+    await ref.read(habitsServiceProvider).updateHabit(
+          HabitEntry(
+            id: habit.id,
+            userId: habit.userId,
+            name: result.name,
+            category: result.category.name,
+            icon: iconString,
+            color: colorString,
+            longestStreak: habit.longestStreak,
+            createdAt: habit.createdAt,
+            updatedAt: DateTime.now(),
+          ),
+        );
+  }
+
+  void _confirmDeleteHabit(Habit habit) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1C1C1E),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Delete Habit',
+          style: TextStyle(color: HabitRepository.whiteText, fontSize: 18),
+        ),
+        content: Text(
+          'Delete "${habit.name}" permanently?',
+          style: const TextStyle(color: HabitRepository.greyText),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel', style: TextStyle(color: HabitRepository.greyText)),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await ref.read(habitsServiceProvider).deleteHabit(habit.id);
+            },
+            child: const Text('Delete', style: TextStyle(color: HabitRepository.redAccent)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
-    // Register the habit add action for the global Add button
     Future.microtask(() {
       ref.read(globalAddActionProvider.notifier).state = () => _showAddHabitDialog();
     });
@@ -36,7 +109,6 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
 
   @override
   void dispose() {
-    // Clear the action when leaving the screen if it's still this screen's action
     if (ref.read(globalAddActionProvider) == _showAddHabitDialog) {
       ref.read(globalAddActionProvider.notifier).state = null;
     }
@@ -87,10 +159,10 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredHabits = ref.watch(filteredHabitsProvider);
-    final overviewMetrics = ref.watch(overviewMetricsProvider);
-    final categoryStats = ref.watch(categoryStatsProvider);
-    final weeklyProgress = ref.watch(weeklyProgressProvider);
+    final filteredHabitsAsync = ref.watch(filteredHabitsProvider);
+    final overviewMetricsAsync = ref.watch(overviewMetricsProvider);
+    final categoryStatsAsync = ref.watch(categoryStatsProvider);
+    final weeklyProgressAsync = ref.watch(weeklyProgressProvider);
     final selectedCategory = ref.watch(selectedCategoryProvider);
 
     return Container(
@@ -101,7 +173,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
         child: Column(
           children: [
             HabitsAppBar(
-              onMenuTap: widget.onMenuTap ?? () {},
+              onMenuTap: widget.onMenuTap ?? () => ref.read(drawerProvider.notifier).state = true,
               onProfileTap: widget.onProfileTap ?? () {},
             ),
             Expanded(
@@ -120,9 +192,13 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
                           setState(() => _dayOffset += 1),
                     ),
                     const SizedBox(height: 20),
-                    OverviewMetricsSection(
-                      metrics: overviewMetrics,
-                      onViewCalendar: () {},
+                    overviewMetricsAsync.when(
+                      data: (overviewMetrics) => OverviewMetricsSection(
+                        metrics: overviewMetrics,
+                        onViewCalendar: () {},
+                      ),
+                      loading: () => const Center(child: CircularProgressIndicator()),
+                      error: (err, stack) => Text('Error: $err'),
                     ),
                     const SizedBox(height: 20),
                     CategoryFiltersRow(
@@ -130,38 +206,57 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
                       onCategorySelected: (cat) => ref
                           .read(selectedCategoryProvider.notifier)
                           .state = cat,
-                      onAddHabit: () {},
+                      onAddHabit: () => _showAddHabitDialog(),
                     ),
                     const SizedBox(height: 12),
-                    ...filteredHabits.map(
-                      (habit) => Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: HabitCard(
-                          habit: habit,
-                          onToggle: () => ref
-                              .read(habitsProvider.notifier)
-                              .toggleCompletion(habit.id),
-                          onMenuTap: () {},
-                        ),
-                      ),
+                    filteredHabitsAsync.when(
+                      data: (filteredHabits) {
+                        if (filteredHabits.isEmpty) {
+                          return const EmptyHabitsState();
+                        } else {
+                          return Column(
+                            children: filteredHabits.map(
+                              (habit) => Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: HabitCard(
+                                  habit: habit,
+                                  onToggle: () => ref
+                                      .read(habitsServiceProvider)
+                                      .toggleCompletion(habit.id, !habit.isCompletedToday),
+                                  onEdit: () => _showEditHabitDialog(habit),
+                                  onDelete: () => _confirmDeleteHabit(habit),
+                                ),
+                              ),
+                            ).toList(),
+                          );
+                        }
+                      },
+                      loading: () => const Center(child: CircularProgressIndicator()),
+                      error: (err, stack) => Text('Error: $err'),
                     ),
                     const SizedBox(height: 16),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
-                          child: WeeklyProgressCard(
-                              data: weeklyProgress),
+                          child: weeklyProgressAsync.when(
+                            data: (weeklyProgress) => WeeklyProgressCard(data: weeklyProgress),
+                            loading: () => const Center(child: CircularProgressIndicator()),
+                            error: (err, stack) => Text('Error: $err'),
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: CategoryStatsCard(
-                              stats: categoryStats),
+                          child: categoryStatsAsync.when(
+                            data: (categoryStats) => CategoryStatsCard(stats: categoryStats),
+                            loading: () => const Center(child: CircularProgressIndicator()),
+                            error: (err, stack) => Text('Error: $err'),
+                          ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 16),
-                    AddHabitTile(onTap: () {}),
+                    AddHabitTile(onTap: () => _showAddHabitDialog()),
                   ],
                 ),
               ),
@@ -170,5 +265,26 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
         ),
       ),
     );
+  }
+
+  // Helper to convert IconData to String for HabitEntry storage
+  String _iconToString(IconData icon) {
+    // This is a simplified conversion. A more robust solution would use a map
+    // or a dedicated utility for IconData serialization.
+    if (icon == Icons.menu_book_outlined) return 'menu_book_outlined';
+    if (icon == Icons.favorite_border) return 'favorite_border';
+    if (icon == Icons.self_improvement) return 'self_improvement';
+    if (icon == Icons.directions_run) return 'directions_run';
+    if (icon == Icons.spa_outlined) return 'spa_outlined';
+    if (icon == Icons.water_drop_outlined) return 'water_drop_outlined';
+    if (icon == Icons.calculate_outlined) return 'calculate_outlined';
+    if (icon == Icons.medication_outlined) return 'medication_outlined';
+    if (icon == Icons.nightlight_outlined) return 'nightlight_outlined';
+    return 'help_outline'; // Default for unknown
+  }
+
+  // Helper to convert Color to String for HabitEntry storage
+  String _colorToString(Color color) {
+    return '#${color.value.toRadixString(16).substring(2).toUpperCase()}';
   }
 }

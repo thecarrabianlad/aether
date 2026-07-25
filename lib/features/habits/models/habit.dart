@@ -40,6 +40,10 @@ extension HabitCategoryX on HabitCategory {
     }
   }
 
+  String get colorString {
+    return '#${color.value.toRadixString(16).substring(2).toUpperCase()}';
+  }
+
   static HabitCategory fromLabel(String label) {
     switch (label.toLowerCase()) {
       case 'study':
@@ -56,6 +60,7 @@ extension HabitCategoryX on HabitCategory {
 
 class Habit {
   final String id;
+  final String userId;
   final String name;
   final HabitCategory category;
   final IconData icon;
@@ -66,9 +71,12 @@ class Habit {
   final int weeklyTotal; // total days in week with data (usually 7)
   final List<bool> dayCompletions; // Mon-Sun (index 0 = Monday)
   final bool isCompletedToday;
+  final DateTime createdAt;
+  final DateTime updatedAt;
 
   const Habit({
     required this.id,
+    required this.userId,
     required this.name,
     required this.category,
     required this.icon,
@@ -79,10 +87,13 @@ class Habit {
     required this.weeklyTotal,
     required this.dayCompletions,
     required this.isCompletedToday,
+    required this.createdAt,
+    required this.updatedAt,
   });
 
   Habit copyWith({
     String? id,
+    String? userId,
     String? name,
     HabitCategory? category,
     IconData? icon,
@@ -93,9 +104,12 @@ class Habit {
     int? weeklyTotal,
     List<bool>? dayCompletions,
     bool? isCompletedToday,
+    DateTime? createdAt,
+    DateTime? updatedAt,
   }) {
     return Habit(
       id: id ?? this.id,
+      userId: userId ?? this.userId,
       name: name ?? this.name,
       category: category ?? this.category,
       icon: icon ?? this.icon,
@@ -106,6 +120,8 @@ class Habit {
       weeklyTotal: weeklyTotal ?? this.weeklyTotal,
       dayCompletions: dayCompletions ?? this.dayCompletions,
       isCompletedToday: isCompletedToday ?? this.isCompletedToday,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 }

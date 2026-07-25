@@ -1,17 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:aether/core/database/database.dart';
-import 'package:aether/core/services/academics_service.dart';
-
-final databaseProvider = Provider<AppDatabase>((ref) {
-  final db = AppDatabase();
-  ref.onDispose(db.close);
-  return db;
-});
-
-final academicsServiceProvider = Provider<AcademicsService>((ref) {
-  final db = ref.watch(databaseProvider);
-  return AcademicsService(db);
-});
+import 'package:flutter_riverpod/legacy.dart';
+import 'package:aether/core/database/database.dart'; // Still needed for Course, Lecture, Assignment types
+import 'package:aether/core/providers.dart'; // Import central providers
 
 /// Courses stream from local DB — pure, no side effects.
 /// Sync is triggered from the widget lifecycle (initState → addPostFrameCallback).
@@ -42,8 +32,8 @@ final courseProgressProvider =
   final lecturesAsync = ref.watch(lecturesProvider(courseId));
   final assignmentsAsync = ref.watch(assignmentsProvider(courseId));
 
-  final lectures = lecturesAsync.valueOrNull ?? [];
-  final assignments = assignmentsAsync.valueOrNull ?? [];
+  final lectures = lecturesAsync.value ?? [];
+  final assignments = assignmentsAsync.value ?? [];
 
   final total = lectures.length + assignments.length;
   if (total == 0) return Stream.value(0.0);

@@ -2,14 +2,21 @@ import 'package:aether/core/routing/app_router.dart';
 import 'package:aether/core/services/supabase_service.dart';
 import 'package:aether/widgets/bottom_navbar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:aether/core/providers.dart'; // Added for globalAddActionProvider
 
 Future<void> main() async {
+  print('main: App starting...');
   WidgetsFlutterBinding.ensureInitialized();
+  print('main: WidgetsFlutterBinding initialized.');
+  await dotenv.load(fileName: '.env');
+  print('main: dotenv loaded.');
   await SupabaseService.initialize();
+  print('main: SupabaseService initialized.');
   runApp(const ProviderScope(child: AetherApp()));
+  print('main: runApp called.');
 }
 
 class AetherApp extends ConsumerWidget {

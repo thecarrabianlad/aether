@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
-import 'package:aether/core/providers.dart';
-import 'package:aether/core/database/database.dart';
-import 'package:aether/features/academics/providers/academics_providers.dart';
-import 'package:aether/features/habits/providers/habits_providers.dart'; // Added for habits provider
-import 'package:aether/features/habits/models/habit.dart'; // Added for Habit model
-import 'package:aether/features/habits/widgets/add_habit_dialog.dart'; // Added for habits dialog
-import 'package:aether/widgets/common/glass_card.dart';
+import 'dart:async';
+import 'package:aether/screens/schedule/schedule_screen.dart'; // Corrected import
+import 'package:aether/screens/tasks/daily_tasks_screen.dart'; // Corrected import
+
 /// ---------------------------------------------------------------------
 /// AETHER — Dashboard content
 /// ---------------------------------------------------------------------
@@ -16,7 +11,6 @@ import 'package:aether/widgets/common/glass_card.dart';
 /// bar are assumed to already exist elsewhere in the app — this widget
 /// is meant to be dropped straight into the `body:` of that Scaffold.
 /// ---------------------------------------------------------------------
-import 'dart:async';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
