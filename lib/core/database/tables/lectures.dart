@@ -5,7 +5,7 @@ import 'package:aether/core/database/tables/courses.dart';
 @DataClassName('Lecture')
 class Lectures extends Table {
   TextColumn get id => text().clientDefault(() => const Uuid().v4())();
-  TextColumn get courseId => text().references(Courses, #id)();
+  TextColumn get courseId => text().references(Courses, #id, onDelete: KeyAction.cascade)();
   TextColumn get userId => text()();
   TextColumn get title => text()();
   TextColumn get chapter => text().nullable()();

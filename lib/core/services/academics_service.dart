@@ -1,7 +1,11 @@
 import 'package:aether/core/database/database.dart';
 import 'package:aether/core/services/supabase_service.dart';
+import 'package:aether/core/services/sync_queue_service.dart';
 import 'package:drift/drift.dart';
+import 'package:gotrue/gotrue.dart';
+import 'package:postgrest/postgrest.dart';
 import 'package:uuid/uuid.dart';
+
 
 /// Offline-first academics data layer.
 ///
@@ -11,9 +15,10 @@ import 'package:uuid/uuid.dart';
 /// `sync*` methods pull remote data into the local DB.
 class AcademicsService {
   final AppDatabase _db;
+  final SyncQueueService _syncQueueService;
   final _supabase = SupabaseService.instance.client;
 
-  AcademicsService(this._db);
+  AcademicsService(this._db, this._syncQueueService);
 
   String? get _userId => _supabase.auth.currentUser?.id;
 
@@ -66,24 +71,41 @@ class AcademicsService {
     );
 
     await _db.into(_db.courses).insert(course);
-    await _push(() => _supabase.from('courses').insert(_courseToRow(course)));
+    await _push(
+      op: () => _supabase.from('courses').insert(_courseToRow(course)),
+      entityType: SyncEntityType.course,
+      operation: SyncOperation.insert,
+      entityId: course.id,
+      payload: _courseToRow(course),
+    );
     return course;
   }
 
   Future<void> updateCourse(Course course) async {
     final updated = course.copyWith(updatedAt: DateTime.now());
     await _db.update(_db.courses).replace(updated);
-    await _push(() => _supabase
-        .from('courses')
-        .update(_courseToRow(updated))
-        .eq('id', updated.id));
+    await _push(
+      op: () => _supabase
+          .from('courses')
+          .update(_courseToRow(updated))
+          .eq('id', updated.id),
+      entityType: SyncEntityType.course,
+      operation: SyncOperation.update,
+      entityId: updated.id,
+      payload: _courseToRow(updated),
+    );
   }
 
   Future<void> deleteCourse(String courseId) async {
     await (_db.delete(_db.courses)..where((t) => t.id.equals(courseId))).go();
     await (_db.delete(_db.lectures)..where((t) => t.courseId.equals(courseId))).go();
     await (_db.delete(_db.assignments)..where((t) => t.courseId.equals(courseId))).go();
-    await _push(() => _supabase.from('courses').delete().eq('id', courseId));
+    await _push(
+      op: () => _supabase.from('courses').delete().eq('id', courseId),
+      entityType: SyncEntityType.course,
+      operation: SyncOperation.delete,
+      entityId: courseId,
+    );
   }
 
   // ── Lectures ──────────────────────────────────────────
@@ -132,7 +154,13 @@ class AcademicsService {
     );
 
     await _db.into(_db.lectures).insert(lecture);
-    await _push(() => _supabase.from('lectures').insert(_lectureToRow(lecture)));
+    await _push(
+      op: () => _supabase.from('lectures').insert(_lectureToRow(lecture)),
+      entityType: SyncEntityType.lecture,
+      operation: SyncOperation.insert,
+      entityId: lecture.id,
+      payload: _lectureToRow(lecture),
+    );
   }
 
   Future<void> toggleLectureCompletion(String lectureId, bool completed) async {
@@ -143,16 +171,47 @@ class AcademicsService {
       completedAt: Value(completed ? now : null),
       updatedAt: Value(now),
     ));
-    await _push(() => _supabase.from('lectures').update({
-          'is_completed': completed,
-          'completed_at': completed ? now.toIso8601String() : null,
-          'updated_at': now.toIso8601String(),
-        }).eq('id', lectureId));
+    await _push(
+      op: () => _supabase.from('lectures').update({
+        'is_completed': completed,
+        'completed_at': completed ? now.toIso8601String() : null,
+        'updated_at': now.toIso8601String(),
+      }).eq('id', lectureId),
+      entityType: SyncEntityType.lecture,
+      operation: SyncOperation.update,
+      entityId: lectureId,
+      payload: {
+        'id': lectureId,
+        'is_completed': completed,
+        'completed_at': completed ? now.toIso8601String() : null,
+        'updated_at': now.toIso8601String(),
+      },
+    );
+  }
+
+  Future<void> updateLecture(Lecture lecture) async {
+    final updated = lecture.copyWith(updatedAt: DateTime.now());
+    await (_db.update(_db.lectures)..where((l) => l.id.equals(lecture.id))).replace(updated);
+    await _push(
+      op: () => _supabase
+          .from('lectures')
+          .update(_lectureToRow(updated))
+          .eq('id', updated.id),
+      entityType: SyncEntityType.lecture,
+      operation: SyncOperation.update,
+      entityId: updated.id,
+      payload: _lectureToRow(updated),
+    );
   }
 
   Future<void> deleteLecture(String lectureId) async {
     await (_db.delete(_db.lectures)..where((l) => l.id.equals(lectureId))).go();
-    await _push(() => _supabase.from('lectures').delete().eq('id', lectureId));
+    await _push(
+      op: () => _supabase.from('lectures').delete().eq('id', lectureId),
+      entityType: SyncEntityType.lecture,
+      operation: SyncOperation.delete,
+      entityId: lectureId,
+    );
   }
 
   // ── Assignments ──────────────────────────────────────
@@ -199,7 +258,28 @@ class AcademicsService {
     );
 
     await _db.into(_db.assignments).insert(assignment);
-    await _push(() => _supabase.from('assignments').insert(_assignmentToRow(assignment)));
+    await _push(
+      op: () => _supabase.from('assignments').insert(_assignmentToRow(assignment)),
+      entityType: SyncEntityType.assignment,
+      operation: SyncOperation.insert,
+      entityId: assignment.id,
+      payload: _assignmentToRow(assignment),
+    );
+  }
+
+  Future<void> updateAssignment(Assignment assignment) async {
+    final updated = assignment.copyWith(updatedAt: DateTime.now());
+    await (_db.update(_db.assignments)..where((a) => a.id.equals(assignment.id))).replace(updated);
+    await _push(
+      op: () => _supabase
+          .from('assignments')
+          .update(_assignmentToRow(updated))
+          .eq('id', updated.id),
+      entityType: SyncEntityType.assignment,
+      operation: SyncOperation.update,
+      entityId: updated.id,
+      payload: _assignmentToRow(updated),
+    );
   }
 
   Future<void> toggleAssignmentCompletion(String assignmentId, bool completed) async {
@@ -210,28 +290,67 @@ class AcademicsService {
       completedAt: Value(completed ? now : null),
       updatedAt: Value(now),
     ));
-    await _push(() => _supabase.from('assignments').update({
-          'is_completed': completed,
-          'completed_at': completed ? now.toIso8601String() : null,
-          'updated_at': now.toIso8601String(),
-        }).eq('id', assignmentId));
+    await _push(
+      op: () => _supabase.from('assignments').update({
+        'is_completed': completed,
+        'completed_at': completed ? now.toIso8601String() : null,
+        'updated_at': now.toIso8601String(),
+      }).eq('id', assignmentId),
+      entityType: SyncEntityType.assignment,
+      operation: SyncOperation.update,
+      entityId: assignmentId,
+      payload: {
+        'id': assignmentId,
+        'is_completed': completed,
+        'completed_at': completed ? now.toIso8601String() : null,
+        'updated_at': now.toIso8601String(),
+      },
+    );
   }
 
   Future<void> deleteAssignment(String assignmentId) async {
     await (_db.delete(_db.assignments)..where((a) => a.id.equals(assignmentId))).go();
-    await _push(() => _supabase.from('assignments').delete().eq('id', assignmentId));
+    await _push(
+      op: () => _supabase.from('assignments').delete().eq('id', assignmentId),
+      entityType: SyncEntityType.assignment,
+      operation: SyncOperation.delete,
+      entityId: assignmentId,
+    );
   }
 
   // ── Helpers ──────────────────────────────────────────
 
-  /// Runs a remote push, swallowing network errors so the local-first
-  /// write still stands (offline-first). Rethrows only auth errors.
-  Future<void> _push(Future<void> Function() op) async {
+  /// Runs a remote push. If successful, returns true. If network/transient error,
+  /// enqueues for retry and returns false. Rethrows only AuthExceptions.
+  Future<void> _push({
+    required Future<void> Function() op,
+    required SyncEntityType entityType,
+    required SyncOperation operation,
+    required String entityId,
+    Map<String, dynamic>? payload,
+  }) async {
     try {
       await op();
-    } catch (_) {
-      // Offline or transient error — local DB is source of truth until
-      // the next successful sync. Intentionally ignored.
+    } on PostgrestException catch (e) {
+      if (e.code == '401' || e.code == 'JWT expired') {
+        rethrow; // Re-throw auth errors
+      }
+      await _syncQueueService.enqueue(
+        entityType: entityType,
+        operation: operation,
+        entityId: entityId,
+        payload: payload,
+      );
+    } on AuthException catch (_) {
+      rethrow; // Re-throw auth errors
+    } catch (e) {
+      // Catch all other errors (e.g., network, transient) and enqueue
+      await _syncQueueService.enqueue(
+        entityType: entityType,
+        operation: operation,
+        entityId: entityId,
+        payload: payload,
+      );
     }
   }
 

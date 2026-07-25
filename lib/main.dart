@@ -2,14 +2,21 @@ import 'package:aether/core/routing/app_router.dart';
 import 'package:aether/core/services/supabase_service.dart';
 import 'package:aether/widgets/bottom_navbar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:aether/screens/academics/academics_screen.dart';
-import 'package:aether/screens/dashboard/dashboard_screen.dart';
+import 'package:aether/core/providers.dart'; // Added for globalAddActionProvider
+
 Future<void> main() async {
+  print('main: App starting...');
   WidgetsFlutterBinding.ensureInitialized();
+  print('main: WidgetsFlutterBinding initialized.');
+  await dotenv.load(fileName: '.env');
+  print('main: dotenv loaded.');
   await SupabaseService.initialize();
+  print('main: SupabaseService initialized.');
   runApp(const ProviderScope(child: AetherApp()));
+  print('main: runApp called.');
 }
 
 class AetherApp extends ConsumerWidget {
@@ -30,7 +37,7 @@ class AetherApp extends ConsumerWidget {
   }
 }
 
-class MainScaffold extends StatelessWidget {
+class MainScaffold extends ConsumerStatefulWidget {
   final Widget child;
 
   const MainScaffold({
@@ -38,6 +45,11 @@ class MainScaffold extends StatelessWidget {
     super.key,
   });
 
+  @override
+  ConsumerState<MainScaffold> createState() => _MainScaffoldState();
+}
+
+class _MainScaffoldState extends ConsumerState<MainScaffold> {
   int _calculateSelectedIndex(BuildContext context) {
     final String location = GoRouterState.of(context).matchedLocation;
 
@@ -64,12 +76,14 @@ class MainScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final addAction = ref.watch(globalAddActionProvider); // Read the dynamic action
+
     return Scaffold(
-      body: child,
+      body: widget.child,
       bottomNavigationBar: BottomNavbar(
         selectedIndex: _calculateSelectedIndex(context),
         onItemTapped: (index) => _onItemTapped(index, context),
-        onAddTapped: () => GoRouter.of(context).go('/academics'),
+        onAddTapped: addAction,
       ),
     );
   }

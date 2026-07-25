@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:drift/drift.dart' show Value;
+import 'package:aether/core/providers.dart';
 import 'package:aether/features/academics/providers/academics_providers.dart';
 import 'package:aether/features/academics/widgets/course_summary_card.dart';
 import 'package:aether/features/academics/widgets/upcoming_lecture_tile.dart';
@@ -33,8 +34,19 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         ref.read(academicsServiceProvider).syncCourses();
+        // Register the academics add action for the global Add button
+        ref.read(globalAddActionProvider.notifier).state = _showAddCourseDialog;
       }
     });
+  }
+
+  @override
+  void dispose() {
+    // Clear the action when leaving the screen
+    if (ref.read(globalAddActionProvider) == _showAddCourseDialog) {
+      ref.read(globalAddActionProvider.notifier).state = null;
+    }
+    super.dispose();
   }
 
   @override
