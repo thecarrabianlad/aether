@@ -8,6 +8,8 @@ class SupabaseService {
   final SupabaseClient client = Supabase.instance.client;
 
   static Future<void> initialize() async {
+    await dotenv.load(fileName: '.env');
+
     final url = dotenv.env['SUPABASE_URL'];
     final publishableKey = dotenv.env['SUPABASE_ANON_KEY']; // Renamed from anonKey
 

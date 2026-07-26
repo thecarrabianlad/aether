@@ -1,4 +1,6 @@
 import 'dart:math';
+
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:aether/core/models/profile.dart';
 
@@ -21,8 +23,12 @@ class ProfileService {
         .eq('id', userId)
         .maybeSingle();
 
-    if (response == null) return null;
+    if (response == null) {
+      debugPrint('ProfileService: No profile found for user $userId');
+      return null;
+    }
 
+    debugPrint('ProfileService: Profile found for user $userId: $response');
     return Profile.fromJson(response);
   }
 
@@ -32,19 +38,8 @@ class ProfileService {
     final styles = ['adventurer', 'avataaars', 'big-ears', 'bottts', 'fun-emoji', 'lorelei', 'micah'];
     final style = styles[random.nextInt(styles.length)];
     final seed = random.nextInt(1000000);
-    return 'https://api.dicebear.com/9.x/$style/svg?seed=$seed';
-  }
-
-  /// Stream profile changes in real-time.
-  Stream<Profile?> get profileStream {
-    final userId = _client.auth.currentUser?.id;
-    if (userId == null) return Stream.value(null);
-
-    return _client
-        .from('profiles')
-        .stream(primaryKey: ['id'])
-        .eq('id', userId)
-        .map((data) => data.isEmpty ? null : Profile.fromJson(data.first));
+    // PNG, not SVG — Flutter's NetworkImage can't decode SVG.
+    return 'https://api.dicebear.com/9.x/$style/png?seed=$seed';
   }
 
   /// Update the current user's profile.
@@ -57,34 +52,16 @@ class ProfileService {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) throw Exception('Not authenticated');
 
-    final updates = <String, dynamic>{
-      'updated_at': DateTime.now().toIso8601String(),
-    };
+    final updates = <String, dynamic>{};
 
     if (name != null) updates['name'] = name;
     if (role != null) updates['role'] = role;
     if (avatarUrl != null) updates['avatar_url'] = avatarUrl;
     if (isPremium != null) updates['is_premium'] = isPremium;
 
+    if (updates.isEmpty) return; // Nothing to update
+
     await _client.from('profiles').update(updates).eq('id', userId);
-  }
-
-  /// Create a profile for the current user (if it doesn't exist).
-  Future<Profile> createProfile({String? name, String? role}) async {
-    final userId = _client.auth.currentUser?.id;
-    if (userId == null) throw Exception('Not authenticated');
-
-    final response = await _client
-        .from('profiles')
-        .insert({
-          'id': userId,
-          'name': name ?? _client.auth.currentUser?.email?.split('@').first ?? 'User',
-          'role': role ?? 'Student',
-        })
-        .select()
-        .single();
-
-    return Profile.fromJson(response);
   }
 
   /// Upsert profile (create if not exists, update if exists).
@@ -98,8 +75,7 @@ class ProfileService {
           'id': userId,
           'name': name ?? _client.auth.currentUser?.email?.split('@').first ?? 'User',
           'role': role ?? 'Student',
-          'avatar_url': avatarUrl ?? generateRandomAvatarUrl(),
-          'updated_at': DateTime.now().toIso8601String(),
+          'avatar_url': avatarUrl, // Can be null, will be generated if missing
         })
         .select()
         .single();
@@ -108,14 +84,14 @@ class ProfileService {
   }
 
   /// Ensure profile exists for current user (creates with default values if missing).
+  /// This is typically called after a successful login/signup.
   Future<Profile> ensureProfileExists({String? name, String? role}) async {
-    // First try to get existing profile
     final existingProfile = await getProfile();
     if (existingProfile != null) {
       return existingProfile;
     }
 
-    // If not exists, create one
+    // If not exists, create one with generated avatar
     return await upsertProfile(
       name: name,
       role: role,

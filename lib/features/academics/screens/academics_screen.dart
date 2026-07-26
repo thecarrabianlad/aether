@@ -12,9 +12,8 @@ import 'package:aether/core/database/database.dart';
 import 'package:aether/widgets/dashboard_top_bar.dart';
 
 class AcademicsScreen extends ConsumerStatefulWidget {
-  final VoidCallback? onMenuTap;
   final VoidCallback? onProfileTap;
-  const AcademicsScreen({super.key, this.onMenuTap, this.onProfileTap});
+  const AcademicsScreen({super.key, this.onProfileTap});
 
   @override
   ConsumerState<AcademicsScreen> createState() => _AcademicsScreenState();
@@ -34,8 +33,8 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         ref.read(academicsServiceProvider).syncCourses();
-        // Register the academics add action for the global Add button
-        ref.read(globalAddActionProvider.notifier).state = _showAddCourseDialog;
+        // TODO: Wire global add action
+        // ref.read(globalAddActionProvider.notifier).state = _showAddCourseDialog;
       }
     });
   }
@@ -43,9 +42,12 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
   @override
   void dispose() {
     // Clear the action when leaving the screen
+    // TODO: Wire global add action
+    /*
     if (ref.read(globalAddActionProvider) == _showAddCourseDialog) {
       ref.read(globalAddActionProvider.notifier).state = null;
     }
+    */
     super.dispose();
   }
 
@@ -60,7 +62,6 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
         child: Column(
           children: [
             DashboardTopBar(
-              onMenuTap: widget.onMenuTap ?? () {},
               onProfileTap: widget.onProfileTap ?? () {},
             ),
             Expanded(

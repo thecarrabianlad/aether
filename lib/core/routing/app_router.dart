@@ -8,7 +8,7 @@ import 'package:aether/screens/home_screen.dart';
 import 'package:aether/features/academics/screens/academics_screen.dart';
 import 'package:aether/features/habits/screens/habits_screen.dart';
 import 'package:aether/screens/health/health_screen.dart';
-import 'package:aether/main.dart';
+import 'package:aether/widgets/main_scaffold.dart';
 import 'package:flutter/foundation.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {

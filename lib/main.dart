@@ -1,23 +1,12 @@
 import 'package:aether/core/routing/app_router.dart';
 import 'package:aether/core/services/supabase_service.dart';
-import 'package:aether/widgets/bottom_navbar.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:aether/core/providers.dart'; // Added for globalAddActionProvider
-import 'package:flutter/foundation.dart';
 
 Future<void> main() async {
-  print('main: App starting...');
   WidgetsFlutterBinding.ensureInitialized();
-  print('main: WidgetsFlutterBinding initialized.');
-  await dotenv.load(fileName: '.env');
-  print('main: dotenv loaded.');
   await SupabaseService.initialize();
-  print('main: SupabaseService initialized.');
   runApp(const ProviderScope(child: AetherApp()));
-  print('main: runApp called.');
 }
 
 class AetherApp extends ConsumerWidget {
@@ -25,7 +14,6 @@ class AetherApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    debugPrint('AetherApp: build method called');
     final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
@@ -33,127 +21,9 @@ class AetherApp extends ConsumerWidget {
       title: 'AETHER',
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: Colors.black,
+        // You can add more theme customizations here to match your design
       ),
       routerConfig: router,
     );
   }
 }
-
-class MainScaffold extends ConsumerStatefulWidget {
-  final Widget child;
-
-  const MainScaffold({
-    required this.child,
-    super.key,
-  });
-
-  @override
-  ConsumerState<MainScaffold> createState() => _MainScaffoldState();
-}
-
-class _MainScaffoldState extends ConsumerState<MainScaffold> {
-  int _calculateSelectedIndex(BuildContext context) {
-    final String location = GoRouterState.of(context).matchedLocation;
-
-    if (location.startsWith('/academics')) return 1;
-    if (location.startsWith('/habits')) return 2;
-    if (location.startsWith('/health')) return 3;
-    if (location.startsWith('/')) return 0;
-
-    return 0;
-  }
-
-  void _onItemTapped(int index, BuildContext context) {
-    switch (index) {
-      case 0:
-        GoRouter.of(context).go('/');
-      case 1:
-        GoRouter.of(context).go('/academics');
-      case 2:
-        GoRouter.of(context).go('/habits');
-      case 3:
-        GoRouter.of(context).go('/health');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final addAction = ref.watch(globalAddActionProvider); // Read the dynamic action
-
-    return Scaffold(
-      body: widget.child,
-      bottomNavigationBar: BottomNavbar(
-        selectedIndex: _calculateSelectedIndex(context),
-        onItemTapped: (index) => _onItemTapped(index, context),
-        onAddTapped: addAction,
-      ),
-    );
-  }
-}
-
-// class _AetherAppState extends State<AetherApp> {
-//   int _selectedIndex = 0;
-
-//   static const List<Widget> _screens = [
-//     DashboardScreen(),
-//     Center(
-//       child: Text(
-//         'Academics',
-//         style: TextStyle(color: Colors.white, fontSize: 32),
-//       ),
-//     ),
-//     Center(
-//       child: Text(
-//         'Habits',
-//         style: TextStyle(color: Colors.white, fontSize: 32),
-//       ),
-//     ),
-//     Center(
-//       child: Text(
-//         'Health',
-//         style: TextStyle(color: Colors.white, fontSize: 32),
-//       ),
-//     ),
-//   ];
-
-//   void _onMenuTap() {
-//     // TODO: open drawer / menu
-//     print('Menu tapped');
-//   }
-
-//   void _onProfileTap() {
-//     // TODO: navigate to profile
-//     print('Profile tapped');
-//   }
-
-//   void _onItemTapped(int index, BuildContext context) {
-//     switch (index) {
-//       case 0:
-//         GoRouter.of(context).go('/');
-//         break;
-//       case 1:
-//         GoRouter.of(context).go('/academics');
-//         break;
-//       case 2:
-//         GoRouter.of(context).go('/habits');
-//         break;
-//       case 3:
-//         GoRouter.of(context).go('/health');
-//         break;
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       body: child,
-//       bottomNavigationBar: BottomNavbar(
-//         selectedIndex: _calculateSelectedIndex(context),
-//         onItemTapped: (index) => _onItemTapped(index, context),
-//         onAddTapped: () {
-//           // TODO: Handle Add button tap, maybe show a modal
-//         },
-//       ),
-//     );
-//   }
-// }

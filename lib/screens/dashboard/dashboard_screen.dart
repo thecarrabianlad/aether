@@ -5,6 +5,7 @@ import 'package:aether/screens/schedule/schedule_screen.dart';
 import 'package:aether/features/tasks/screens/daily_tasks_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+// import 'package:aether/core/providers.dart'; // Added for drawerProvider - REVERTED
 import 'package:aether/features/academics/providers/academics_providers.dart';
 import 'package:aether/widgets/common/glass_card.dart';
 
@@ -21,12 +22,10 @@ import 'package:aether/widgets/dashboard_top_bar.dart';
 /// ---------------------------------------------------------------------
 
 class DashboardScreen extends ConsumerStatefulWidget {
-  final VoidCallback? onMenuTap;
   final VoidCallback? onProfileTap;
 
   const DashboardScreen({
     super.key,
-    this.onMenuTap,
     this.onProfileTap,
   });
 
@@ -322,9 +321,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               DashboardTopBar(
-      onMenuTap: widget.onMenuTap ?? () {},
-      onProfileTap: widget.onProfileTap ?? () {},
-    ),
+                onProfileTap: widget.onProfileTap ?? () {},
+              ),
               _HeaderRow(
                 timeText: _timeText,
                 periodText: _periodText,

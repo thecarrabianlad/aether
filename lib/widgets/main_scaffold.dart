@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart'; // For debugPrint
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show AuthState; // For AuthState
 import 'package:aether/widgets/bottom_navbar.dart';
-import 'package:aether/widgets/side_drawer.dart';
-import 'package:aether/widgets/first_login_dialog.dart';
-import 'package:aether/core/providers.dart';
-import 'package:aether/core/models/profile.dart';
-import 'package:aether/core/services/profile_service.dart';
+import 'package:aether/widgets/side_drawer.dart'; // New import for SideDrawer
+import 'package:aether/widgets/first_login_dialog.dart'; // New import for FirstLoginDialog
+import 'package:aether/core/providers.dart'; // For all new providers
+import 'package:aether/core/models/profile.dart'; // For Profile model
+import 'package:aether/core/services/profile_service.dart'; // For ProfileService
 
 /// Main scaffold with bottom navbar wrapping all authenticated routes.
 class MainScaffold extends ConsumerStatefulWidget {
@@ -63,16 +65,21 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
     // Close drawer
     ref.read(drawerProvider.notifier).state = false;
     await ref.read(authProvider).signOut();
-    // GoRouter.of(context).go('/login'); // Handled by router refresh listener
+    // Navigation to /login is handled by router refresh listener
   }
 
   /// Check if this is a first-time login and prompt for username.
   Future<void> _checkFirstLogin(Profile? profile) async {
-    if (_hasCheckedFirstLogin) return;
+    debugPrint('MainScaffold: _checkFirstLogin called. Profile: $profile');
+    if (_hasCheckedFirstLogin) {
+      debugPrint('MainScaffold: Already checked first login, returning.');
+      return;
+    }
     _hasCheckedFirstLogin = true;
 
     // If no profile exists, this is a first login
     if (profile == null) {
+      debugPrint('MainScaffold: Profile is null, showing first login dialog.');
       // Show the first login dialog
       final name = await showFirstLoginDialog(context);
 
@@ -104,14 +111,29 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
 
   @override
   Widget build(BuildContext context) {
+    // Listen to auth state changes and invalidate profile provider
+    ref.listen<AsyncValue<AuthState>>(
+      authStateChangesProvider,
+      (previous, next) {
+        if (previous?.value?.event != next.value?.event) {
+          debugPrint('MainScaffold: Auth state changed, invalidating profileProvider');
+          ref.invalidate(profileProvider);
+        }
+      },
+    );
+
     final isDrawerOpen = ref.watch(drawerProvider);
+    debugPrint('MainScaffold: isDrawerOpen rebuilt as $isDrawerOpen');
     final profileAsync = ref.watch(profileProvider);
 
-    // Check for first login when profile loads
+    // Check for first login when profile loads (deferred — showing a dialog
+    // mid-build would push a route while the tree is locked).
     profileAsync.when(
-      data: (profile) => _checkFirstLogin(profile),
+      data: (profile) => WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _checkFirstLogin(profile),
+      ),
       loading: () {},
-      error: (_, _) {},
+      error: (_, __) {},
     );
 
     // Default menu items
@@ -145,7 +167,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
           bottomNavigationBar: BottomNavbar(
             selectedIndex: _calculateSelectedIndex(context),
             onItemTapped: (index) => _onItemTapped(index, context),
-            onAddTapped: ref.watch(globalAddActionProvider) ?? () {},
+            onAddTapped: () => GoRouter.of(context).go('/academics'), // Default action
           ),
         ),
         // Side drawer overlay

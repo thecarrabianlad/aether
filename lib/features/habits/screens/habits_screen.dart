@@ -102,16 +102,16 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      ref.read(globalAddActionProvider.notifier).state = () => _showAddHabitDialog();
-    });
+    // Future.microtask(() {
+    //   ref.read(globalAddActionProvider.notifier).state = () => _showAddHabitDialog();
+    // });
   }
 
   @override
   void dispose() {
-    if (ref.read(globalAddActionProvider) == _showAddHabitDialog) {
-      ref.read(globalAddActionProvider.notifier).state = null;
-    }
+    // if (ref.read(globalAddActionProvider) == _showAddHabitDialog) {
+    //   ref.read(globalAddActionProvider.notifier).state = null;
+    // }
     super.dispose();
   }
 
@@ -173,7 +173,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
         child: Column(
           children: [
             HabitsAppBar(
-              onMenuTap: widget.onMenuTap ?? () => ref.read(drawerProvider.notifier).state = true,
+              onMenuTap: widget.onMenuTap ?? () {}, // TODO: Wire drawer
               onProfileTap: widget.onProfileTap ?? () {},
             ),
             Expanded(

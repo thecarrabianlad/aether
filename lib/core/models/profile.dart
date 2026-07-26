@@ -5,8 +5,6 @@ class Profile {
   final String role;
   final String? avatarUrl;
   final bool isPremium;
-  final DateTime createdAt;
-  final DateTime updatedAt;
 
   const Profile({
     required this.id,
@@ -14,8 +12,6 @@ class Profile {
     required this.role,
     this.avatarUrl,
     required this.isPremium,
-    required this.createdAt,
-    required this.updatedAt,
   });
 
   factory Profile.fromJson(Map<String, dynamic> json) {
@@ -25,8 +21,6 @@ class Profile {
       role: json['role'] as String? ?? 'Student',
       avatarUrl: json['avatar_url'] as String?,
       isPremium: json['is_premium'] as bool? ?? false,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
     );
   }
 
@@ -37,8 +31,6 @@ class Profile {
       'role': role,
       'avatar_url': avatarUrl,
       'is_premium': isPremium,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
     };
   }
 
@@ -54,8 +46,6 @@ class Profile {
       role: role ?? this.role,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       isPremium: isPremium ?? this.isPremium,
-      createdAt: createdAt,
-      updatedAt: DateTime.now(),
     );
   }
 }

@@ -1,21 +1,21 @@
 import 'dart:ui';
 
+import 'package:aether/core/providers.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class DashboardTopBar extends StatelessWidget {
-  final VoidCallback onMenuTap;
+class DashboardTopBar extends ConsumerWidget {
   final VoidCallback onProfileTap;
 
   const DashboardTopBar({
     super.key,
-    required this.onMenuTap,
     required this.onProfileTap,
   });
 
   static const Color _bgColor = Color(0xFF111111);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return ClipRRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
@@ -36,7 +36,10 @@ class DashboardTopBar extends StatelessWidget {
               children: [
                 _TopBarIconButton(
                   icon: Icons.menu_rounded,
-                  onTap: onMenuTap,
+                  onTap: () {
+                    debugPrint('DashboardTopBar: Menu icon tapped, setting drawerProvider to true');
+                    ref.read(drawerProvider.notifier).state = true;
+                  },
                 ),
                 Expanded(
                   child: Text(
@@ -92,3 +95,4 @@ class _TopBarIconButton extends StatelessWidget {
     );
   }
 }
+
