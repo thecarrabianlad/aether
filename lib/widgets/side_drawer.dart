@@ -1,3 +1,4 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 /// Data model for a navigation item in the drawer.
@@ -88,8 +89,19 @@ class _SideDrawerState extends State<SideDrawer>
       curve: Curves.easeOut,
     ));
 
+    // When the close animation finishes, rebuild so the guard in [build]
+    // collapses the overlay — otherwise the invisible full-screen overlay
+    // stays mounted and swallows every tap in the app.
+    _controller.addStatusListener(_onAnimationStatusChanged);
+
     if (widget.isOpen) {
       _controller.value = 1.0;
+    }
+  }
+
+  void _onAnimationStatusChanged(AnimationStatus status) {
+    if (status == AnimationStatus.dismissed && mounted) {
+      setState(() {});
     }
   }
 
@@ -114,18 +126,25 @@ class _SideDrawerState extends State<SideDrawer>
 
   // --- Styling Constants ---
   static const Color _overlayColor = Color(0xBE000000); // ~75% black overlay
-  static const Color _bgColor = Color(0xFF0D0D0D);
-  static const Color _surfaceColor = Color(0xFF18181A);
   static const Color _borderColor = Color(0x1AFFFFFF); // 10% white
-  static const Color _accentColor = Color(0xFFE88D8A); // muted rose/pink
   static const Color _mutedTextColor = Color(0xFF8E8E93);
   static const Color _textColor = Color(0xFFF5F5F5);
+  // Premium badge and logout keep fixed red tints — semantic, not accent.
   static const Color _badgeBgColor = Color(0xFF4A1E1E);
   static const Color _badgeBorderColor = Color(0xFFCC5E5E);
-  static const Color _activeItemBgColor = Color(0x22E88D8A); // low-opacity accent
   static const Color _inactiveItemColor = Color(0xFFB0B0B0);
   static const Color _logoutBgColor = Color(0xFF2A1A1A);
   static const Color _logoutBorderColor = Color(0xFF4A2A2A);
+
+  /// Panel and avatar-well colors from the active theme (AMOLED-aware).
+  Color get _bgColor => context.aether.background;
+  Color get _surfaceColor => context.aether.surface;
+
+  /// Accent from the active theme — used for highlights and glows.
+  Color get _accentColor => context.aether.accent;
+
+  /// Low-opacity accent fill behind the active nav item.
+  Color get _activeItemBgColor => _accentColor.withValues(alpha: 0.13);
 
   @override
   Widget build(BuildContext context) {

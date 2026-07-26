@@ -1,3 +1,4 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:aether/widgets/common/glass_card.dart';
 
@@ -36,7 +37,7 @@ class DueAssignmentTile extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: isCompleted ? color : Colors.transparent,
                 border: Border.all(
-                  color: isCompleted ? color : const Color(0xFF5A5A5E),
+                  color: isCompleted ? color : context.aether.textMuted,
                   width: 1.5,
                 ),
               ),
@@ -52,26 +53,26 @@ class DueAssignmentTile extends StatelessWidget {
               children: [
                 Text(title,
                     style: TextStyle(
-                      color: Colors.white,
+                      color: context.aether.text,
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                       decoration: isCompleted ? TextDecoration.lineThrough : null,
                     )),
                 const SizedBox(height: 4),
                 Text(dueDate,
-                    style: const TextStyle(color: Color(0xFF9A9A9E), fontSize: 12)),
+                    style: TextStyle(color: context.aether.textMuted, fontSize: 12)),
               ],
             ),
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: const Color(0xFFE8443F).withOpacity(0.15),
+              color: context.aether.danger.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(daysLeft,
-                style: const TextStyle(
-                    color: Color(0xFFE8443F),
+                style: TextStyle(
+                    color: context.aether.danger,
                     fontSize: 11,
                     fontWeight: FontWeight.w600)),
           ),

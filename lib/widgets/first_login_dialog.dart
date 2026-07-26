@@ -1,3 +1,4 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 /// Dialog shown to new users to collect their display name.
@@ -19,13 +20,14 @@ class _FirstLoginDialog extends StatefulWidget {
 
 class _FirstLoginDialogState extends State<_FirstLoginDialog> {
   final _controller = TextEditingController();
-  bool _isLoading = false;
+  final bool _isLoading = false;
 
-  static const Color _bgColor = Color(0xFF1C1C1E);
-  static const Color _textColor = Color(0xFFF5F5F5);
-  static const Color _mutedColor = Color(0xFF8E8E93);
-  static const Color _accentColor = Color(0xFFE88D8A);
-  static const Color _inputBgColor = Color(0xFF2C2C2E);
+  AetherTheme get _aether => context.aether;
+  Color get _bgColor => _aether.surface;
+  Color get _textColor => _aether.text;
+  Color get _mutedColor => _aether.textMuted;
+  Color get _accentColor => _aether.accent;
+  Color get _inputBgColor => _aether.surfaceAlt;
 
   @override
   void dispose() {
@@ -65,7 +67,7 @@ class _FirstLoginDialogState extends State<_FirstLoginDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Title
-            const Text(
+            Text(
               'Welcome to Aether!',
               style: TextStyle(
                 fontSize: 22,
@@ -88,7 +90,7 @@ class _FirstLoginDialogState extends State<_FirstLoginDialog> {
               controller: _controller,
               autofocus: true,
               textCapitalization: TextCapitalization.words,
-              style: const TextStyle(color: _textColor, fontSize: 16),
+              style: TextStyle(color: _textColor, fontSize: 16),
               decoration: InputDecoration(
                 hintText: 'Enter your name',
                 hintStyle: TextStyle(color: _mutedColor),
@@ -137,7 +139,7 @@ class _FirstLoginDialogState extends State<_FirstLoginDialog> {
                     ),
                   ),
                   child: _isLoading
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 16,
                           height: 16,
                           child: CircularProgressIndicator(

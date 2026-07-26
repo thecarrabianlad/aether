@@ -8,8 +8,8 @@ import 'package:aether/screens/home_screen.dart';
 import 'package:aether/features/academics/screens/academics_screen.dart';
 import 'package:aether/features/habits/screens/habits_screen.dart';
 import 'package:aether/screens/health/health_screen.dart';
+import 'package:aether/features/settings/screens/settings_screen.dart';
 import 'package:aether/widgets/main_scaffold.dart';
-import 'package:flutter/foundation.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authService = AuthService.instance;
@@ -37,6 +37,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/signup',
         builder: (context, state) => const SignUpScreen(),
+      ),
+      // Full-screen page without the bottom navbar shell.
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
       ),
       ShellRoute(
         builder: (context, state, child) {

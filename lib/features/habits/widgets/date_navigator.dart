@@ -1,5 +1,5 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:aether/features/habits/models/habit_repository.dart';
 
 class DateNavigatorCard extends StatelessWidget {
   final String label;
@@ -20,24 +20,24 @@ class DateNavigatorCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       decoration: BoxDecoration(
-        color: HabitRepository.cardBg,
+        color: context.aether.card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: HabitRepository.cardBorder),
+        border: Border.all(color: context.aether.border),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           GestureDetector(
             onTap: onPrevious,
-            child: const Icon(Icons.chevron_left,
-                color: HabitRepository.greyText, size: 22),
+            child: Icon(Icons.chevron_left,
+                color: context.aether.textMuted, size: 22),
           ),
           Column(
             children: [
               Text(
                 label,
-                style: const TextStyle(
-                  color: HabitRepository.whiteText,
+                style: TextStyle(
+                  color: context.aether.text,
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
                 ),
@@ -45,8 +45,8 @@ class DateNavigatorCard extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 subtitle,
-                style: const TextStyle(
-                  color: HabitRepository.greyText,
+                style: TextStyle(
+                  color: context.aether.textMuted,
                   fontSize: 12,
                 ),
               ),
@@ -54,8 +54,8 @@ class DateNavigatorCard extends StatelessWidget {
           ),
           GestureDetector(
             onTap: onNext,
-            child: const Icon(Icons.chevron_right,
-                color: HabitRepository.greyText, size: 22),
+            child: Icon(Icons.chevron_right,
+                color: context.aether.textMuted, size: 22),
           ),
         ],
       ),

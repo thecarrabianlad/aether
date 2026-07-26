@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart'; // Added for debugPrint
 import 'dart:async';
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:aether/features/schedule/screens/schedule_screen.dart';
 import 'package:aether/features/tasks/screens/daily_tasks_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,15 +30,10 @@ class DashboardScreen extends ConsumerStatefulWidget {
     this.onProfileTap,
   });
 
-  // Palette
-  static const bg = Color(0xFF000000);
-  static const card = Color(0xFF121212);
-  static const cardBorder = Color(0xFF262626);
+  // Fixed category colors for the glance cards — semantic, not themed.
   static const red = Color(0xFFFF3B30);
   static const purple = Color(0xFF8B5CF6);
   static const green = Color(0xFF34C759);
-  static const grey = Color(0xFF9A9A9E);
-  static const white = Color(0xFFF5F5F5);
 
   @override
   ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
@@ -333,7 +328,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final upcomingBlocks = _nextScheduleBlocks(blocksAsync.value ?? const []);
 
     return Container(
-      color: DashboardScreen.bg,
+      color: context.aether.background,
       child: SafeArea(
         top: false,
         bottom: false,
@@ -448,8 +443,8 @@ class _HeaderRow extends StatelessWidget {
                 children: [
                   Text(
                     timeText,
-                    style: const TextStyle(
-                      color: DashboardScreen.white,
+                    style: TextStyle(
+                      color: context.aether.text,
                       fontSize: 40,
                       fontWeight: FontWeight.w600,
                       height: 1,
@@ -458,8 +453,8 @@ class _HeaderRow extends StatelessWidget {
                   const SizedBox(width: 6),
                   Text(
                     periodText,
-                    style: const TextStyle(
-                      color: DashboardScreen.grey,
+                    style: TextStyle(
+                      color: context.aether.textMuted,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
@@ -469,8 +464,8 @@ class _HeaderRow extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 weekdayLabel,
-                style: const TextStyle(
-                  color: DashboardScreen.white,
+                style: TextStyle(
+                  color: context.aether.text,
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
@@ -478,8 +473,8 @@ class _HeaderRow extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 fullDateLabel,
-                style: const TextStyle(
-                  color: DashboardScreen.grey,
+                style: TextStyle(
+                  color: context.aether.textMuted,
                   fontSize: 13,
                 ),
               ),
@@ -524,9 +519,9 @@ class _ProgressRing extends ConsumerWidget {
       height: 128,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: DashboardScreen.card,
+        color: context.aether.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: DashboardScreen.cardBorder),
+        border: Border.all(color: context.aether.border),
       ),
       child: Center(
         child: SizedBox(
@@ -540,7 +535,7 @@ class _ProgressRing extends ConsumerWidget {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: DashboardScreen.red.withValues(alpha: 0.55),
+                      color: context.aether.accent.withValues(alpha: 0.55),
                       blurRadius: 20,
                       spreadRadius: 1,
                     ),
@@ -554,8 +549,8 @@ class _ProgressRing extends ConsumerWidget {
                   value: displayPercent,
                   strokeWidth: 6,
                   backgroundColor: const Color(0xFF3A3A3C),
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    DashboardScreen.red,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    context.aether.accent,
                   ),
                   strokeCap: StrokeCap.round,
                 ),
@@ -563,15 +558,15 @@ class _ProgressRing extends ConsumerWidget {
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
+                  Text(
                     'Progress',
-                    style: TextStyle(color: DashboardScreen.grey, fontSize: 11),
+                    style: TextStyle(color: context.aether.textMuted, fontSize: 11),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     '${(displayPercent * 100).toStringAsFixed(1)}%',
-                    style: const TextStyle(
-                      color: DashboardScreen.white,
+                    style: TextStyle(
+                      color: context.aether.text,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -606,34 +601,34 @@ class _DateNavigator extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       decoration: BoxDecoration(
-        color: DashboardScreen.card,
+        color: context.aether.card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: DashboardScreen.cardBorder),
+        border: Border.all(color: context.aether.border),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           GestureDetector(
             onTap: onPrevious,
-            child: const Icon(
+            child: Icon(
               Icons.chevron_left,
-              color: DashboardScreen.grey,
+              color: context.aether.textMuted,
               size: 22,
             ),
           ),
           Text(
             label,
-            style: const TextStyle(
-              color: DashboardScreen.white,
+            style: TextStyle(
+              color: context.aether.text,
               fontSize: 15,
               fontWeight: FontWeight.w500,
             ),
           ),
           GestureDetector(
             onTap: onNext,
-            child: const Icon(
+            child: Icon(
               Icons.chevron_right,
-              color: DashboardScreen.grey,
+              color: context.aether.textMuted,
               size: 22,
             ),
           ),
@@ -671,10 +666,10 @@ class _GlanceRow extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Today at a glance',
           style: TextStyle(
-            color: DashboardScreen.white,
+            color: context.aether.text,
             fontSize: 15,
             fontWeight: FontWeight.w600,
           ),
@@ -718,7 +713,7 @@ class _GlanceCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
       decoration: BoxDecoration(
-        color: DashboardScreen.card,
+        color: context.aether.card,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: iconColor.withValues(alpha: 0.4)),
       ),
@@ -729,8 +724,8 @@ class _GlanceCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             value,
-            style: const TextStyle(
-              color: DashboardScreen.white,
+            style: TextStyle(
+              color: context.aether.text,
               fontSize: 18,
               fontWeight: FontWeight.w700,
             ),
@@ -738,7 +733,7 @@ class _GlanceCard extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             label,
-            style: const TextStyle(color: DashboardScreen.grey, fontSize: 11),
+            style: TextStyle(color: context.aether.textMuted, fontSize: 11),
           ),
         ],
       ),
@@ -763,21 +758,21 @@ class _SectionHeader extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
-            color: DashboardScreen.white,
+          style: TextStyle(
+            color: context.aether.text,
             fontSize: 15,
             fontWeight: FontWeight.w600,
           ),
         ),
         GestureDetector(
           onTap: onViewAll,
-          child: const Row(
+          child: Row(
             children: [
               Text(
                 'View All',
-                style: TextStyle(color: DashboardScreen.grey, fontSize: 12),
+                style: TextStyle(color: context.aether.textMuted, fontSize: 12),
               ),
-              Icon(Icons.chevron_right, color: DashboardScreen.grey, size: 16),
+              Icon(Icons.chevron_right, color: context.aether.textMuted, size: 16),
             ],
           ),
         ),
@@ -824,11 +819,11 @@ class _ScheduleCard extends StatelessWidget {
         child: Center(
           child: Column(
             children: [
-              const Icon(Icons.event_busy, color: DashboardScreen.grey, size: 32),
+              Icon(Icons.event_busy, color: context.aether.textMuted, size: 32),
               const SizedBox(height: 8),
               Text(
                 emptyMessage,
-                style: const TextStyle(color: DashboardScreen.grey, fontSize: 14),
+                style: TextStyle(color: context.aether.textMuted, fontSize: 14),
               ),
             ],
           ),
@@ -839,9 +834,9 @@ class _ScheduleCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: DashboardScreen.card,
+        color: context.aether.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: DashboardScreen.cardBorder),
+        border: Border.all(color: context.aether.border),
       ),
       child: Column(
         children: List.generate(items.length, (i) {
@@ -872,8 +867,8 @@ class _ScheduleRow extends StatelessWidget {
               padding: const EdgeInsets.only(top: 4),
               child: Text(
                 item.time,
-                style: const TextStyle(
-                  color: DashboardScreen.grey,
+                style: TextStyle(
+                  color: context.aether.textMuted,
                   fontSize: 12,
                 ),
               ),
@@ -885,9 +880,9 @@ class _ScheduleRow extends StatelessWidget {
                 width: 8,
                 height: 8,
                 margin: const EdgeInsets.only(top: 6),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: DashboardScreen.grey,
+                  color: context.aether.textMuted,
                 ),
               ),
               if (showLine)
@@ -895,7 +890,7 @@ class _ScheduleRow extends StatelessWidget {
                   child: Container(
                     width: 1,
                     margin: const EdgeInsets.symmetric(vertical: 4),
-                    color: DashboardScreen.cardBorder,
+                    color: context.aether.border,
                   ),
                 ),
             ],
@@ -909,8 +904,8 @@ class _ScheduleRow extends StatelessWidget {
                 children: [
                   Text(
                     item.title,
-                    style: const TextStyle(
-                      color: DashboardScreen.white,
+                    style: TextStyle(
+                      color: context.aether.text,
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
@@ -918,8 +913,8 @@ class _ScheduleRow extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     item.subtitle,
-                    style: const TextStyle(
-                      color: DashboardScreen.grey,
+                    style: TextStyle(
+                      color: context.aether.textMuted,
                       fontSize: 12,
                     ),
                   ),
@@ -962,9 +957,9 @@ class _TasksCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: DashboardScreen.card,
+        color: context.aether.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: DashboardScreen.cardBorder),
+        border: Border.all(color: context.aether.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -972,28 +967,28 @@ class _TasksCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Tasks',
                 style: TextStyle(
-                  color: DashboardScreen.white,
+                  color: context.aether.text,
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               GestureDetector(
                 onTap: onViewAll,
-                child: const Row(
+                child: Row(
                   children: [
                     Text(
                       'View All',
                       style: TextStyle(
-                        color: DashboardScreen.grey,
+                        color: context.aether.textMuted,
                         fontSize: 11,
                       ),
                     ),
                     Icon(
                       Icons.chevron_right,
-                      color: DashboardScreen.grey,
+                      color: context.aether.textMuted,
                       size: 14,
                     ),
                   ],
@@ -1008,10 +1003,10 @@ class _TasksCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'No tasks added yet',
                     style: TextStyle(
-                      color: DashboardScreen.grey,
+                      color: context.aether.textMuted,
                       fontSize: 12.5,
                       fontWeight: FontWeight.w500,
                     ),
@@ -1019,10 +1014,10 @@ class _TasksCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   GestureDetector(
                     onTap: onViewAll,
-                    child: const Text(
+                    child: Text(
                       'Tap View All to add a task',
                       style: TextStyle(
-                        color: DashboardScreen.grey,
+                        color: context.aether.textMuted,
                         fontSize: 11,
                       ),
                     ),
@@ -1042,10 +1037,10 @@ class _TasksCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       completed
-                          ? const CircleAvatar(
+                          ? CircleAvatar(
                               radius: 9,
-                              backgroundColor: DashboardScreen.red,
-                              child: Icon(
+                              backgroundColor: context.aether.accent,
+                              child: const Icon(
                                 Icons.check,
                                 size: 12,
                                 color: Colors.white,
@@ -1059,7 +1054,7 @@ class _TasksCard extends StatelessWidget {
                                 border: Border.all(
                                   color: t.status == 'InProgress'
                                       ? const Color(0xFFE08A2E)
-                                      : DashboardScreen.grey,
+                                      : context.aether.textMuted,
                                   width: 1.4,
                                 ),
                               ),
@@ -1073,8 +1068,8 @@ class _TasksCard extends StatelessWidget {
                               t.title,
                               style: TextStyle(
                                 color: completed
-                                    ? DashboardScreen.grey
-                                    : DashboardScreen.white,
+                                    ? context.aether.textMuted
+                                    : context.aether.text,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
                                 decoration: completed
@@ -1085,8 +1080,8 @@ class _TasksCard extends StatelessWidget {
                             const SizedBox(height: 1),
                             Text(
                               t.category,
-                              style: const TextStyle(
-                                color: DashboardScreen.grey,
+                              style: TextStyle(
+                                color: context.aether.textMuted,
                                 fontSize: 11,
                               ),
                             ),
@@ -1094,10 +1089,10 @@ class _TasksCard extends StatelessWidget {
                         ),
                       ),
                       if (t.priority == 'High')
-                        const Icon(
+                        Icon(
                           Icons.flag,
                           size: 14,
-                          color: DashboardScreen.red,
+                          color: context.aether.danger,
                         ),
                     ],
                   ),
@@ -1139,9 +1134,9 @@ class _HabitTrackerCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: DashboardScreen.card,
+        color: context.aether.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: DashboardScreen.cardBorder),
+        border: Border.all(color: context.aether.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1149,28 +1144,28 @@ class _HabitTrackerCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Habit Tracker',
                 style: TextStyle(
-                  color: DashboardScreen.white,
+                  color: context.aether.text,
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               GestureDetector(
                 onTap: onViewAll,
-                child: const Row(
+                child: Row(
                   children: [
                     Text(
                       'View All',
                       style: TextStyle(
-                        color: DashboardScreen.grey,
+                        color: context.aether.textMuted,
                         fontSize: 11,
                       ),
                     ),
                     Icon(
                       Icons.chevron_right,
-                      color: DashboardScreen.grey,
+                      color: context.aether.textMuted,
                       size: 14,
                     ),
                   ],
@@ -1187,13 +1182,13 @@ class _HabitTrackerCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Icon(h.icon, size: 14, color: DashboardScreen.grey),
+                      Icon(h.icon, size: 14, color: context.aether.textMuted),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           h.title,
-                          style: const TextStyle(
-                            color: DashboardScreen.white,
+                          style: TextStyle(
+                            color: context.aether.text,
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                           ),
@@ -1201,8 +1196,8 @@ class _HabitTrackerCard extends StatelessWidget {
                       ),
                       Text(
                         h.fraction,
-                        style: const TextStyle(
-                          color: DashboardScreen.grey,
+                        style: TextStyle(
+                          color: context.aether.textMuted,
                           fontSize: 11,
                         ),
                       ),
@@ -1215,8 +1210,8 @@ class _HabitTrackerCard extends StatelessWidget {
                       value: h.progress,
                       minHeight: 3,
                       backgroundColor: const Color(0xFF2A2A2A),
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                        DashboardScreen.red,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        context.aether.accent,
                       ),
                     ),
                   ),
@@ -1260,9 +1255,9 @@ class _UpcomingCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: DashboardScreen.card,
+        color: context.aether.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: DashboardScreen.cardBorder),
+        border: Border.all(color: context.aether.border),
       ),
       child: Row(
         children: [
@@ -1271,17 +1266,17 @@ class _UpcomingCard extends StatelessWidget {
             height: 48,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: const Color(0xFF1C1C1E),
+              color: context.aether.surface,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: DashboardScreen.cardBorder),
+              border: Border.all(color: context.aether.border),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   event.day,
-                  style: const TextStyle(
-                    color: DashboardScreen.white,
+                  style: TextStyle(
+                    color: context.aether.text,
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     height: 1,
@@ -1289,8 +1284,8 @@ class _UpcomingCard extends StatelessWidget {
                 ),
                 Text(
                   event.month,
-                  style: const TextStyle(
-                    color: DashboardScreen.red,
+                  style: TextStyle(
+                    color: context.aether.accent,
                     fontSize: 9,
                     fontWeight: FontWeight.w600,
                   ),
@@ -1305,8 +1300,8 @@ class _UpcomingCard extends StatelessWidget {
               children: [
                 Text(
                   event.title,
-                  style: const TextStyle(
-                    color: DashboardScreen.white,
+                  style: TextStyle(
+                    color: context.aether.text,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -1314,8 +1309,8 @@ class _UpcomingCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   event.subtitle,
-                  style: const TextStyle(
-                    color: DashboardScreen.grey,
+                  style: TextStyle(
+                    color: context.aether.textMuted,
                     fontSize: 12,
                   ),
                 ),
@@ -1324,8 +1319,8 @@ class _UpcomingCard extends StatelessWidget {
           ),
           Text(
             event.daysLeftLabel,
-            style: const TextStyle(
-              color: DashboardScreen.red,
+            style: TextStyle(
+              color: context.aether.accent,
               fontSize: 12,
               fontWeight: FontWeight.w500,
             ),

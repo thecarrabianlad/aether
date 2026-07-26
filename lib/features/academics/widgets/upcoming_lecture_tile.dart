@@ -1,3 +1,4 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:aether/widgets/common/glass_card.dart';
 
@@ -38,7 +39,7 @@ class UpcomingLectureTile extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: isCompleted ? accentColor : Colors.transparent,
                 border: Border.all(
-                  color: isCompleted ? accentColor : const Color(0xFF5A5A5E),
+                  color: isCompleted ? accentColor : context.aether.textMuted,
                   width: 1.5,
                 ),
               ),
@@ -54,14 +55,14 @@ class UpcomingLectureTile extends StatelessWidget {
               children: [
                 Text(title,
                     style: TextStyle(
-                      color: Colors.white,
+                      color: context.aether.text,
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                       decoration: isCompleted ? TextDecoration.lineThrough : null,
                     )),
                 const SizedBox(height: 4),
                 Text(chapter,
-                    style: const TextStyle(color: Color(0xFF9A9A9E), fontSize: 12)),
+                    style: TextStyle(color: context.aether.textMuted, fontSize: 12)),
               ],
             ),
           ),
@@ -79,7 +80,7 @@ class UpcomingLectureTile extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(time,
-                  style: const TextStyle(color: Color(0xFF9A9A9E), fontSize: 12)),
+                  style: TextStyle(color: context.aether.textMuted, fontSize: 12)),
             ],
           ),
         ],

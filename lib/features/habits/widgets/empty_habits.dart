@@ -1,5 +1,5 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:aether/features/habits/models/habit_repository.dart'; // Using for static color constants
 
 class EmptyHabitsState extends StatelessWidget {
   const EmptyHabitsState({super.key});
@@ -15,30 +15,30 @@ class EmptyHabitsState extends StatelessWidget {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: HabitRepository.cardBg,
+              color: context.aether.card,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: HabitRepository.cardBorder),
+              border: Border.all(color: context.aether.border),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.check_circle_outline,
-              color: HabitRepository.greyText,
+              color: context.aether.textMuted,
               size: 28,
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'No habits yet.',
             style: TextStyle(
-              color: HabitRepository.whiteText,
+              color: context.aether.text,
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
+          Text(
             'Tap "Add New Habit" to create your first one.',
             style: TextStyle(
-              color: HabitRepository.greyText,
+              color: context.aether.textMuted,
               fontSize: 13,
             ),
           ),

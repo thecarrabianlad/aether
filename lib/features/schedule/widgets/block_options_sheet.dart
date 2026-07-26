@@ -1,3 +1,4 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:aether/features/schedule/screens/schedule_screen.dart'
     show ScheduleScreen;
@@ -34,13 +35,13 @@ class _BlockOptionsSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
-      decoration: const BoxDecoration(
-        color: ScheduleScreen.card,
+      decoration: BoxDecoration(
+        color: context.aether.card,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         border: Border(
-          top: BorderSide(color: ScheduleScreen.cardBorder),
-          left: BorderSide(color: ScheduleScreen.cardBorder),
-          right: BorderSide(color: ScheduleScreen.cardBorder),
+          top: BorderSide(color: context.aether.border),
+          left: BorderSide(color: context.aether.border),
+          right: BorderSide(color: context.aether.border),
         ),
       ),
       child: Column(
@@ -52,7 +53,7 @@ class _BlockOptionsSheet extends StatelessWidget {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: ScheduleScreen.cardBorder,
+                color: context.aether.border,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -62,8 +63,8 @@ class _BlockOptionsSheet extends StatelessWidget {
             blockTitle,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: ScheduleScreen.grey,
+            style: TextStyle(
+              color: context.aether.textMuted,
               fontSize: 12,
               fontWeight: FontWeight.w500,
             ),
@@ -95,25 +96,25 @@ class _BlockOptionsSheet extends StatelessWidget {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: ScheduleScreen.card,
+        backgroundColor: context.aether.card,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
-          side: const BorderSide(color: ScheduleScreen.cardBorder),
+          side: BorderSide(color: context.aether.border),
         ),
-        title: const Text(
+        title: Text(
           'Delete time block?',
-          style: TextStyle(color: ScheduleScreen.white),
+          style: TextStyle(color: context.aether.text),
         ),
         content: Text(
           '"$blockTitle" will be removed from this device and your account.',
-          style: const TextStyle(color: ScheduleScreen.grey, fontSize: 13),
+          style: TextStyle(color: context.aether.textMuted, fontSize: 13),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text(
+            child: Text(
               'Cancel',
-              style: TextStyle(color: ScheduleScreen.grey),
+              style: TextStyle(color: context.aether.textMuted),
             ),
           ),
           TextButton(
@@ -147,7 +148,7 @@ class _OptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = color ?? ScheduleScreen.white;
+    final c = color ?? context.aether.text;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),

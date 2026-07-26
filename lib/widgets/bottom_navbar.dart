@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 /// A reusable dark glassmorphism bottom navigation bar.
@@ -25,7 +26,6 @@ class BottomNavbar extends StatelessWidget {
     this.onAddTapped,
   });
 
-  static const Color _accentRed = Color(0xFFE8443F);
   static const Color _bgColor = Color(0xFF111111);
 
   // Nav items excluding the center Add button.
@@ -39,6 +39,7 @@ class BottomNavbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = context.aether.accent;
     return SizedBox(
       height: 110,
       child: Stack(
@@ -72,12 +73,12 @@ class BottomNavbar extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildNavItem(0),
-                      _buildNavItem(1),
+                      _buildNavItem(0, accent),
+                      _buildNavItem(1, accent),
                       // Empty space reserved for the floating Add button
                       const SizedBox(width: 64),
-                      _buildNavItem(2),
-                      _buildNavItem(3),
+                      _buildNavItem(2, accent),
+                      _buildNavItem(3, accent),
                     ],
                   ),
                 ),
@@ -88,16 +89,16 @@ class BottomNavbar extends StatelessWidget {
           // Floating center "Add" button
           Positioned(
             bottom: 60,
-            child: _buildAddButton(),
+            child: _buildAddButton(accent),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildNavItem(int index) {
+  Widget _buildNavItem(int index, Color accent) {
     final bool isSelected = selectedIndex == index;
-    final Color color = isSelected ? _accentRed : Colors.white;
+    final Color color = isSelected ? accent : Colors.white;
     final item = _items[index];
 
     return GestureDetector(
@@ -118,7 +119,7 @@ class BottomNavbar extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          // Glowing red dot indicator for the selected tab
+          // Glowing dot indicator for the selected tab
           AnimatedOpacity(
             opacity: isSelected ? 1 : 0,
             duration: const Duration(milliseconds: 200),
@@ -127,10 +128,10 @@ class BottomNavbar extends StatelessWidget {
               height: 5,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: _accentRed,
+                color: accent,
                 boxShadow: [
                   BoxShadow(
-                    color: _accentRed.withValues(alpha: 0.8),
+                    color: accent.withValues(alpha: 0.8),
                     blurRadius: 6,
                     spreadRadius: 1,
                   ),
@@ -143,7 +144,7 @@ class BottomNavbar extends StatelessWidget {
     );
   }
 
-  Widget _buildAddButton() {
+  Widget _buildAddButton(Color accent) {
     return GestureDetector(
       onTap: onAddTapped,
       child: Container(
@@ -152,15 +153,15 @@ class BottomNavbar extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: _bgColor,
-          border: Border.all(color: _accentRed, width: 2),
+          border: Border.all(color: accent, width: 2),
           boxShadow: [
             BoxShadow(
-              color: _accentRed.withValues(alpha: 0.7),
+              color: accent.withValues(alpha: 0.7),
               blurRadius: 20,
               spreadRadius: 2,
             ),
             BoxShadow(
-              color: _accentRed.withValues(alpha: 0.4),
+              color: accent.withValues(alpha: 0.4),
               blurRadius: 35,
               spreadRadius: 6,
             ),

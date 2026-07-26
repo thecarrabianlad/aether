@@ -1,3 +1,4 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -23,10 +24,11 @@ class _HealthScreenState extends ConsumerState<HealthScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Colors.black,
+    final aether = context.aether;
+    return Scaffold(
+      backgroundColor: aether.background,
       body: Center(
-        child: Text('Health Screen', style: TextStyle(color: Colors.white)),
+        child: Text('Health Screen', style: TextStyle(color: aether.text)),
       ),
     );
   }

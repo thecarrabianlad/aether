@@ -1,3 +1,4 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:aether/features/habits/models/habit.dart';
 import 'package:aether/features/habits/models/habit_repository.dart';
@@ -20,23 +21,23 @@ class OverviewMetricsSection extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               'Overview',
               style: TextStyle(
-                color: HabitRepository.whiteText,
+                color: context.aether.text,
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
               ),
             ),
             GestureDetector(
               onTap: onViewCalendar,
-              child: const Row(
+              child: Row(
                 children: [
                   Text(
                     'View Calendar',
-                    style: TextStyle(color: HabitRepository.greyText, fontSize: 12),
+                    style: TextStyle(color: context.aether.textMuted, fontSize: 12),
                   ),
-                  Icon(Icons.chevron_right, color: HabitRepository.greyText, size: 16),
+                  Icon(Icons.chevron_right, color: context.aether.textMuted, size: 16),
                 ],
               ),
             ),
@@ -105,9 +106,9 @@ class _MetricRing extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
       decoration: BoxDecoration(
-        color: HabitRepository.cardBg,
+        color: context.aether.card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: HabitRepository.cardBorder),
+        border: Border.all(color: context.aether.border),
       ),
       child: Column(
         children: [
@@ -123,7 +124,7 @@ class _MetricRing extends StatelessWidget {
                   child: CircularProgressIndicator(
                     value: fraction,
                     strokeWidth: 4,
-                    backgroundColor: const Color(0xFF2C2C2E),
+                    backgroundColor: context.aether.surfaceAlt,
                     valueColor: AlwaysStoppedAnimation<Color>(color),
                     strokeCap: StrokeCap.round,
                   ),
@@ -142,8 +143,8 @@ class _MetricRing extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             label,
-            style: const TextStyle(
-              color: HabitRepository.greyText,
+            style: TextStyle(
+              color: context.aether.textMuted,
               fontSize: 10,
             ),
           ),

@@ -1,3 +1,4 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:aether/widgets/common/glass_card.dart';
 import 'package:aether/widgets/common/progress_bar.dart';
@@ -45,27 +46,27 @@ class CourseSummaryCard extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(courseName,
-                  style: const TextStyle(
-                      color: Colors.white,
+                  style: TextStyle(
+                      color: context.aether.text,
                       fontSize: 15,
                       fontWeight: FontWeight.w600)),
               const SizedBox(height: 4),
               Text(professor,
-                  style: const TextStyle(color: Color(0xFF9A9A9E), fontSize: 11)),
+                  style: TextStyle(color: context.aether.textMuted, fontSize: 11)),
               const SizedBox(height: 10),
               Row(
                 children: [
-                  const Icon(Icons.access_time, color: Color(0xFF9A9A9E), size: 12),
+                  Icon(Icons.access_time, color: context.aether.textMuted, size: 12),
                   const SizedBox(width: 4),
                   Text(time,
-                      style: const TextStyle(color: Color(0xFF9A9A9E), fontSize: 11)),
+                      style: TextStyle(color: context.aether.textMuted, fontSize: 11)),
                   const SizedBox(width: 8),
-                  const Icon(Icons.location_on, color: Color(0xFF9A9A9E), size: 12),
+                  Icon(Icons.location_on, color: context.aether.textMuted, size: 12),
                   const SizedBox(width: 4),
                   Expanded(
                       child: Text(room,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(color: Color(0xFF9A9A9E), fontSize: 11))),
+                          style: TextStyle(color: context.aether.textMuted, fontSize: 11))),
                 ],
               ),
               const SizedBox(height: 12),

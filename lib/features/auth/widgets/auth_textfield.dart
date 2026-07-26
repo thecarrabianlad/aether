@@ -1,3 +1,4 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class AuthTextField extends StatefulWidget {
@@ -30,8 +31,8 @@ class _AuthTextFieldState extends State<AuthTextField> {
       children: [
         Text(
           widget.label,
-          style: const TextStyle(
-            color: Color(0xFF9A9A9E),
+          style: TextStyle(
+            color: context.aether.textMuted,
             fontSize: 12,
             fontWeight: FontWeight.w600,
             letterSpacing: 1.2,
@@ -45,9 +46,9 @@ class _AuthTextFieldState extends State<AuthTextField> {
           style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
             filled: true,
-            fillColor: const Color(0xFF1C1C1E),
+            fillColor: context.aether.surface,
             prefixIcon:
-                Icon(widget.icon, color: const Color(0xFF9A9A9E), size: 20),
+                Icon(widget.icon, color: context.aether.textMuted, size: 20),
             suffixIcon: widget.isPassword
                 ? IconButton(
                     onPressed: () => setState(() => _obscured = !_obscured),
@@ -55,7 +56,7 @@ class _AuthTextFieldState extends State<AuthTextField> {
                       _obscured
                           ? Icons.visibility_outlined
                           : Icons.visibility_off_outlined,
-                      color: const Color(0xFF9A9A9E),
+                      color: context.aether.textMuted,
                       size: 20,
                     ),
                   )

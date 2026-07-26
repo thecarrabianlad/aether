@@ -1,8 +1,8 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:aether/core/providers.dart';
 import 'package:aether/features/habits/models/habit.dart';
-import 'package:aether/features/habits/models/habit_repository.dart'; // For constants like colors
 import 'package:aether/features/habits/providers/habits_providers.dart';
 import 'package:aether/core/database/database.dart'; // For HabitEntry
 import 'package:aether/features/habits/widgets/habits_app_bar.dart';
@@ -72,27 +72,27 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1C1C1E),
+        backgroundColor: context.aether.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
+        title: Text(
           'Delete Habit',
-          style: TextStyle(color: HabitRepository.whiteText, fontSize: 18),
+          style: TextStyle(color: context.aether.text, fontSize: 18),
         ),
         content: Text(
           'Delete "${habit.name}" permanently?',
-          style: const TextStyle(color: HabitRepository.greyText),
+          style: TextStyle(color: context.aether.textMuted),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: HabitRepository.greyText)),
+            child: Text('Cancel', style: TextStyle(color: context.aether.textMuted)),
           ),
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
               await ref.read(habitsServiceProvider).deleteHabit(habit.id);
             },
-            child: const Text('Delete', style: TextStyle(color: HabitRepository.redAccent)),
+            child: Text('Delete', style: TextStyle(color: context.aether.danger)),
           ),
         ],
       ),
@@ -166,14 +166,15 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
     final selectedCategory = ref.watch(selectedCategoryProvider);
 
     return Container(
-      color: HabitRepository.darkBg,
+      color: context.aether.background,
       child: SafeArea(
         top: false,
         bottom: false,
         child: Column(
           children: [
             HabitsAppBar(
-              onMenuTap: widget.onMenuTap ?? () {}, // TODO: Wire drawer
+              onMenuTap: widget.onMenuTap ??
+                  () => ref.read(drawerProvider.notifier).state = true,
               onProfileTap: widget.onProfileTap ?? () {},
             ),
             Expanded(

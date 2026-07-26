@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:aether/core/providers.dart';
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -12,17 +13,16 @@ class DashboardTopBar extends ConsumerWidget {
     required this.onProfileTap,
   });
 
-  static const Color _bgColor = Color(0xFF111111);
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final aether = context.aether;
     return ClipRRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
           decoration: BoxDecoration(
-            color: _bgColor.withValues(alpha: 0.65),
+            color: aether.surface.withValues(alpha: 0.65),
             border: Border(
               bottom: BorderSide(
                 color: Colors.white.withValues(alpha: 0.08),

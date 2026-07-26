@@ -1,6 +1,6 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:aether/features/habits/models/habit.dart';
-import 'package:aether/features/habits/models/habit_repository.dart';
 
 /// Result returned by the habit dialog.
 class HabitDialogResult {
@@ -103,12 +103,12 @@ class _HabitFormDialogState extends State<_HabitFormDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: const Color(0xFF1C1C1E),
+      backgroundColor: context.aether.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       title: Text(
         _isEditing ? 'Edit Habit' : 'Add New Habit',
-        style: const TextStyle(
-          color: HabitRepository.whiteText,
+        style: TextStyle(
+          color: context.aether.text,
           fontSize: 18,
           fontWeight: FontWeight.w600,
         ),
@@ -125,9 +125,9 @@ class _HabitFormDialogState extends State<_HabitFormDialog> {
               decoration: InputDecoration(
                 hintText: 'Habit name',
                 hintStyle:
-                    const TextStyle(color: Color(0xFF5A5A5E), fontSize: 15),
+                    TextStyle(color: context.aether.textMuted, fontSize: 15),
                 filled: true,
-                fillColor: const Color(0xFF2C2C2E),
+                fillColor: context.aether.surfaceAlt,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -135,7 +135,7 @@ class _HabitFormDialogState extends State<_HabitFormDialog> {
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    color: HabitRepository.redAccent.withOpacity(0.5),
+                    color: context.aether.accent.withValues(alpha: 0.5),
                   ),
                 ),
                 contentPadding:
@@ -145,12 +145,12 @@ class _HabitFormDialogState extends State<_HabitFormDialog> {
                   (v == null || v.trim().isEmpty) ? 'Enter a habit name' : null,
             ),
             const SizedBox(height: 20),
-            const Align(
+            Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 'Category',
                 style: TextStyle(
-                  color: HabitRepository.greyText,
+                  color: context.aether.textMuted,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
@@ -170,7 +170,7 @@ class _HabitFormDialogState extends State<_HabitFormDialog> {
                         decoration: BoxDecoration(
                           color: selected
                               ? cat.color.withOpacity(0.15)
-                              : const Color(0xFF2C2C2E),
+                              : context.aether.surfaceAlt,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: selected
@@ -183,7 +183,7 @@ class _HabitFormDialogState extends State<_HabitFormDialog> {
                             Icon(
                               _categoryIconMap[cat]!,
                               color:
-                                  selected ? cat.color : HabitRepository.greyText,
+                                  selected ? cat.color : context.aether.textMuted,
                               size: 22,
                             ),
                             const SizedBox(height: 4),
@@ -192,7 +192,7 @@ class _HabitFormDialogState extends State<_HabitFormDialog> {
                               style: TextStyle(
                                 color: selected
                                     ? cat.color
-                                    : HabitRepository.greyText,
+                                    : context.aether.textMuted,
                                 fontSize: 12,
                                 fontWeight:
                                     selected ? FontWeight.w600 : FontWeight.w400,
@@ -212,16 +212,16 @@ class _HabitFormDialogState extends State<_HabitFormDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(null),
-          child: const Text(
+          child: Text(
             'Cancel',
-            style: TextStyle(color: HabitRepository.greyText),
+            style: TextStyle(color: context.aether.textMuted),
           ),
         ),
         TextButton(
           onPressed: _submit,
           child: Text(
             _isEditing ? 'Save' : 'Add Habit',
-            style: const TextStyle(color: HabitRepository.redAccent),
+            style: TextStyle(color: context.aether.accent),
           ),
         ),
       ],

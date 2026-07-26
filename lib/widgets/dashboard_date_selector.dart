@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -14,8 +15,6 @@ class DashboardDateSelector extends StatelessWidget {
     required this.onPreviousDay,
     required this.onNextDay,
   });
-
-  static const Color _cardColor = Color(0xFF141821);
 
   bool isToday(DateTime date) {
     final now = DateTime.now();
@@ -55,7 +54,7 @@ class DashboardDateSelector extends StatelessWidget {
           height: 48,
           padding: const EdgeInsets.symmetric(horizontal: 4),
           decoration: BoxDecoration(
-            color: _cardColor.withValues(alpha: 0.52),
+            color: context.aether.surface.withValues(alpha: 0.52),
             borderRadius: BorderRadius.circular(15),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.07),

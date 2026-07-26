@@ -1,5 +1,5 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:aether/features/habits/models/habit_repository.dart';
 
 class AddHabitTile extends StatelessWidget {
   final VoidCallback onTap;
@@ -13,9 +13,9 @@ class AddHabitTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
         decoration: BoxDecoration(
-          color: HabitRepository.cardBg,
+          color: context.aether.card,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: HabitRepository.cardBorder),
+          border: Border.all(color: context.aether.border),
         ),
         child: Row(
           children: [
@@ -23,12 +23,12 @@ class AddHabitTile extends StatelessWidget {
               width: 42,
               height: 42,
               decoration: BoxDecoration(
-                color: HabitRepository.redAccent.withOpacity(0.15),
+                color: context.aether.accent.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.add,
-                color: HabitRepository.redAccent,
+                color: context.aether.accent,
                 size: 22,
               ),
             ),
@@ -37,28 +37,28 @@ class AddHabitTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Add New Habit',
                     style: TextStyle(
-                      color: HabitRepository.whiteText,
+                      color: context.aether.text,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 3),
-                  const Text(
+                  Text(
                     'Track something new',
                     style: TextStyle(
-                      color: HabitRepository.greyText,
+                      color: context.aether.textMuted,
                       fontSize: 12,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(
+            Icon(
               Icons.chevron_right,
-              color: HabitRepository.greyText,
+              color: context.aether.textMuted,
               size: 20,
             ),
           ],

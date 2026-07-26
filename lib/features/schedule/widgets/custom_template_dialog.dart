@@ -1,6 +1,5 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:aether/features/schedule/screens/schedule_screen.dart'
-    show ScheduleScreen;
 import 'package:aether/features/schedule/widgets/schedule_options.dart';
 
 class CustomTemplateResult {
@@ -44,14 +43,14 @@ class _CustomTemplateDialogState extends State<_CustomTemplateDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: ScheduleScreen.card,
+      backgroundColor: context.aether.card,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: ScheduleScreen.cardBorder),
+        side: BorderSide(color: context.aether.border),
       ),
-      title: const Text(
+      title: Text(
         'New Custom Template',
-        style: TextStyle(color: ScheduleScreen.white, fontSize: 16),
+        style: TextStyle(color: context.aether.text, fontSize: 16),
       ),
       content: SizedBox(
         width: 320,
@@ -62,15 +61,15 @@ class _CustomTemplateDialogState extends State<_CustomTemplateDialog> {
             TextField(
               controller: _titleController,
               autofocus: true,
-              style: const TextStyle(
-                color: ScheduleScreen.white,
+              style: TextStyle(
+                color: context.aether.text,
                 fontSize: 14,
               ),
               decoration: InputDecoration(
                 hintText: 'Template name',
-                hintStyle: const TextStyle(color: ScheduleScreen.grey),
+                hintStyle: TextStyle(color: context.aether.textMuted),
                 filled: true,
-                fillColor: ScheduleScreen.bg,
+                fillColor: context.aether.background,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 14,
                   vertical: 12,
@@ -78,23 +77,23 @@ class _CustomTemplateDialogState extends State<_CustomTemplateDialog> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide:
-                      const BorderSide(color: ScheduleScreen.cardBorder),
+                      BorderSide(color: context.aether.border),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide:
-                      const BorderSide(color: ScheduleScreen.cardBorder),
+                      BorderSide(color: context.aether.border),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: ScheduleScreen.red),
+                  borderSide: BorderSide(color: context.aether.accent),
                 ),
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Icon',
-              style: TextStyle(color: ScheduleScreen.grey, fontSize: 12),
+              style: TextStyle(color: context.aether.textMuted, fontSize: 12),
             ),
             const SizedBox(height: 8),
             Wrap(
@@ -110,20 +109,20 @@ class _CustomTemplateDialogState extends State<_CustomTemplateDialog> {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: selected
-                          ? ScheduleScreen.red.withOpacity(0.15)
-                          : ScheduleScreen.bg,
+                          ? context.aether.accent.withValues(alpha: 0.15)
+                          : context.aether.background,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: selected
-                            ? ScheduleScreen.red
-                            : ScheduleScreen.cardBorder,
+                            ? context.aether.accent
+                            : context.aether.border,
                       ),
                     ),
                     child: Icon(
                       entry.value,
                       size: 17,
                       color:
-                          selected ? ScheduleScreen.red : ScheduleScreen.grey,
+                          selected ? context.aether.accent : context.aether.textMuted,
                     ),
                   ),
                 );
@@ -135,17 +134,17 @@ class _CustomTemplateDialogState extends State<_CustomTemplateDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text(
+          child: Text(
             'Cancel',
-            style: TextStyle(color: ScheduleScreen.grey),
+            style: TextStyle(color: context.aether.textMuted),
           ),
         ),
         TextButton(
           onPressed: _confirm,
-          child: const Text(
+          child: Text(
             'Create',
             style: TextStyle(
-              color: ScheduleScreen.red,
+              color: context.aether.accent,
               fontWeight: FontWeight.w600,
             ),
           ),

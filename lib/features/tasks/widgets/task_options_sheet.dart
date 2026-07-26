@@ -1,3 +1,4 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:aether/features/tasks/screens/daily_tasks_screen.dart'
     show DailyTasksScreen;
@@ -48,13 +49,13 @@ class _TaskOptionsSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
-      decoration: const BoxDecoration(
-        color: DailyTasksScreen.card,
+      decoration: BoxDecoration(
+        color: context.aether.card,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         border: Border(
-          top: BorderSide(color: DailyTasksScreen.cardBorder),
-          left: BorderSide(color: DailyTasksScreen.cardBorder),
-          right: BorderSide(color: DailyTasksScreen.cardBorder),
+          top: BorderSide(color: context.aether.border),
+          left: BorderSide(color: context.aether.border),
+          right: BorderSide(color: context.aether.border),
         ),
       ),
       child: Column(
@@ -66,7 +67,7 @@ class _TaskOptionsSheet extends StatelessWidget {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: DailyTasksScreen.cardBorder,
+                color: context.aether.border,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -76,8 +77,8 @@ class _TaskOptionsSheet extends StatelessWidget {
             taskTitle,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: DailyTasksScreen.grey,
+            style: TextStyle(
+              color: context.aether.textMuted,
               fontSize: 12,
               fontWeight: FontWeight.w500,
             ),
@@ -151,25 +152,25 @@ class _TaskOptionsSheet extends StatelessWidget {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: DailyTasksScreen.card,
+        backgroundColor: context.aether.card,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
-          side: const BorderSide(color: DailyTasksScreen.cardBorder),
+          side: BorderSide(color: context.aether.border),
         ),
-        title: const Text(
+        title: Text(
           'Delete task?',
-          style: TextStyle(color: DailyTasksScreen.white),
+          style: TextStyle(color: context.aether.text),
         ),
         content: Text(
           '"$taskTitle" will be removed from this device and your account.',
-          style: const TextStyle(color: DailyTasksScreen.grey, fontSize: 13),
+          style: TextStyle(color: context.aether.textMuted, fontSize: 13),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text(
+            child: Text(
               'Cancel',
-              style: TextStyle(color: DailyTasksScreen.grey),
+              style: TextStyle(color: context.aether.textMuted),
             ),
           ),
           TextButton(
@@ -203,7 +204,7 @@ class _OptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = color ?? DailyTasksScreen.white;
+    final c = color ?? context.aether.text;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
@@ -245,13 +246,13 @@ class _PickerSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
-      decoration: const BoxDecoration(
-        color: DailyTasksScreen.card,
+      decoration: BoxDecoration(
+        color: context.aether.card,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         border: Border(
-          top: BorderSide(color: DailyTasksScreen.cardBorder),
-          left: BorderSide(color: DailyTasksScreen.cardBorder),
-          right: BorderSide(color: DailyTasksScreen.cardBorder),
+          top: BorderSide(color: context.aether.border),
+          left: BorderSide(color: context.aether.border),
+          right: BorderSide(color: context.aether.border),
         ),
       ),
       child: Column(
@@ -263,7 +264,7 @@ class _PickerSheet extends StatelessWidget {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: DailyTasksScreen.cardBorder,
+                color: context.aether.border,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -271,8 +272,8 @@ class _PickerSheet extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             title,
-            style: const TextStyle(
-              color: DailyTasksScreen.white,
+            style: TextStyle(
+              color: context.aether.text,
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
@@ -297,10 +298,10 @@ class _PickerSheet extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: selected
                         ? color.withOpacity(0.15)
-                        : DailyTasksScreen.bg,
+                        : context.aether.background,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: selected ? color : DailyTasksScreen.cardBorder,
+                      color: selected ? color : context.aether.border,
                     ),
                   ),
                   child: Row(
@@ -317,7 +318,7 @@ class _PickerSheet extends StatelessWidget {
                       Text(
                         label,
                         style: TextStyle(
-                          color: selected ? color : DailyTasksScreen.white,
+                          color: selected ? color : context.aether.text,
                           fontSize: 13.5,
                           fontWeight: FontWeight.w500,
                         ),

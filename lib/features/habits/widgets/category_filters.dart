@@ -1,6 +1,6 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:aether/features/habits/models/habit.dart';
-import 'package:aether/features/habits/models/habit_repository.dart';
 
 class CategoryFiltersRow extends StatelessWidget {
   final HabitCategory? selectedCategory;
@@ -19,10 +19,10 @@ class CategoryFiltersRow extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           "Today's Habits",
           style: TextStyle(
-            color: HabitRepository.whiteText,
+            color: context.aether.text,
             fontSize: 15,
             fontWeight: FontWeight.w600,
           ),
@@ -33,9 +33,10 @@ class CategoryFiltersRow extends StatelessWidget {
           child: Row(
             children: [
               _buildChip(
+                context,
                 label: 'All Habits',
                 icon: Icons.check_circle_outline,
-                color: HabitRepository.redAccent,
+                color: context.aether.accent,
                 isSelected: selectedCategory == null,
                 onTap: () => onCategorySelected(null),
               ),
@@ -44,6 +45,7 @@ class CategoryFiltersRow extends StatelessWidget {
                 Row(
                   children: [
                     _buildChip(
+                      context,
                       label: cat.label,
                       icon: cat.icon,
                       color: cat.color,
@@ -53,7 +55,7 @@ class CategoryFiltersRow extends StatelessWidget {
                     const SizedBox(width: 8),
                   ],
                 ),
-              _buildAddHabitChip(onTap: onAddHabit),
+              _buildAddHabitChip(context, onTap: onAddHabit),
             ],
           ),
         ),
@@ -61,7 +63,7 @@ class CategoryFiltersRow extends StatelessWidget {
     );
   }
 
-  Widget _buildChip({
+  Widget _buildChip(BuildContext context, {
     required String label,
     required IconData icon,
     required Color color,
@@ -74,20 +76,20 @@ class CategoryFiltersRow extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.15) : HabitRepository.cardBg,
+          color: isSelected ? color.withOpacity(0.15) : context.aether.card,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? color.withOpacity(0.5) : HabitRepository.cardBorder,
+            color: isSelected ? color.withOpacity(0.5) : context.aether.border,
           ),
         ),
         child: Row(
           children: [
-            Icon(icon, color: isSelected ? color : HabitRepository.greyText, size: 16),
+            Icon(icon, color: isSelected ? color : context.aether.textMuted, size: 16),
             const SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? color : HabitRepository.greyText,
+                color: isSelected ? color : context.aether.textMuted,
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               ),
@@ -98,26 +100,26 @@ class CategoryFiltersRow extends StatelessWidget {
     );
   }
 
-  Widget _buildAddHabitChip({required VoidCallback onTap}) {
+  Widget _buildAddHabitChip(BuildContext context, {required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: HabitRepository.redAccent.withOpacity(0.15),
+          color: context.aether.accent.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: HabitRepository.redAccent.withOpacity(0.4),
+            color: context.aether.accent.withValues(alpha: 0.4),
           ),
         ),
-        child: const Row(
+        child: Row(
           children: [
-            Icon(Icons.add, color: HabitRepository.redAccent, size: 16),
+            Icon(Icons.add, color: context.aether.accent, size: 16),
             SizedBox(width: 4),
             Text(
               'Add Habit',
               style: TextStyle(
-                color: HabitRepository.redAccent,
+                color: context.aether.accent,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),

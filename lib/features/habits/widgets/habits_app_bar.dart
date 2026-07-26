@@ -1,3 +1,4 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
@@ -19,7 +20,7 @@ class HabitsAppBar extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
           decoration: BoxDecoration(
-            color: const Color(0xFF111111).withOpacity(0.65),
+            color: context.aether.surface.withValues(alpha: 0.65),
             border: Border(
               bottom: BorderSide(
                 color: Colors.white.withOpacity(0.08),

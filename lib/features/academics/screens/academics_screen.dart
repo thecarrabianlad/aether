@@ -9,6 +9,7 @@ import 'package:aether/features/academics/widgets/upcoming_lecture_tile.dart';
 import 'package:aether/features/academics/widgets/due_assignment_tile.dart';
 import 'package:aether/features/academics/widgets/quick_access_button.dart';
 import 'package:aether/core/database/database.dart';
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:aether/widgets/dashboard_top_bar.dart';
 
 class AcademicsScreen extends ConsumerStatefulWidget {
@@ -22,10 +23,8 @@ class AcademicsScreen extends ConsumerStatefulWidget {
 class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
   int _selectedTab = 0;
 
-  static const _red = Color(0xFFE8443F);
-  static const _green = Color(0xFF34C759);
-  static const _orange = Color(0xFFE08A2E);
-  static const _blue = Color(0xFF3B82F6);
+  /// Theme tokens — safe to read anywhere below build (dialogs, snackbars).
+  AetherTheme get _aether => context.aether;
 
   @override
   void initState() {
@@ -53,9 +52,10 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final aether = context.aether;
     final coursesAsync = ref.watch(coursesProvider);
     return Container(
-      color: Colors.black,
+      color: aether.background,
       child: SafeArea(
         top: false,
         bottom: false,
@@ -70,20 +70,20 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildHeader(),
+                    _buildHeader(aether),
                     const SizedBox(height: 20),
                     _buildCourseCards(coursesAsync),
                     const SizedBox(height: 20),
-                    _buildTabSelector(),
+                    _buildTabSelector(aether),
                     const SizedBox(height: 20),
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
                       child: _selectedTab == 0
-                          ? _buildMyCoursesView()
-                          : _buildTimetableView(),
+                          ? _buildMyCoursesView(aether)
+                          : _buildTimetableView(aether),
                     ),
                     const SizedBox(height: 24),
-                    _buildQuickAccessBar(),
+                    _buildQuickAccessBar(aether),
                   ],
                 ),
               ),
@@ -94,18 +94,16 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(AetherTheme aether) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
+      children: [
         Text('Academics',
             style: TextStyle(
-                color: Colors.white,
-                fontSize: 26,
-                fontWeight: FontWeight.w700)),
-        SizedBox(height: 6),
+                color: aether.text, fontSize: 26, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 6),
         Text('Manage courses, lectures & assignments.',
-            style: TextStyle(color: Color(0xFF9A9A9E), fontSize: 14)),
+            style: TextStyle(color: aether.textMuted, fontSize: 14)),
       ],
     );
   }
@@ -113,15 +111,16 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
   // ── Course Cards ──────────────────────────────────
 
   Widget _buildCourseCards(AsyncValue<List<Course>> asyncCourses) {
+    final aether = context.aether;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('My Courses',
+            Text('My Courses',
                 style: TextStyle(
-                    color: Colors.white,
+                    color: aether.text,
                     fontSize: 16,
                     fontWeight: FontWeight.w600)),
             GestureDetector(
@@ -130,16 +129,16 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: _red.withValues(alpha: 0.15),
+                  color: aether.accent.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.add, color: _red, size: 16),
-                    SizedBox(width: 4),
+                    Icon(Icons.add, color: aether.accent, size: 16),
+                    const SizedBox(width: 4),
                     Text('Add Course',
                         style: TextStyle(
-                            color: _red,
+                            color: aether.accent,
                             fontSize: 12,
                             fontWeight: FontWeight.w600)),
                   ],
@@ -151,7 +150,7 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
         const SizedBox(height: 12),
         asyncCourses.when(
           data: (courses) => courses.isEmpty
-              ? _buildEmptyCourses()
+              ? _buildEmptyCourses(aether)
               : SizedBox(
                   height: 200,
                   child: ListView.separated(
@@ -172,29 +171,28 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
                     },
                   ),
                 ),
-          loading: () => const SizedBox(
+          loading: () => SizedBox(
             height: 200,
             child:
-                Center(child: CircularProgressIndicator(color: _red)),
+                Center(child: CircularProgressIndicator(color: aether.accent)),
           ),
-          error: (e, _) => _buildError('Error loading courses: $e'),
+          error: (e, _) => _buildError('Error loading courses: $e', aether),
         ),
       ],
     );
   }
 
-  Widget _buildEmptyCourses() {
+  Widget _buildEmptyCourses(AetherTheme aether) {
     return SizedBox(
       height: 200,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.menu_book_outlined,
-                color: Color(0xFF5A5A5E), size: 48),
+            Icon(Icons.menu_book_outlined, color: aether.textMuted, size: 48),
             const SizedBox(height: 16),
-            const Text('No courses added yet.',
-                style: TextStyle(color: Color(0xFF9A9A9E), fontSize: 16)),
+            Text('No courses added yet.',
+                style: TextStyle(color: aether.textMuted, fontSize: 16)),
             const SizedBox(height: 16),
             GestureDetector(
               onTap: () => _showAddCourseDialog(),
@@ -202,12 +200,12 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 decoration: BoxDecoration(
-                  color: _red.withValues(alpha: 0.2),
+                  color: aether.accent.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(24),
                 ),
-                child: const Text('+ Add your first course',
+                child: Text('+ Add your first course',
                     style: TextStyle(
-                        color: _red,
+                        color: aether.accent,
                         fontSize: 14,
                         fontWeight: FontWeight.w600)),
               ),
@@ -220,17 +218,17 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
 
   // ── Tabs ──────────────────────────────────────────
 
-  Widget _buildTabSelector() {
+  Widget _buildTabSelector(AetherTheme aether) {
     return Row(
       children: [
-        _buildTab('My Courses', 0),
+        _buildTab('My Courses', 0, aether),
         const SizedBox(width: 12),
-        _buildTab('Timetable', 1),
+        _buildTab('Timetable', 1, aether),
       ],
     );
   }
 
-  Widget _buildTab(String title, int index) {
+  Widget _buildTab(String title, int index, AetherTheme aether) {
     final selected = _selectedTab == index;
     return GestureDetector(
       onTap: () => setState(() => _selectedTab = index),
@@ -238,12 +236,12 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
         duration: const Duration(milliseconds: 250),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
-          color: selected ? _red : const Color(0xFF1C1C1E),
+          color: selected ? aether.accent : aether.surfaceAlt,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(title,
             style: TextStyle(
-                color: Colors.white,
+                color: aether.text,
                 fontSize: 13,
                 fontWeight: selected ? FontWeight.w600 : FontWeight.w400)),
       ),
@@ -252,7 +250,7 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
 
   // ── My Courses Detail View ────────────────────────
 
-  Widget _buildMyCoursesView() {
+  Widget _buildMyCoursesView(AetherTheme aether) {
     final selectedCourse = ref.watch(selectedCourseProvider);
     if (selectedCourse == null) {
       return Container(
@@ -261,11 +259,10 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.touch_app_outlined,
-                color: Color(0xFF5A5A5E), size: 48),
+            Icon(Icons.touch_app_outlined, color: aether.textMuted, size: 48),
             const SizedBox(height: 16),
-            const Text('Select a course from above',
-                style: TextStyle(color: Color(0xFF9A9A9E), fontSize: 16)),
+            Text('Select a course from above',
+                style: TextStyle(color: aether.textMuted, fontSize: 16)),
           ],
         ),
       );
@@ -280,36 +277,37 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
     );
   }
 
-  Widget _buildTimetableView() {
+  Widget _buildTimetableView(AetherTheme aether) {
     return Container(
       height: 400,
       alignment: Alignment.center,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.calendar_month_outlined,
-              color: Color(0xFF5A5A5E), size: 48),
+          Icon(Icons.calendar_month_outlined,
+              color: aether.textMuted, size: 48),
           const SizedBox(height: 16),
-          const Text('Timetable view coming soon.',
-              style: TextStyle(color: Color(0xFF9A9A9E), fontSize: 16)),
+          Text('Timetable view coming soon.',
+              style: TextStyle(color: aether.textMuted, fontSize: 16)),
         ],
       ),
     );
   }
 
-  Widget _buildQuickAccessBar() {
+  Widget _buildQuickAccessBar(AetherTheme aether) {
+    // Fixed category colors — each shortcut keeps its own identity.
     final actions = [
-      (Icons.notes_rounded, 'All Notes', _green),
-      (Icons.assignment_rounded, 'Past Papers', _orange),
-      (Icons.timer_rounded, 'Pomodoro', _red),
-      (Icons.auto_stories_rounded, 'Flashcards', _blue),
+      (Icons.notes_rounded, 'All Notes', const Color(0xFF34C759)),
+      (Icons.assignment_rounded, 'Past Papers', const Color(0xFFE08A2E)),
+      (Icons.timer_rounded, 'Pomodoro', aether.accent),
+      (Icons.auto_stories_rounded, 'Flashcards', const Color(0xFF3B82F6)),
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Quick Access',
+        Text('Quick Access',
             style: TextStyle(
-                color: Colors.white,
+                color: aether.text,
                 fontSize: 15,
                 fontWeight: FontWeight.w600)),
         const SizedBox(height: 10),
@@ -332,18 +330,17 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
     );
   }
 
-  Widget _buildError(String msg) {
+  Widget _buildError(String msg, AetherTheme aether) {
     return Container(
       height: 200,
       alignment: Alignment.center,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.error_outline,
-              color: Color(0xFFE8443F), size: 40),
+          Icon(Icons.error_outline, color: aether.danger, size: 40),
           const SizedBox(height: 12),
           Text(msg,
-              style: const TextStyle(color: Color(0xFF9A9A9E), fontSize: 14),
+              style: TextStyle(color: aether.textMuted, fontSize: 14),
               textAlign: TextAlign.center),
         ],
       ),
@@ -365,9 +362,9 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
       context: context,
       builder: (_) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          backgroundColor: const Color(0xFF1C1C1E),
+          backgroundColor: _aether.surface,
           title:
-              const Text('Add Course', style: TextStyle(color: Colors.white)),
+              Text('Add Course', style: TextStyle(color: _aether.text)),
           content: Form(
             key: formKey,
             child: SingleChildScrollView(
@@ -414,7 +411,7 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
                 }
               },
               child:
-                  const Text('Add', style: TextStyle(color: _red)),
+                  Text('Add', style: TextStyle(color: _aether.accent)),
             ),
           ],
         ),
@@ -435,9 +432,9 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
       context: context,
       builder: (_) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          backgroundColor: const Color(0xFF1C1C1E),
+          backgroundColor: _aether.surface,
           title:
-              const Text('Edit Course', style: TextStyle(color: Colors.white)),
+              Text('Edit Course', style: TextStyle(color: _aether.text)),
           content: Form(
             key: formKey,
             child: SingleChildScrollView(
@@ -488,7 +485,7 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
                 if (mounted) Navigator.pop(context);
               },
               child:
-                  const Text('Save', style: TextStyle(color: _red)),
+                  Text('Save', style: TextStyle(color: _aether.accent)),
             ),
           ],
         ),
@@ -500,12 +497,12 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: const Color(0xFF1C1C1E),
-        title: const Text('Delete Course',
-            style: TextStyle(color: Colors.white)),
+        backgroundColor: _aether.surface,
+        title: Text('Delete Course',
+            style: TextStyle(color: _aether.text)),
         content: Text(
             'Delete "${course.name}" and all its lectures, assignments, notes, and flashcards?',
-            style: const TextStyle(color: Color(0xFF9A9A9E))),
+            style: TextStyle(color: _aether.textMuted)),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context),
@@ -538,9 +535,9 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
       context: context,
       builder: (_) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          backgroundColor: const Color(0xFF1C1C1E),
+          backgroundColor: _aether.surface,
           title:
-              const Text('Add Lecture', style: TextStyle(color: Colors.white)),
+              Text('Add Lecture', style: TextStyle(color: _aether.text)),
           content: Form(
             key: formKey,
             child: Column(
@@ -579,7 +576,7 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
                   if (mounted) _showSnack('Failed to add lecture: $e');
                 }
               },
-              child: const Text('Add', style: TextStyle(color: _red)),
+              child: Text('Add', style: TextStyle(color: _aether.accent)),
             ),
           ],
         ),
@@ -597,9 +594,9 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
       context: context,
       builder: (_) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          backgroundColor: const Color(0xFF1C1C1E),
-          title: const Text('Add Assignment',
-              style: TextStyle(color: Colors.white)),
+          backgroundColor: _aether.surface,
+          title: Text('Add Assignment',
+              style: TextStyle(color: _aether.text)),
           content: Form(
             key: formKey,
             child: Column(
@@ -639,7 +636,7 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
                   if (mounted) _showSnack('Failed to add assignment: $e');
                 }
               },
-              child: const Text('Add', style: TextStyle(color: _red)),
+              child: Text('Add', style: TextStyle(color: _aether.accent)),
             ),
           ],
         ),
@@ -655,7 +652,7 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
       lastDate: DateTime(2030),
       builder: (context, child) => Theme(
         data: ThemeData.dark().copyWith(
-          colorScheme: const ColorScheme.dark(primary: _red),
+          colorScheme: ColorScheme.dark(primary: _aether.accent),
         ),
         child: child!,
       ),
@@ -670,7 +667,7 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
       initialTime: TimeOfDay.fromDateTime(initial ?? DateTime.now()),
       builder: (context, child) => Theme(
         data: ThemeData.dark().copyWith(
-          colorScheme: const ColorScheme.dark(primary: _red),
+          colorScheme: ColorScheme.dark(primary: _aether.accent),
         ),
         child: child!,
       ),
@@ -682,7 +679,7 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
   void _showSnack(String message) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(message),
-      backgroundColor: const Color(0xFFE8443F),
+      backgroundColor: _aether.danger,
       behavior: SnackBarBehavior.floating,
     ));
   }
@@ -693,13 +690,13 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
       padding: const EdgeInsets.only(bottom: 12),
       child: TextFormField(
         controller: ctrl,
-        style: const TextStyle(color: Colors.white),
+        style: TextStyle(color: _aether.text),
         decoration: InputDecoration(
           labelText: label,
           labelStyle:
-              const TextStyle(color: Color(0xFF9A9A9E), fontSize: 12),
+              TextStyle(color: _aether.textMuted, fontSize: 12),
           filled: true,
-          fillColor: const Color(0xFF2C2C2E),
+          fillColor: _aether.surfaceAlt,
           border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide.none),
@@ -750,19 +747,19 @@ class _DateTimeField extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
           decoration: BoxDecoration(
-            color: const Color(0xFF2C2C2E),
+            color: context.aether.surfaceAlt,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Row(
             children: [
-              const Icon(Icons.calendar_today, color: Color(0xFF9A9A9E), size: 16),
+              Icon(Icons.calendar_today, color: context.aether.textMuted, size: 16),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(text,
                     style: TextStyle(
                         color: value == null
-                            ? const Color(0xFF9A9A9E)
-                            : Colors.white,
+                            ? context.aether.textMuted
+                            : context.aether.text,
                         fontSize: 14)),
               ),
             ],
@@ -787,8 +784,8 @@ class _ColorPicker extends StatelessWidget {
 
     return Row(
       children: [
-        const Text('Color:',
-            style: TextStyle(color: Color(0xFF9A9A9E))),
+        Text('Color:',
+            style: TextStyle(color: context.aether.textMuted)),
         const SizedBox(width: 12),
         ...colorOptions
             .map((c) => Padding(
@@ -873,33 +870,33 @@ class _CourseDetailView extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(course.name,
-                    style: const TextStyle(
-                        color: Colors.white,
+                    style: TextStyle(
+                        color: context.aether.text,
                         fontSize: 18,
                         fontWeight: FontWeight.w700)),
                 if (course.professor != null)
                   Text(course.professor!,
-                      style: const TextStyle(
-                          color: Color(0xFF9A9A9E), fontSize: 13)),
+                      style: TextStyle(
+                          color: context.aether.textMuted, fontSize: 13)),
               ],
             ),
             PopupMenuButton<String>(
-              icon: const Icon(Icons.more_horiz,
-                  color: Color(0xFF9A9A9E)),
-              color: const Color(0xFF1C1C1E),
+              icon: Icon(Icons.more_horiz,
+                  color: context.aether.textMuted),
+              color: context.aether.surface,
               onSelected: (value) {
                 if (value == 'edit') onEdit();
                 if (value == 'delete') onDelete();
               },
-              itemBuilder: (_) => const [
+              itemBuilder: (_) => [
                 PopupMenuItem(
                     value: 'edit',
                     child: Text('Edit Course',
-                        style: TextStyle(color: Colors.white))),
+                        style: TextStyle(color: context.aether.text))),
                 PopupMenuItem(
                     value: 'delete',
                     child: Text('Delete Course',
-                        style: TextStyle(color: Colors.red))),
+                        style: TextStyle(color: context.aether.danger))),
               ],
             ),
           ],
@@ -909,9 +906,9 @@ class _CourseDetailView extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Upcoming Lectures',
+            Text('Upcoming Lectures',
                 style: TextStyle(
-                    color: Colors.white,
+                    color: context.aether.text,
                     fontSize: 15,
                     fontWeight: FontWeight.w600)),
             GestureDetector(
@@ -935,7 +932,7 @@ class _CourseDetailView extends ConsumerWidget {
         const SizedBox(height: 10),
         lecturesAsync.when(
           data: (lectures) => lectures.isEmpty
-              ? _emptyState('No lectures yet. Add one!')
+              ? _emptyState(context, 'No lectures yet. Add one!')
               : Column(
                   children: lectures
                       .map((l) => UpcomingLectureTile(
@@ -954,19 +951,19 @@ class _CourseDetailView extends ConsumerWidget {
                           ))
                       .toList(),
                 ),
-          loading: () => const Center(
-              child: CircularProgressIndicator(color: Colors.white)),
+          loading: () => Center(
+              child: CircularProgressIndicator(color: context.aether.accent)),
           error: (e, _) =>
-              Text('Error: $e', style: const TextStyle(color: Colors.red)),
+              Text('Error: $e', style: TextStyle(color: context.aether.danger)),
         ),
         const SizedBox(height: 20),
         // Assignments
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Due Assignments',
+            Text('Due Assignments',
                 style: TextStyle(
-                    color: Colors.white,
+                    color: context.aether.text,
                     fontSize: 15,
                     fontWeight: FontWeight.w600)),
             GestureDetector(
@@ -990,7 +987,7 @@ class _CourseDetailView extends ConsumerWidget {
         const SizedBox(height: 10),
         assignmentsAsync.when(
           data: (assignments) => assignments.isEmpty
-              ? _emptyState('No assignments due.')
+              ? _emptyState(context, 'No assignments due.')
               : Column(
                   children: assignments
                       .map((a) => DueAssignmentTile(
@@ -1001,7 +998,7 @@ class _CourseDetailView extends ConsumerWidget {
                             daysLeft: a.dueDate != null
                                 ? _daysLeft(a.dueDate!)
                                 : '',
-                            color: const Color(0xFFE8443F),
+                            color: context.aether.danger,
                             isCompleted: a.isCompleted,
                             onCompletionChanged: (val) => ref
                                 .read(academicsServiceProvider)
@@ -1009,25 +1006,25 @@ class _CourseDetailView extends ConsumerWidget {
                           ))
                       .toList(),
                 ),
-          loading: () => const Center(
-              child: CircularProgressIndicator(color: Colors.white)),
+          loading: () => Center(
+              child: CircularProgressIndicator(color: context.aether.accent)),
           error: (e, _) =>
-              Text('Error: $e', style: const TextStyle(color: Colors.red)),
+              Text('Error: $e', style: TextStyle(color: context.aether.danger)),
         ),
       ],
     );
   }
 
-  Widget _emptyState(String msg) {
+  Widget _emptyState(BuildContext context, String msg) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 24),
       alignment: Alignment.center,
       child: Column(
         children: [
-          const Icon(Icons.info_outline, color: Color(0xFF5A5A5E), size: 32),
+          Icon(Icons.info_outline, color: context.aether.textMuted, size: 32),
           const SizedBox(height: 8),
           Text(msg,
-              style: const TextStyle(color: Color(0xFF9A9A9E), fontSize: 14)),
+              style: TextStyle(color: context.aether.textMuted, fontSize: 14)),
         ],
       ),
     );

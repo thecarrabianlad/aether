@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui';
 
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class DashboardProgressCard extends StatelessWidget {
@@ -11,8 +12,6 @@ class DashboardProgressCard extends StatelessWidget {
     required this.progress,
   });
 
-  static const Color _accentRed = Color(0xFFEF4F4A);
-  static const Color _cardColor = Color(0xFF141821);
   static const Color _centerColor = Color(0xFF0B0E14);
   static const Color _trackColor = Color(0xFF2A2F3A);
 
@@ -21,6 +20,7 @@ class DashboardProgressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final aether = context.aether;
     final clampedProgress = progress.clamp(0.0, 1.0);
     final percentage = '${(clampedProgress * 100).round()}%';
 
@@ -33,7 +33,7 @@ class DashboardProgressCard extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
             decoration: BoxDecoration(
-              color: _cardColor.withValues(alpha: 0.52),
+              color: aether.surface.withValues(alpha: 0.52),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: Colors.white.withValues(alpha: 0.07),
@@ -61,7 +61,7 @@ class DashboardProgressCard extends StatelessWidget {
                         painter: _ProgressRingPainter(
                           progress: clampedProgress,
                           trackColor: _trackColor,
-                          activeColor: _accentRed,
+                          activeColor: aether.accent,
                           strokeWidth: _strokeWidth,
                         ),
                       ),

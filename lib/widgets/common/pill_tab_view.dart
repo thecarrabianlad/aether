@@ -1,3 +1,4 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class PillTabView extends StatefulWidget {
@@ -27,10 +28,11 @@ class _PillTabViewState extends State<PillTabView> {
 
   @override
   Widget build(BuildContext context) {
+    final aether = context.aether;
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFF1C1C1E),
+        color: aether.surfaceAlt,
         borderRadius: BorderRadius.circular(25),
       ),
       child: Row(
@@ -48,7 +50,7 @@ class _PillTabViewState extends State<PillTabView> {
               duration: const Duration(milliseconds: 250),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFFE8443F) : Colors.transparent,
+                color: isSelected ? aether.accent : Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(

@@ -1,3 +1,4 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:aether/features/tasks/screens/daily_tasks_screen.dart'
     show DailyTasksScreen;
@@ -59,13 +60,13 @@ class _AddTaskSheetState extends State<_AddTaskSheet> {
       ),
       child: Container(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-        decoration: const BoxDecoration(
-          color: DailyTasksScreen.card,
+        decoration: BoxDecoration(
+          color: context.aether.card,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           border: Border(
-            top: BorderSide(color: DailyTasksScreen.cardBorder),
-            left: BorderSide(color: DailyTasksScreen.cardBorder),
-            right: BorderSide(color: DailyTasksScreen.cardBorder),
+            top: BorderSide(color: context.aether.border),
+            left: BorderSide(color: context.aether.border),
+            right: BorderSide(color: context.aether.border),
           ),
         ),
         child: Column(
@@ -77,16 +78,16 @@ class _AddTaskSheetState extends State<_AddTaskSheet> {
                 width: 36,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: DailyTasksScreen.cardBorder,
+                  color: context.aether.border,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
             const SizedBox(height: 18),
-            const Text(
+            Text(
               'New Task',
               style: TextStyle(
-                color: DailyTasksScreen.white,
+                color: context.aether.text,
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
@@ -95,15 +96,15 @@ class _AddTaskSheetState extends State<_AddTaskSheet> {
             TextField(
               controller: _titleController,
               autofocus: true,
-              style: const TextStyle(
-                color: DailyTasksScreen.white,
+              style: TextStyle(
+                color: context.aether.text,
                 fontSize: 14,
               ),
               decoration: InputDecoration(
                 hintText: 'Task title',
-                hintStyle: const TextStyle(color: DailyTasksScreen.grey),
+                hintStyle: TextStyle(color: context.aether.textMuted),
                 filled: true,
-                fillColor: DailyTasksScreen.bg,
+                fillColor: context.aether.background,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 14,
                   vertical: 12,
@@ -111,30 +112,30 @@ class _AddTaskSheetState extends State<_AddTaskSheet> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide:
-                      const BorderSide(color: DailyTasksScreen.cardBorder),
+                      BorderSide(color: context.aether.border),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide:
-                      const BorderSide(color: DailyTasksScreen.cardBorder),
+                      BorderSide(color: context.aether.border),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: DailyTasksScreen.red),
+                  borderSide: BorderSide(color: context.aether.accent),
                 ),
               ),
             ),
             const SizedBox(height: 18),
-            const Text(
+            Text(
               'Priority',
-              style: TextStyle(color: DailyTasksScreen.grey, fontSize: 12),
+              style: TextStyle(color: context.aether.textMuted, fontSize: 12),
             ),
             const SizedBox(height: 8),
             Row(
               children: [
                 _OptionChip(
                   label: 'High',
-                  color: DailyTasksScreen.red,
+                  color: context.aether.accent,
                   selected: _priority == 'High',
                   onTap: () => setState(() => _priority = 'High'),
                 ),
@@ -148,16 +149,16 @@ class _AddTaskSheetState extends State<_AddTaskSheet> {
                 const SizedBox(width: 8),
                 _OptionChip(
                   label: 'Low',
-                  color: DailyTasksScreen.grey,
+                  color: context.aether.textMuted,
                   selected: _priority == 'Low',
                   onTap: () => setState(() => _priority = 'Low'),
                 ),
               ],
             ),
             const SizedBox(height: 18),
-            const Text(
+            Text(
               'Category',
-              style: TextStyle(color: DailyTasksScreen.grey, fontSize: 12),
+              style: TextStyle(color: context.aether.textMuted, fontSize: 12),
             ),
             const SizedBox(height: 8),
             Row(
@@ -178,7 +179,7 @@ class _AddTaskSheetState extends State<_AddTaskSheet> {
                 const SizedBox(width: 8),
                 _OptionChip(
                   label: 'Other',
-                  color: DailyTasksScreen.grey,
+                  color: context.aether.textMuted,
                   selected: _category == 'Other',
                   onTap: () => setState(() => _category = 'Other'),
                 ),
@@ -190,7 +191,7 @@ class _AddTaskSheetState extends State<_AddTaskSheet> {
               child: ElevatedButton(
                 onPressed: _confirm,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: DailyTasksScreen.red,
+                  backgroundColor: context.aether.accent,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
@@ -232,16 +233,16 @@ class _OptionChip extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 10),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: selected ? color.withOpacity(0.15) : DailyTasksScreen.bg,
+            color: selected ? color.withOpacity(0.15) : context.aether.background,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: selected ? color : DailyTasksScreen.cardBorder,
+              color: selected ? color : context.aether.border,
             ),
           ),
           child: Text(
             label,
             style: TextStyle(
-              color: selected ? color : DailyTasksScreen.grey,
+              color: selected ? color : context.aether.textMuted,
               fontSize: 12.5,
               fontWeight: FontWeight.w500,
             ),

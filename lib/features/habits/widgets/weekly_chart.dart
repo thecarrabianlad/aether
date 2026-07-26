@@ -1,3 +1,4 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:aether/features/habits/models/habit.dart';
 import 'package:aether/features/habits/models/habit_repository.dart';
@@ -14,14 +15,14 @@ class WeeklyProgressCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: HabitRepository.cardBg,
+        color: context.aether.card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: HabitRepository.cardBorder),
+        border: Border.all(color: context.aether.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
               Icon(Icons.trending_up,
                   color: HabitRepository.greenAccent, size: 16),
@@ -29,7 +30,7 @@ class WeeklyProgressCard extends StatelessWidget {
               Text(
                 'Weekly Progress',
                 style: TextStyle(
-                  color: HabitRepository.whiteText,
+                  color: context.aether.text,
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
@@ -44,6 +45,8 @@ class WeeklyProgressCard extends StatelessWidget {
               painter: _LineChartPainter(
                 dailyCounts: data.dailyCounts,
                 maxCount: data.maxCount,
+                gridColor:
+                    context.aether.textMuted.withValues(alpha: 0.2),
               ),
             ),
           ),
@@ -54,8 +57,8 @@ class WeeklyProgressCard extends StatelessWidget {
             children: _dayNames
                 .map((d) => Text(
                       d,
-                      style: const TextStyle(
-                        color: HabitRepository.greyText,
+                      style: TextStyle(
+                        color: context.aether.textMuted,
                         fontSize: 10,
                       ),
                     ))
@@ -65,10 +68,10 @@ class WeeklyProgressCard extends StatelessWidget {
           // Score
           Row(
             children: [
-              const Text(
+              Text(
                 'Weekly Score',
                 style: TextStyle(
-                  color: HabitRepository.greyText,
+                  color: context.aether.textMuted,
                   fontSize: 11,
                 ),
               ),
@@ -99,10 +102,12 @@ class WeeklyProgressCard extends StatelessWidget {
 class _LineChartPainter extends CustomPainter {
   final List<int> dailyCounts;
   final int maxCount;
+  final Color gridColor;
 
   _LineChartPainter({
     required this.dailyCounts,
     required this.maxCount,
+    required this.gridColor,
   });
 
   @override
@@ -110,7 +115,7 @@ class _LineChartPainter extends CustomPainter {
     if (maxCount == 0) return;
 
     final paint = Paint()
-      ..color = HabitRepository.greyText.withOpacity(0.2)
+      ..color = gridColor
       ..strokeWidth = 0.5;
 
     // Draw horizontal grid lines (3)

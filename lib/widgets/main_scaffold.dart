@@ -9,6 +9,7 @@ import 'package:aether/widgets/first_login_dialog.dart'; // New import for First
 import 'package:aether/core/providers.dart'; // For all new providers
 import 'package:aether/core/models/profile.dart'; // For Profile model
 import 'package:aether/core/services/profile_service.dart'; // For ProfileService
+import 'package:aether/core/theme/app_theme.dart';
 
 /// Main scaffold with bottom navbar wrapping all authenticated routes.
 class MainScaffold extends ConsumerStatefulWidget {
@@ -56,7 +57,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
         // TODO: Navigate to premium screen
         break;
       case 'settings':
-        // TODO: Navigate to settings screen
+        GoRouter.of(context).push('/settings');
         break;
     }
   }
@@ -100,7 +101,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Logged in successfully!'),
-            backgroundColor: const Color(0xFF34C759),
+            backgroundColor: context.aether.success,
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 2),
           ),

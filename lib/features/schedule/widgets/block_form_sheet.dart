@@ -1,6 +1,5 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:aether/features/schedule/screens/schedule_screen.dart'
-    show ScheduleScreen;
 import 'package:aether/features/schedule/widgets/schedule_options.dart';
 
 class BlockFormResult {
@@ -110,13 +109,13 @@ class _BlockFormSheetState extends State<_BlockFormSheet> {
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * 0.85,
         ),
-        decoration: const BoxDecoration(
-          color: ScheduleScreen.card,
+        decoration: BoxDecoration(
+          color: context.aether.card,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           border: Border(
-            top: BorderSide(color: ScheduleScreen.cardBorder),
-            left: BorderSide(color: ScheduleScreen.cardBorder),
-            right: BorderSide(color: ScheduleScreen.cardBorder),
+            top: BorderSide(color: context.aether.border),
+            left: BorderSide(color: context.aether.border),
+            right: BorderSide(color: context.aether.border),
           ),
         ),
         child: SingleChildScrollView(
@@ -129,7 +128,7 @@ class _BlockFormSheetState extends State<_BlockFormSheet> {
                   width: 36,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: ScheduleScreen.cardBorder,
+                    color: context.aether.border,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -137,8 +136,8 @@ class _BlockFormSheetState extends State<_BlockFormSheet> {
               const SizedBox(height: 18),
               Text(
                 isEditing ? 'Edit Time Block' : 'New Time Block',
-                style: const TextStyle(
-                  color: ScheduleScreen.white,
+                style: TextStyle(
+                  color: context.aether.text,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -147,8 +146,8 @@ class _BlockFormSheetState extends State<_BlockFormSheet> {
               TextField(
                 controller: _titleController,
                 autofocus: !isEditing,
-                style: const TextStyle(
-                  color: ScheduleScreen.white,
+                style: TextStyle(
+                  color: context.aether.text,
                   fontSize: 14,
                 ),
                 decoration: _fieldDecoration('Title'),
@@ -176,15 +175,15 @@ class _BlockFormSheetState extends State<_BlockFormSheet> {
               const SizedBox(height: 10),
               Text(
                 'Duration: $durationLabel',
-                style: const TextStyle(
-                  color: ScheduleScreen.grey,
+                style: TextStyle(
+                  color: context.aether.textMuted,
                   fontSize: 11.5,
                 ),
               ),
               const SizedBox(height: 18),
-              const Text(
+              Text(
                 'Color',
-                style: TextStyle(color: ScheduleScreen.grey, fontSize: 12),
+                style: TextStyle(color: context.aether.textMuted, fontSize: 12),
               ),
               const SizedBox(height: 8),
               Row(
@@ -202,7 +201,7 @@ class _BlockFormSheetState extends State<_BlockFormSheet> {
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: selected
-                                ? ScheduleScreen.white
+                                ? context.aether.text
                                 : Colors.transparent,
                             width: 2,
                           ),
@@ -220,9 +219,9 @@ class _BlockFormSheetState extends State<_BlockFormSheet> {
                 }).toList(),
               ),
               const SizedBox(height: 18),
-              const Text(
+              Text(
                 'Icon',
-                style: TextStyle(color: ScheduleScreen.grey, fontSize: 12),
+                style: TextStyle(color: context.aether.textMuted, fontSize: 12),
               ),
               const SizedBox(height: 8),
               Wrap(
@@ -240,18 +239,18 @@ class _BlockFormSheetState extends State<_BlockFormSheet> {
                       decoration: BoxDecoration(
                         color: selected
                             ? swatch.withOpacity(0.15)
-                            : ScheduleScreen.bg,
+                            : context.aether.background,
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                           color: selected
                               ? swatch
-                              : ScheduleScreen.cardBorder,
+                              : context.aether.border,
                         ),
                       ),
                       child: Icon(
                         entry.value,
                         size: 18,
-                        color: selected ? swatch : ScheduleScreen.grey,
+                        color: selected ? swatch : context.aether.textMuted,
                       ),
                     ),
                   );
@@ -263,7 +262,7 @@ class _BlockFormSheetState extends State<_BlockFormSheet> {
                 child: ElevatedButton(
                   onPressed: _confirm,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: ScheduleScreen.red,
+                    backgroundColor: context.aether.accent,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
@@ -285,24 +284,24 @@ class _BlockFormSheetState extends State<_BlockFormSheet> {
 
   InputDecoration _fieldDecoration(String hint) => InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(color: ScheduleScreen.grey),
+        hintStyle: TextStyle(color: context.aether.textMuted),
         filled: true,
-        fillColor: ScheduleScreen.bg,
+        fillColor: context.aether.background,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 14,
           vertical: 12,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: ScheduleScreen.cardBorder),
+          borderSide: BorderSide(color: context.aether.border),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: ScheduleScreen.cardBorder),
+          borderSide: BorderSide(color: context.aether.border),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: ScheduleScreen.red),
+          borderSide: BorderSide(color: context.aether.accent),
         ),
       );
 }
@@ -327,7 +326,7 @@ class _TimeField extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(color: ScheduleScreen.grey, fontSize: 12),
+            style: TextStyle(color: context.aether.textMuted, fontSize: 12),
           ),
           const SizedBox(height: 6),
           Container(
@@ -336,24 +335,24 @@ class _TimeField extends StatelessWidget {
               vertical: 12,
             ),
             decoration: BoxDecoration(
-              color: ScheduleScreen.bg,
+              color: context.aether.background,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: ScheduleScreen.cardBorder),
+              border: Border.all(color: context.aether.border),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   value,
-                  style: const TextStyle(
-                    color: ScheduleScreen.white,
+                  style: TextStyle(
+                    color: context.aether.text,
                     fontSize: 13,
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.access_time,
                   size: 16,
-                  color: ScheduleScreen.grey,
+                  color: context.aether.textMuted,
                 ),
               ],
             ),

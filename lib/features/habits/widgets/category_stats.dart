@@ -1,6 +1,6 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:aether/features/habits/models/habit.dart';
-import 'package:aether/features/habits/models/habit_repository.dart';
 
 class CategoryStatsCard extends StatelessWidget {
   final List<CategoryStat> stats;
@@ -12,17 +12,17 @@ class CategoryStatsCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: HabitRepository.cardBg,
+        color: context.aether.card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: HabitRepository.cardBorder),
+        border: Border.all(color: context.aether.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Habit Categories',
             style: TextStyle(
-              color: HabitRepository.whiteText,
+              color: context.aether.text,
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
@@ -30,14 +30,14 @@ class CategoryStatsCard extends StatelessWidget {
           const SizedBox(height: 14),
           for (int i = 0; i < stats.length; i++) ...[
             if (i > 0) const SizedBox(height: 12),
-            _buildCategoryRow(stats[i]),
+            _buildCategoryRow(context, stats[i]),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildCategoryRow(CategoryStat stat) {
+  Widget _buildCategoryRow(BuildContext context, CategoryStat stat) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -57,8 +57,8 @@ class CategoryStatsCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   stat.category.label,
-                  style: const TextStyle(
-                    color: HabitRepository.whiteText,
+                  style: TextStyle(
+                    color: context.aether.text,
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                   ),
@@ -67,8 +67,8 @@ class CategoryStatsCard extends StatelessWidget {
             ),
             Text(
               '${stat.completed}/${stat.total}',
-              style: const TextStyle(
-                color: HabitRepository.greyText,
+              style: TextStyle(
+                color: context.aether.textMuted,
                 fontSize: 12,
               ),
             ),
@@ -80,7 +80,7 @@ class CategoryStatsCard extends StatelessWidget {
           child: LinearProgressIndicator(
             value: stat.fraction,
             minHeight: 4,
-            backgroundColor: const Color(0xFF2C2C2E),
+            backgroundColor: context.aether.surfaceAlt,
             valueColor: AlwaysStoppedAnimation<Color>(stat.category.color),
           ),
         ),

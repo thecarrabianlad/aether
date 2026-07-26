@@ -1,3 +1,4 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:aether/core/database/database.dart' show Task;
@@ -20,16 +21,13 @@ class DailyTasksScreen extends ConsumerStatefulWidget {
   const DailyTasksScreen({super.key});
 
   // Palette (kept consistent with DashboardScreen)
-  static const bg = Color(0xFF000000);
-  static const card = Color(0xFF121212);
-  static const cardBorder = Color(0xFF262626);
+  // Fixed semantic colors — categories/priorities keep their meaning.
   static const red = Color(0xFFFF3B30);
   static const purple = Color(0xFF8B5CF6);
   static const green = Color(0xFF34C759);
   static const orange = Color(0xFFE08A2E);
   static const blue = Color(0xFF3B82F6);
   static const grey = Color(0xFF9A9A9E);
-  static const white = Color(0xFFF5F5F5);
 
   @override
   ConsumerState<DailyTasksScreen> createState() => _DailyTasksScreenState();
@@ -177,7 +175,7 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
     final tasksAsync = ref.watch(tasksForDateProvider(_dateKey));
 
     return Container(
-      color: DailyTasksScreen.bg,
+      color: context.aether.background,
       child: SafeArea(
         bottom: false,
         child: Column(
@@ -185,15 +183,15 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
             const _TopBar(),
             Expanded(
               child: tasksAsync.when(
-                loading: () => const Center(
+                loading: () => Center(
                   child: CircularProgressIndicator(
-                    color: DailyTasksScreen.red,
+                    color: context.aether.accent,
                   ),
                 ),
                 error: (err, _) => Center(
                   child: Text(
                     'Could not load tasks',
-                    style: const TextStyle(color: DailyTasksScreen.grey),
+                    style: TextStyle(color: context.aether.textMuted),
                   ),
                 ),
                 data: (tasks) {
@@ -234,10 +232,10 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
                               setState(() => _activeFilter = f),
                         ),
                         const SizedBox(height: 20),
-                        const Text(
+                        Text(
                           'Tasks',
                           style: TextStyle(
-                            color: DailyTasksScreen.white,
+                            color: context.aether.text,
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -249,8 +247,8 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
                             child: Center(
                               child: Text(
                                 'No tasks for this day yet',
-                                style: const TextStyle(
-                                  color: DailyTasksScreen.grey,
+                                style: TextStyle(
+                                  color: context.aether.textMuted,
                                   fontSize: 13,
                                 ),
                               ),
@@ -298,6 +296,7 @@ class _DailyTasksScreenState extends ConsumerState<DailyTasksScreen> {
 // Category / priority display helpers
 // ---------------------------------------------------------------------
 Color _categoryColor(String category) {
+  // Fixed semantic colors — category identity must not change with theme.
   switch (category) {
     case 'Study':
       return DailyTasksScreen.purple;
@@ -320,6 +319,7 @@ IconData _categoryIcon(String category) {
 }
 
 Color _priorityColor(String priority) {
+  // Fixed semantic colors — priority meaning must not change with theme.
   switch (priority) {
     case 'High':
       return DailyTasksScreen.red;
@@ -345,12 +345,12 @@ class _TopBar extends StatelessWidget {
         children: [
           IconButton(
             onPressed: () => Navigator.of(context).maybePop(),
-            icon: const Icon(Icons.menu, color: DailyTasksScreen.white),
+            icon: Icon(Icons.menu, color: context.aether.text),
           ),
-          const Text(
+          Text(
             'DAILY TASKS',
             style: TextStyle(
-              color: DailyTasksScreen.white,
+              color: context.aether.text,
               fontSize: 15,
               fontWeight: FontWeight.w600,
               letterSpacing: 3,
@@ -358,9 +358,9 @@ class _TopBar extends StatelessWidget {
           ),
           IconButton(
             onPressed: () {},
-            icon: const Icon(
+            icon: Icon(
               Icons.more_vert,
-              color: DailyTasksScreen.white,
+              color: context.aether.text,
             ),
           ),
         ],
@@ -395,8 +395,8 @@ class _DateNavigator extends StatelessWidget {
           children: [
             Text(
               label,
-              style: const TextStyle(
-                color: DailyTasksScreen.white,
+              style: TextStyle(
+                color: context.aether.text,
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
               ),
@@ -404,8 +404,8 @@ class _DateNavigator extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               fullDateLabel,
-              style: const TextStyle(
-                color: DailyTasksScreen.grey,
+              style: TextStyle(
+                color: context.aether.textMuted,
                 fontSize: 12,
               ),
             ),
@@ -432,11 +432,11 @@ class _NavArrow extends StatelessWidget {
         height: 36,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: DailyTasksScreen.card,
+          color: context.aether.card,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: DailyTasksScreen.cardBorder),
+          border: Border.all(color: context.aether.border),
         ),
-        child: Icon(icon, color: DailyTasksScreen.white, size: 18),
+        child: Icon(icon, color: context.aether.text, size: 18),
       ),
     );
   }
@@ -465,7 +465,7 @@ class _StatsRow extends StatelessWidget {
         Expanded(
           child: _StatCard(
             icon: Icons.check_circle,
-            iconColor: DailyTasksScreen.red,
+            iconColor: context.aether.accent,
             value: '$completed',
             label: 'Completed',
           ),
@@ -520,9 +520,9 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
-        color: DailyTasksScreen.card,
+        color: context.aether.card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: DailyTasksScreen.cardBorder),
+        border: Border.all(color: context.aether.border),
       ),
       child: Column(
         children: [
@@ -530,8 +530,8 @@ class _StatCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             value,
-            style: const TextStyle(
-              color: DailyTasksScreen.white,
+            style: TextStyle(
+              color: context.aether.text,
               fontSize: 13,
               fontWeight: FontWeight.w700,
             ),
@@ -540,8 +540,8 @@ class _StatCard extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             label,
-            style: const TextStyle(
-              color: DailyTasksScreen.grey,
+            style: TextStyle(
+              color: context.aether.textMuted,
               fontSize: 9.5,
             ),
             textAlign: TextAlign.center,
@@ -593,7 +593,7 @@ class _FilterRow extends StatelessWidget {
                 const SizedBox(width: 8),
                 _FilterChip(
                   label: 'Other',
-                  color: DailyTasksScreen.grey,
+                  color: context.aether.textMuted,
                   selected: active == TaskFilter.other,
                   onTap: () => onSelected(TaskFilter.other),
                 ),
@@ -605,18 +605,18 @@ class _FilterRow extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           decoration: BoxDecoration(
-            color: DailyTasksScreen.card,
+            color: context.aether.card,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: DailyTasksScreen.cardBorder),
+            border: Border.all(color: context.aether.border),
           ),
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.tune, size: 14, color: DailyTasksScreen.grey),
+              Icon(Icons.tune, size: 14, color: context.aether.textMuted),
               SizedBox(width: 4),
               Text(
                 'Priority',
-                style: TextStyle(color: DailyTasksScreen.grey, fontSize: 12),
+                style: TextStyle(color: context.aether.textMuted, fontSize: 12),
               ),
             ],
           ),
@@ -646,16 +646,16 @@ class _FilterChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? color.withOpacity(0.15) : DailyTasksScreen.card,
+          color: selected ? color.withOpacity(0.15) : context.aether.card,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: selected ? color : DailyTasksScreen.cardBorder,
+            color: selected ? color : context.aether.border,
           ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: selected ? color : DailyTasksScreen.grey,
+            color: selected ? color : context.aether.textMuted,
             fontSize: 12,
             fontWeight: FontWeight.w500,
           ),
@@ -690,9 +690,9 @@ class _TaskRow extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: DailyTasksScreen.card,
+        color: context.aether.card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: DailyTasksScreen.cardBorder),
+        border: Border.all(color: context.aether.border),
       ),
       child: Row(
         children: [
@@ -727,8 +727,8 @@ class _TaskRow extends StatelessWidget {
                           task.title,
                           style: TextStyle(
                             color: completed
-                                ? DailyTasksScreen.grey
-                                : DailyTasksScreen.white,
+                                ? context.aether.textMuted
+                                : context.aether.text,
                             fontSize: 13.5,
                             fontWeight: FontWeight.w600,
                             decoration: completed
@@ -747,17 +747,17 @@ class _TaskRow extends StatelessWidget {
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
-                            const Text(
+                            Text(
                               '  •  ',
                               style: TextStyle(
-                                color: DailyTasksScreen.grey,
+                                color: context.aether.textMuted,
                                 fontSize: 11,
                               ),
                             ),
                             Text(
                               durationLabel,
-                              style: const TextStyle(
-                                color: DailyTasksScreen.grey,
+                              style: TextStyle(
+                                color: context.aether.textMuted,
                                 fontSize: 11,
                               ),
                             ),
@@ -785,17 +785,17 @@ class _TaskRow extends StatelessWidget {
                   Icon(
                     _categoryIcon(task.category),
                     size: 16,
-                    color: DailyTasksScreen.grey,
+                    color: context.aether.textMuted,
                   ),
                   const SizedBox(width: 4),
                   GestureDetector(
                     onTap: onMenuTap,
-                    child: const Padding(
+                    child: Padding(
                       padding: EdgeInsets.symmetric(horizontal: 2),
                       child: Icon(
                         Icons.more_vert,
                         size: 16,
-                        color: DailyTasksScreen.grey,
+                        color: context.aether.textMuted,
                       ),
                     ),
                   ),
@@ -842,7 +842,7 @@ class _StatusIndicator extends StatelessWidget {
           height: 22,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: DailyTasksScreen.grey, width: 1.4),
+            border: Border.all(color: context.aether.textMuted, width: 1.4),
           ),
         );
     }
@@ -865,9 +865,9 @@ class _AddTaskField extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
         decoration: BoxDecoration(
-          color: DailyTasksScreen.card,
+          color: context.aether.card,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: DailyTasksScreen.red.withOpacity(0.5)),
+          border: Border.all(color: context.aether.accent.withValues(alpha: 0.5)),
         ),
         child: Row(
           children: [
@@ -882,14 +882,14 @@ class _AddTaskField extends StatelessWidget {
                 child: TextField(
                   controller: controller,
                   enabled: false,
-                  style: const TextStyle(
-                    color: DailyTasksScreen.white,
+                  style: TextStyle(
+                    color: context.aether.text,
                     fontSize: 13,
                   ),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'Add a new task',
                     hintStyle: TextStyle(
-                      color: DailyTasksScreen.grey,
+                      color: context.aether.textMuted,
                       fontSize: 13,
                     ),
                     border: InputBorder.none,
@@ -899,7 +899,7 @@ class _AddTaskField extends StatelessWidget {
                 ),
               ),
             ),
-            const Icon(Icons.mic_none, color: DailyTasksScreen.red, size: 20),
+            Icon(Icons.mic_none, color: context.aether.accent, size: 20),
           ],
         ),
       ),

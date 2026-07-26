@@ -3,8 +3,10 @@ import 'package:aether/core/models/profile.dart';
 import 'package:aether/core/services/academics_service.dart';
 import 'package:aether/core/services/auth_service.dart';
 import 'package:aether/core/services/profile_service.dart';
+import 'package:aether/core/services/settings_service.dart';
 import 'package:aether/core/services/sync_queue_service.dart';
 import 'package:aether/core/services/sync_service.dart';
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:aether/features/habits/services/habits_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -111,4 +113,116 @@ class ProfileNotifier extends AsyncNotifier<Profile?> {
 final authStateChangesProvider = StreamProvider<AuthState>((ref) {
   return AuthService.instance.onAuthStateChange;
 });
+
+/// Settings service, loaded once at startup and overridden in main().
+final settingsServiceProvider = Provider<SettingsService>((ref) {
+  throw UnimplementedError(
+    'settingsServiceProvider must be overridden in ProviderScope',
+  );
+});
+
+/// Controls the active theme (accent + background variant), persisting
+/// changes through [SettingsService].
+final themeControllerProvider =
+    StateNotifierProvider<ThemeController, AppThemeState>((ref) {
+  return ThemeController(ref.watch(settingsServiceProvider));
+});
+
+class ThemeController extends StateNotifier<AppThemeState> {
+  final SettingsService _settings;
+
+  ThemeController(this._settings) : super(_settings.themeState);
+
+  Future<void> setAccent(AccentPreset accent) async {
+    state = state.copyWith(accent: accent);
+    await _settings.saveThemeState(state);
+  }
+
+  Future<void> setBackground(BackgroundVariant background) async {
+    state = state.copyWith(background: background);
+    await _settings.saveThemeState(state);
+  }
+}
+
+/// Notification preference toggles, persisted locally. FCM isn't wired
+/// up yet — these take effect once notifications land.
+final notificationSettingsProvider = StateNotifierProvider<
+    NotificationSettingsController, NotificationSettings>((ref) {
+  return NotificationSettingsController(ref.watch(settingsServiceProvider));
+});
+
+@immutable
+class NotificationSettings {
+  final bool enabled;
+  final bool tasks;
+  final bool habits;
+  final bool lectures;
+
+  const NotificationSettings({
+    required this.enabled,
+    required this.tasks,
+    required this.habits,
+    required this.lectures,
+  });
+
+  NotificationSettings copyWith({
+    bool? enabled,
+    bool? tasks,
+    bool? habits,
+    bool? lectures,
+  }) {
+    return NotificationSettings(
+      enabled: enabled ?? this.enabled,
+      tasks: tasks ?? this.tasks,
+      habits: habits ?? this.habits,
+      lectures: lectures ?? this.lectures,
+    );
+  }
+}
+
+class NotificationSettingsController
+    extends StateNotifier<NotificationSettings> {
+  final SettingsService _settings;
+
+  NotificationSettingsController(this._settings)
+      : super(NotificationSettings(
+          enabled: _settings.notificationsEnabled,
+          tasks: _settings.notifyTasks,
+          habits: _settings.notifyHabits,
+          lectures: _settings.notifyLectures,
+        ));
+
+  Future<void> setEnabled(bool value) async {
+    state = state.copyWith(enabled: value);
+    await _settings.setNotificationsEnabled(value);
+  }
+
+  Future<void> setTasks(bool value) async {
+    state = state.copyWith(tasks: value);
+    await _settings.setNotifyTasks(value);
+  }
+
+  Future<void> setHabits(bool value) async {
+    state = state.copyWith(habits: value);
+    await _settings.setNotifyHabits(value);
+  }
+
+  Future<void> setLectures(bool value) async {
+    state = state.copyWith(lectures: value);
+    await _settings.setNotifyLectures(value);
+  }
+}
+
+/// Last successful manual/auto sync time, for the settings page.
+final lastSyncedAtProvider = StateProvider<DateTime?>((ref) {
+  return ref.watch(settingsServiceProvider).lastSyncedAt;
+});
+
+/// Count of operations waiting in the offline sync queue.
+final pendingSyncCountProvider = FutureProvider.autoDispose<int>((ref) async {
+  final db = ref.watch(databaseProvider);
+  final rows = await db.select(db.syncQueue).get();
+  return rows.length;
+});
+
 

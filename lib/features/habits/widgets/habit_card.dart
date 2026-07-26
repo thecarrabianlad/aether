@@ -1,3 +1,4 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:aether/features/habits/models/habit.dart';
 import 'package:aether/features/habits/models/habit_repository.dart';
@@ -23,9 +24,9 @@ class HabitCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: HabitRepository.cardBg,
+        color: context.aether.card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: HabitRepository.cardBorder),
+        border: Border.all(color: context.aether.border),
       ),
       child: Row(
         children: [
@@ -47,8 +48,8 @@ class HabitCard extends StatelessWidget {
               children: [
                 Text(
                   habit.name,
-                  style: const TextStyle(
-                    color: HabitRepository.whiteText,
+                  style: TextStyle(
+                    color: context.aether.text,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -56,8 +57,8 @@ class HabitCard extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(
                   habit.category.label,
-                  style: const TextStyle(
-                    color: HabitRepository.greyText,
+                  style: TextStyle(
+                    color: context.aether.textMuted,
                     fontSize: 12,
                   ),
                 ),
@@ -85,8 +86,8 @@ class HabitCard extends StatelessWidget {
                             color: isCompleted
                                 ? HabitRepository.greenAccent
                                 : isToday
-                                    ? HabitRepository.redAccent.withOpacity(0.4)
-                                    : HabitRepository.cardBorder,
+                                    ? context.aether.accent.withValues(alpha: 0.4)
+                                    : context.aether.border,
                             width: 1.2,
                           ),
                         ),
@@ -97,8 +98,8 @@ class HabitCard extends StatelessWidget {
                               color: isCompleted
                                   ? HabitRepository.greenAccent
                                   : isToday
-                                      ? HabitRepository.redAccent
-                                      : HabitRepository.greyText,
+                                      ? context.aether.accent
+                                      : context.aether.textMuted,
                               fontSize: 9,
                               fontWeight: FontWeight.w600,
                             ),
@@ -124,13 +125,13 @@ class HabitCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 16),
-                    const Icon(Icons.calendar_today,
-                        color: HabitRepository.greyText, size: 12),
+                    Icon(Icons.calendar_today,
+                        color: context.aether.textMuted, size: 12),
                     const SizedBox(width: 4),
                     Text(
                       '${habit.weeklyCompletions}/${habit.weeklyTotal}',
-                      style: const TextStyle(
-                        color: HabitRepository.greyText,
+                      style: TextStyle(
+                        color: context.aether.textMuted,
                         fontSize: 12,
                       ),
                     ),
@@ -139,7 +140,7 @@ class HabitCard extends StatelessWidget {
                       height: 3,
                       width: 40,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF2C2C2E),
+                        color: context.aether.surfaceAlt,
                         borderRadius: BorderRadius.circular(2),
                       ),
                       child: FractionallySizedBox(
@@ -174,7 +175,7 @@ class HabitCard extends StatelessWidget {
                 border: Border.all(
                   color: habit.isCompletedToday
                       ? HabitRepository.greenAccent
-                      : HabitRepository.greyText.withOpacity(0.4),
+                      : context.aether.textMuted.withOpacity(0.4),
                   width: 2,
                 ),
               ),
@@ -191,24 +192,24 @@ class HabitCard extends StatelessWidget {
               if (value == 'edit') onEdit();
               if (value == 'delete') onDelete();
             },
-            color: const Color(0xFF1C1C1E),
+            color: context.aether.surface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: const BorderSide(color: HabitRepository.cardBorder),
+              side: BorderSide(color: context.aether.border),
             ),
             offset: const Offset(-12, 0),
-            icon: const Icon(Icons.more_vert,
-                color: HabitRepository.greyText, size: 18),
-            itemBuilder: (_) => const [
+            icon: Icon(Icons.more_vert,
+                color: context.aether.textMuted, size: 18),
+            itemBuilder: (_) => [
               PopupMenuItem(
                 value: 'edit',
                 child: Row(
                   children: [
                     Icon(Icons.edit_outlined,
-                        color: HabitRepository.greyText, size: 16),
+                        color: context.aether.textMuted, size: 16),
                     SizedBox(width: 8),
                     Text('Edit',
-                        style: TextStyle(color: HabitRepository.whiteText, fontSize: 14)),
+                        style: TextStyle(color: context.aether.text, fontSize: 14)),
                   ],
                 ),
               ),
@@ -217,10 +218,10 @@ class HabitCard extends StatelessWidget {
                 child: Row(
                   children: [
                     Icon(Icons.delete_outline,
-                        color: HabitRepository.redAccent, size: 16),
+                        color: context.aether.danger, size: 16),
                     SizedBox(width: 8),
                     Text('Delete',
-                        style: TextStyle(color: HabitRepository.redAccent, fontSize: 14)),
+                        style: TextStyle(color: context.aether.danger, fontSize: 14)),
                   ],
                 ),
               ),

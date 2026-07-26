@@ -1,3 +1,4 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:aether/core/services/auth_service.dart';
@@ -53,7 +54,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: const Color(0xFFE8443F),
+        backgroundColor: context.aether.accent,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -63,7 +64,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: const Color(0xFF34C759),
+        backgroundColor: context.aether.success,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -72,7 +73,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: context.aether.background,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -92,10 +93,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              const Text(
+              Text(
                 'Start your journey',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Color(0xFF9A9A9E), fontSize: 16),
+                style: TextStyle(color: context.aether.textMuted, fontSize: 16),
               ),
               const SizedBox(height: 60),
               AuthTextField(
@@ -115,7 +116,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ElevatedButton(
                 onPressed: _isLoading ? null : _signUp,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE8443F),
+                  backgroundColor: context.aether.accent,
                   padding: const EdgeInsets.symmetric(vertical: 18),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
@@ -138,13 +139,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text("Already have an account? ",
-                      style: TextStyle(color: Color(0xFF9A9A9E))),
+                  Text("Already have an account? ",
+                      style: TextStyle(color: context.aether.textMuted)),
                   GestureDetector(
                     onTap: () => context.go('/login'),
-                    child: const Text('Sign In',
+                    child: Text('Sign In',
                         style: TextStyle(
-                            color: Color(0xFFE8443F), fontWeight: FontWeight.bold)),
+                            color: context.aether.accent, fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),

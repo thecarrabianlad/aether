@@ -1,3 +1,4 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:aether/core/database/database.dart'
@@ -27,17 +28,13 @@ class ScheduleScreen extends ConsumerStatefulWidget {
   const ScheduleScreen({super.key});
 
   // Palette — kept consistent with DashboardScreen
-  static const bg = Color(0xFF000000);
-  static const card = Color(0xFF121212);
-  static const cardBorder = Color(0xFF262626);
+  // Fixed semantic colors — categories/priorities keep their meaning.
   static const red = Color(0xFFFF3B30);
   static const purple = Color(0xFF8B5CF6);
   static const green = Color(0xFF34C759);
   static const orange = Color(0xFFE08A2E);
   static const blue = Color(0xFF3B82F6);
   static const grey = Color(0xFF9A9A9E);
-  static const white = Color(0xFFF5F5F5);
-  static const white54 = Color(0xB3F5F5F5);
 
   @override
   ConsumerState<ScheduleScreen> createState() => _ScheduleScreenState();
@@ -257,7 +254,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
     );
 
     return Scaffold(
-      backgroundColor: ScheduleScreen.bg,
+      backgroundColor: context.aether.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -280,7 +277,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                     const SizedBox(height: 12),
                     _buildActionRow(
                       icon: Icons.add_circle_outline,
-                      iconColor: ScheduleScreen.red,
+                      iconColor: context.aether.accent,
                       title: 'Add New Time Block',
                       subtitle: 'Add task, break, or custom activity',
                       onTap: () => _onAddTimeBlock(selectedTemplateId),
@@ -305,25 +302,25 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
         children: [
           GestureDetector(
             onTap: () => Navigator.of(context).pop(),
-            child: const Icon(
+            child: Icon(
               Icons.arrow_back_ios_new_rounded,
-              color: ScheduleScreen.white,
+              color: context.aether.text,
               size: 20,
             ),
           ),
-          const Expanded(
+          Expanded(
             child: Text(
               'DAILY SCHEDULE',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: ScheduleScreen.white,
+                color: context.aether.text,
                 fontSize: 15,
                 letterSpacing: 3,
                 fontWeight: FontWeight.w500,
               ),
             ),
           ),
-          const Icon(Icons.more_vert, color: ScheduleScreen.white, size: 22),
+          Icon(Icons.more_vert, color: context.aether.text, size: 22),
         ],
       ),
     );
@@ -341,8 +338,8 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
           children: [
             Text(
               _dateNavigatorLabel,
-              style: const TextStyle(
-                color: ScheduleScreen.white,
+              style: TextStyle(
+                color: context.aether.text,
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
@@ -350,7 +347,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
             const SizedBox(height: 2),
             Text(
               _fullDateLabel,
-              style: const TextStyle(color: ScheduleScreen.grey, fontSize: 11),
+              style: TextStyle(color: context.aether.textMuted, fontSize: 11),
             ),
           ],
         ),
@@ -367,11 +364,11 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
         height: 34,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: ScheduleScreen.card,
+          color: context.aether.card,
           shape: BoxShape.circle,
-          border: Border.all(color: ScheduleScreen.cardBorder),
+          border: Border.all(color: context.aether.border),
         ),
-        child: Icon(icon, color: ScheduleScreen.white, size: 18),
+        child: Icon(icon, color: context.aether.text, size: 18),
       ),
     );
   }
@@ -387,10 +384,10 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Choose Template',
           style: TextStyle(
-            color: ScheduleScreen.white,
+            color: context.aether.text,
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -415,23 +412,23 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                       horizontal: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: ScheduleScreen.card,
+                      color: context.aether.card,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: ScheduleScreen.cardBorder,
+                        color: context.aether.border,
                         style: BorderStyle.solid,
                       ),
                     ),
-                    child: const Column(
+                    child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.add, color: ScheduleScreen.grey, size: 20),
+                        Icon(Icons.add, color: context.aether.textMuted, size: 20),
                         SizedBox(height: 6),
                         Text(
                           'Custom Template',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: ScheduleScreen.grey,
+                            color: context.aether.textMuted,
                             fontSize: 10,
                             fontWeight: FontWeight.w500,
                           ),
@@ -453,22 +450,22 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                     horizontal: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: ScheduleScreen.card,
+                    color: context.aether.card,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
                       color:
-                          selected ? ScheduleScreen.red : ScheduleScreen.cardBorder,
+                          selected ? context.aether.accent : context.aether.border,
                       width: selected ? 1.4 : 1,
                     ),
                   ),
                   child: Stack(
                     children: [
                       if (selected)
-                        const Positioned(
+                        Positioned(
                           top: 4,
                           right: 4,
                           child: Icon(Icons.check_circle,
-                              color: ScheduleScreen.red, size: 14),
+                              color: context.aether.accent, size: 14),
                         ),
                       Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -476,8 +473,8 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                           Icon(
                             iconForKey(template.icon),
                             color: selected
-                                ? ScheduleScreen.red
-                                : ScheduleScreen.grey,
+                                ? context.aether.accent
+                                : context.aether.textMuted,
                             size: 20,
                           ),
                           const SizedBox(height: 6),
@@ -488,8 +485,8 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: selected
-                                  ? ScheduleScreen.red
-                                  : ScheduleScreen.grey,
+                                  ? context.aether.accent
+                                  : context.aether.textMuted,
                               fontSize: 10,
                               fontWeight: FontWeight.w500,
                             ),
@@ -515,26 +512,26 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
       return Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: ScheduleScreen.card,
+          color: context.aether.card,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: ScheduleScreen.cardBorder),
+          border: Border.all(color: context.aether.border),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: ScheduleScreen.red.withOpacity(0.15),
+                color: context.aether.accent.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.calendar_today_outlined,
-                  color: ScheduleScreen.red, size: 16),
+              child: Icon(Icons.calendar_today_outlined,
+                  color: context.aether.accent, size: 16),
             ),
             const SizedBox(width: 10),
-            const Expanded(
+            Expanded(
               child: Text(
                 'No template selected — tap Custom Template to create one.',
-                style: TextStyle(color: ScheduleScreen.grey, fontSize: 12),
+                style: TextStyle(color: context.aether.textMuted, fontSize: 12),
               ),
             ),
           ],
@@ -547,9 +544,9 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: ScheduleScreen.card,
+        color: context.aether.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: ScheduleScreen.cardBorder),
+        border: Border.all(color: context.aether.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -559,29 +556,29 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: ScheduleScreen.red.withOpacity(0.15),
+                  color: context.aether.accent.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(iconForKey(template.icon),
-                    color: ScheduleScreen.red, size: 16),
+                    color: context.aether.accent, size: 16),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Template Settings',
                       style: TextStyle(
-                        color: ScheduleScreen.white,
+                        color: context.aether.text,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     Text(
                       template.title,
-                      style: const TextStyle(
-                          color: ScheduleScreen.grey, fontSize: 11),
+                      style: TextStyle(
+                          color: context.aether.textMuted, fontSize: 11),
                     ),
                   ],
                 ),
@@ -589,14 +586,14 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const Text(
+                  Text(
                     'Repeat on',
-                    style: TextStyle(color: ScheduleScreen.grey, fontSize: 10),
+                    style: TextStyle(color: context.aether.textMuted, fontSize: 10),
                   ),
                   Text(
                     repeatDaysLabel(template.repeatDays),
-                    style: const TextStyle(
-                      color: ScheduleScreen.red,
+                    style: TextStyle(
+                      color: context.aether.accent,
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                     ),
@@ -624,18 +621,18 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: selected
-                            ? ScheduleScreen.red
-                            : ScheduleScreen.cardBorder,
+                            ? context.aether.accent
+                            : context.aether.border,
                       ),
                     ),
                     child: Text(
                       _weekdayShort[index],
                       style: TextStyle(
                         color: selected
-                            ? ScheduleScreen.red
+                            ? context.aether.accent
                             : (isWeekend
-                                ? ScheduleScreen.grey
-                                : ScheduleScreen.white54),
+                                ? context.aether.textMuted
+                                : context.aether.text.withValues(alpha: 0.7)),
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                       ),
@@ -657,14 +654,14 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Row(
+        Row(
           children: [
-            Icon(Icons.schedule, color: ScheduleScreen.white, size: 16),
+            Icon(Icons.schedule, color: context.aether.text, size: 16),
             SizedBox(width: 6),
             Text(
               'Schedule Preview',
               style: TextStyle(
-                color: ScheduleScreen.white,
+                color: context.aether.text,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
@@ -673,7 +670,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
         ),
         Text(
           formatTotalDuration(totalMinutes),
-          style: const TextStyle(color: ScheduleScreen.grey, fontSize: 11),
+          style: TextStyle(color: context.aether.textMuted, fontSize: 11),
         ),
       ],
     );
@@ -726,7 +723,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                     if (!isLast)
                       Expanded(
                         child: Container(
-                            width: 1.4, color: ScheduleScreen.cardBorder),
+                            width: 1.4, color: context.aether.border),
                       ),
                   ],
                 ),
@@ -738,8 +735,8 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                     padding: const EdgeInsets.only(top: 2, bottom: 12),
                     child: Text(
                       formatTimeLabel(block.startTime),
-                      style: const TextStyle(
-                          color: ScheduleScreen.grey, fontSize: 10, height: 1.2),
+                      style: TextStyle(
+                          color: context.aether.textMuted, fontSize: 10, height: 1.2),
                     ),
                   ),
                 ),
@@ -750,9 +747,9 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: ScheduleScreen.card,
+                        color: context.aether.card,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: ScheduleScreen.cardBorder),
+                        border: Border.all(color: context.aether.border),
                       ),
                       child: Row(
                         children: [
@@ -772,16 +769,16 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                               children: [
                                 Text(
                                   block.title,
-                                  style: const TextStyle(
-                                    color: ScheduleScreen.white,
+                                  style: TextStyle(
+                                    color: context.aether.text,
                                     fontSize: 12.5,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 Text(
                                   timeRangeLabel,
-                                  style: const TextStyle(
-                                      color: ScheduleScreen.grey,
+                                  style: TextStyle(
+                                      color: context.aether.textMuted,
                                       fontSize: 10.5),
                                 ),
                               ],
@@ -796,17 +793,17 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                             ),
                             child: Text(
                               durationLabel,
-                              style: const TextStyle(
-                                  color: ScheduleScreen.grey, fontSize: 10),
+                              style: TextStyle(
+                                  color: context.aether.textMuted, fontSize: 10),
                             ),
                           ),
                           const SizedBox(width: 4),
                           GestureDetector(
                             onTap: () => _onBlockOptions(block),
-                            child: const Padding(
+                            child: Padding(
                               padding: EdgeInsets.symmetric(horizontal: 2),
                               child: Icon(Icons.more_vert,
-                                  color: ScheduleScreen.grey, size: 15),
+                                  color: context.aether.textMuted, size: 15),
                             ),
                           ),
                         ],
@@ -837,9 +834,9 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: ScheduleScreen.card,
+          color: context.aether.card,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: ScheduleScreen.cardBorder),
+          border: Border.all(color: context.aether.border),
         ),
         child: Row(
           children: [
@@ -851,8 +848,8 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      color: ScheduleScreen.white,
+                    style: TextStyle(
+                      color: context.aether.text,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
@@ -860,12 +857,12 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                   Text(
                     subtitle,
                     style:
-                        const TextStyle(color: ScheduleScreen.grey, fontSize: 11),
+                        TextStyle(color: context.aether.textMuted, fontSize: 11),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: ScheduleScreen.grey, size: 18),
+            Icon(Icons.chevron_right, color: context.aether.textMuted, size: 18),
           ],
         ),
       ),
@@ -885,7 +882,7 @@ class _TimelineEmptyState extends StatelessWidget {
         child: Text(
           message,
           textAlign: TextAlign.center,
-          style: const TextStyle(color: ScheduleScreen.grey, fontSize: 12.5),
+          style: TextStyle(color: context.aether.textMuted, fontSize: 12.5),
         ),
       ),
     );

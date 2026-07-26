@@ -1,9 +1,12 @@
+import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class CustomProgressBar extends StatelessWidget {
   final double progress;
   final Color color;
-  final Color backgroundColor;
+
+  /// Track color behind the fill; defaults to the theme's raised surface.
+  final Color? backgroundColor;
   final double height;
   final BorderRadius borderRadius;
 
@@ -11,7 +14,7 @@ class CustomProgressBar extends StatelessWidget {
     super.key,
     required this.progress,
     required this.color,
-    this.backgroundColor = const Color(0xFF3A3A3C),
+    this.backgroundColor,
     this.height = 6.0,
     this.borderRadius = const BorderRadius.all(Radius.circular(3)),
   });
@@ -24,7 +27,7 @@ class CustomProgressBar extends StatelessWidget {
           width: double.infinity,
           height: height,
           decoration: BoxDecoration(
-            color: backgroundColor,
+            color: backgroundColor ?? context.aether.surfaceAlt,
             borderRadius: borderRadius,
           ),
           child: Stack(
