@@ -99,19 +99,35 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
     );
   }
 
+  /// Named method (not an inline closure) so the dispose-time equality check
+  /// below matches what initState registered — tear-offs of the same instance
+  /// method compare equal.
+  void _addHabitAction() => _showAddHabitDialog();
+
   @override
   void initState() {
     super.initState();
-    // Future.microtask(() {
-    //   ref.read(globalAddActionProvider.notifier).state = () => _showAddHabitDialog();
-    // });
+    // Deferred — modifying a provider synchronously during initState would
+    // throw while the widget tree is building.
+    Future.microtask(() {
+      if (mounted) {
+        ref.read(globalAddActionProvider.notifier).state = _addHabitAction;
+      }
+    });
   }
 
   @override
   void dispose() {
-    // if (ref.read(globalAddActionProvider) == _showAddHabitDialog) {
-    //   ref.read(globalAddActionProvider.notifier).state = null;
-    // }
+    // Capture the notifier now (ref is unusable after dispose), but defer the
+    // actual clear — mutating a provider synchronously mid-tree-teardown can
+    // throw "modified a provider while the widget tree was building".
+    final notifier = ref.read(globalAddActionProvider.notifier);
+    final action = _addHabitAction;
+    Future.microtask(() {
+      // Only clear if we still own the action; a newly-mounted screen may
+      // have already registered its own by the time this runs.
+      if (notifier.state == action) notifier.state = null;
+    });
     super.dispose();
   }
 

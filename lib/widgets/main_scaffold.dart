@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart'; // For debugPrint
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show AuthState; // For AuthState
+import 'package:supabase_flutter/supabase_flutter.dart' show AuthState, AuthChangeEvent;
 import 'package:aether/widgets/bottom_navbar.dart';
 import 'package:aether/widgets/side_drawer.dart'; // New import for SideDrawer
 import 'package:aether/widgets/first_login_dialog.dart'; // New import for FirstLoginDialog
@@ -71,11 +70,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
 
   /// Check if this is a first-time login and prompt for username.
   Future<void> _checkFirstLogin(Profile? profile) async {
-    debugPrint('MainScaffold: _checkFirstLogin called. Profile: $profile');
-    if (_hasCheckedFirstLogin) {
-      debugPrint('MainScaffold: Already checked first login, returning.');
-      return;
-    }
+    if (_hasCheckedFirstLogin) return;
     _hasCheckedFirstLogin = true;
 
     // If no profile exists, this is a first login
@@ -112,19 +107,21 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
 
   @override
   Widget build(BuildContext context) {
-    // Listen to auth state changes and invalidate profile provider
+    // Refetch the profile only when the signed-in user actually changes.
+    // Supabase also emits initialSession / tokenRefreshed / userUpdated at
+    // startup — invalidating on those caused a duplicate profile fetch on
+    // every launch.
     ref.listen<AsyncValue<AuthState>>(
       authStateChangesProvider,
       (previous, next) {
-        if (previous?.value?.event != next.value?.event) {
-          debugPrint('MainScaffold: Auth state changed, invalidating profileProvider');
+        final event = next.value?.event;
+        if (event == AuthChangeEvent.signedIn ||
+            event == AuthChangeEvent.signedOut) {
           ref.invalidate(profileProvider);
         }
       },
     );
 
-    final isDrawerOpen = ref.watch(drawerProvider);
-    debugPrint('MainScaffold: isDrawerOpen rebuilt as $isDrawerOpen');
     final profileAsync = ref.watch(profileProvider);
 
     // Check for first login when profile loads (deferred — showing a dialog
@@ -168,18 +165,33 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
           bottomNavigationBar: BottomNavbar(
             selectedIndex: _calculateSelectedIndex(context),
             onItemTapped: (index) => _onItemTapped(index, context),
-            onAddTapped: () => GoRouter.of(context).go('/academics'), // Default action
+            onAddTapped: () {
+              // Invoke the active screen's registered add action (e.g. the
+              // Add Habit dialog); fall back to Academics when none is set.
+              final addAction = ref.read(globalAddActionProvider);
+              if (addAction != null) {
+                addAction();
+              } else {
+                GoRouter.of(context).go('/academics');
+              }
+            },
           ),
         ),
-        // Side drawer overlay
-        SideDrawer(
-          isOpen: isDrawerOpen,
-          onClose: () => ref.read(drawerProvider.notifier).state = false,
-          userData: userData,
-          menuItems: menuItems,
-          activeItemId: 'profile',
-          onNavItemTap: (id) => _onNavItemTap(id, context, ref),
-          onLogout: () => _onLogout(context, ref),
+        // Side drawer overlay. Watched inside its own Consumer so toggling
+        // the drawer rebuilds just this subtree, not the whole scaffold.
+        Consumer(
+          builder: (context, ref, _) {
+            final isDrawerOpen = ref.watch(drawerProvider);
+            return SideDrawer(
+              isOpen: isDrawerOpen,
+              onClose: () => ref.read(drawerProvider.notifier).state = false,
+              userData: userData,
+              menuItems: menuItems,
+              activeItemId: 'profile',
+              onNavItemTap: (id) => _onNavItemTap(id, context, ref),
+              onLogout: () => _onLogout(context, ref),
+            );
+          },
         ),
       ],
     );

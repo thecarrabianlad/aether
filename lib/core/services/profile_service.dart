@@ -28,7 +28,6 @@ class ProfileService {
       return null;
     }
 
-    debugPrint('ProfileService: Profile found for user $userId: $response');
     return Profile.fromJson(response);
   }
 

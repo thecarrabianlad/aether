@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show AuthState;
 import 'package:aether/features/auth/screens/login_screen.dart';
 import 'package:aether/features/auth/screens/signup_screen.dart';
 import 'package:aether/core/services/auth_service.dart';
@@ -17,12 +20,10 @@ final routerProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     initialLocation: isLoggedIn ? '/' : '/login',
-    refreshListenable: _GoRouterRefreshStream(authService.onAuthStateChange),
+    refreshListenable: _GoRouterRefreshStream(authService),
     redirect: (BuildContext context, GoRouterState state) {
-      debugPrint('GoRouter: redirecting from ${state.matchedLocation}');
       final loggedIn = authService.isLoggedIn;
       final authenticating = state.matchedLocation == '/login' || state.matchedLocation == '/signup';
-      debugPrint('GoRouter Redirect: loggedIn=$loggedIn, authenticating=$authenticating, matchedLocation=${state.matchedLocation}');
 
       if (!loggedIn && !authenticating) return '/login';
       if (loggedIn && authenticating) return '/';
@@ -45,14 +46,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       ShellRoute(
         builder: (context, state, child) {
-          debugPrint('GoRouter: Building ShellRoute for ${state.matchedLocation}');
           return MainScaffold(child: child);
         },
         routes: [
           GoRoute(
             path: '/',
             builder: (context, state) {
-              debugPrint('GoRouter: Building HomeScreen for /');
               return const HomeScreen();
             },
           ),
@@ -74,8 +73,27 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
+/// Refreshes the router only when the logged-in state actually flips.
+/// Supabase emits auth events on startup and token refresh too — reacting
+/// to those re-ran every redirect and rebuilt the shell for no reason.
 class _GoRouterRefreshStream extends ChangeNotifier {
-  _GoRouterRefreshStream(Stream<dynamic> stream) {
-    stream.asBroadcastStream().listen((_) => notifyListeners());
+  _GoRouterRefreshStream(AuthService authService)
+      : _wasLoggedIn = authService.isLoggedIn {
+    _subscription = authService.onAuthStateChange.listen((AuthState _) {
+      final loggedIn = authService.isLoggedIn;
+      if (loggedIn != _wasLoggedIn) {
+        _wasLoggedIn = loggedIn;
+        notifyListeners();
+      }
+    });
+  }
+
+  bool _wasLoggedIn;
+  late final StreamSubscription<AuthState> _subscription;
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
   }
 }

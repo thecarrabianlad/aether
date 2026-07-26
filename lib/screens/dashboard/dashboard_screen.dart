@@ -49,10 +49,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-    debugPrint('DashboardScreen: initState called');
+    // Once a minute: refresh the clock text and re-filter today's
+    // upcoming schedule blocks against the current time.
     _timer = Timer.periodic(const Duration(minutes: 1), (_) {
-      debugPrint('DashboardScreen: timer tick, calling setState');
-      setState(() {});
+      if (mounted) setState(() {});
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {

@@ -37,7 +37,6 @@ class DashboardTopBar extends ConsumerWidget {
                 _TopBarIconButton(
                   icon: Icons.menu_rounded,
                   onTap: () {
-                    debugPrint('DashboardTopBar: Menu icon tapped, setting drawerProvider to true');
                     ref.read(drawerProvider.notifier).state = true;
                   },
                 ),

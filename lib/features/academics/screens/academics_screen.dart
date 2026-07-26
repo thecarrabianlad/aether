@@ -26,27 +26,34 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
   /// Theme tokens — safe to read anywhere below build (dialogs, snackbars).
   AetherTheme get _aether => context.aether;
 
+  /// Named method (not an inline closure) so the dispose-time equality check
+  /// below matches what initState registered — tear-offs of the same instance
+  /// method compare equal.
+  void _addCourseAction() => _showAddCourseDialog();
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         ref.read(academicsServiceProvider).syncCourses();
-        // TODO: Wire global add action
-        // ref.read(globalAddActionProvider.notifier).state = _showAddCourseDialog;
+        ref.read(globalAddActionProvider.notifier).state = _addCourseAction;
       }
     });
   }
 
   @override
   void dispose() {
-    // Clear the action when leaving the screen
-    // TODO: Wire global add action
-    /*
-    if (ref.read(globalAddActionProvider) == _showAddCourseDialog) {
-      ref.read(globalAddActionProvider.notifier).state = null;
-    }
-    */
+    // Capture the notifier now (ref is unusable after dispose), but defer the
+    // actual clear — mutating a provider synchronously mid-tree-teardown can
+    // throw "modified a provider while the widget tree was building".
+    final notifier = ref.read(globalAddActionProvider.notifier);
+    final action = _addCourseAction;
+    Future.microtask(() {
+      // Only clear if we still own the action; a newly-mounted screen may
+      // have already registered its own by the time this runs.
+      if (notifier.state == action) notifier.state = null;
+    });
     super.dispose();
   }
 

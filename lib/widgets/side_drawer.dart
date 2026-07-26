@@ -108,7 +108,6 @@ class _SideDrawerState extends State<SideDrawer>
   @override
   void didUpdateWidget(SideDrawer oldWidget) {
     super.didUpdateWidget(oldWidget);
-    debugPrint('SideDrawer: didUpdateWidget - isOpen: ${widget.isOpen}, oldIsOpen: ${oldWidget.isOpen}');
     if (widget.isOpen != oldWidget.isOpen) {
       if (widget.isOpen) {
         _controller.forward();
@@ -148,7 +147,6 @@ class _SideDrawerState extends State<SideDrawer>
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('SideDrawer: build - isOpen: ${widget.isOpen}');
     if (_controller.isDismissed && !widget.isOpen) {
       return const SizedBox.shrink();
     }
