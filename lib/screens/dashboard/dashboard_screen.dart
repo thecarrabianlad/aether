@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart'; // Added for debugPrint
 import 'dart:async';
-import 'package:aether/screens/schedule/schedule_screen.dart';
+import 'package:aether/features/schedule/screens/schedule_screen.dart';
 import 'package:aether/features/tasks/screens/daily_tasks_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:aether/features/academics/providers/academics_providers.dart';
 import 'package:aether/widgets/common/glass_card.dart';
 
-import 'package:aether/core/database/database.dart' show Task;
+import 'package:aether/core/database/database.dart'
+    show Task, ScheduleTemplate, ScheduleBlock;
 import 'package:aether/features/tasks/providers/task_providers.dart';
+import 'package:aether/features/schedule/providers/schedule_providers.dart';
+import 'package:aether/features/schedule/widgets/schedule_options.dart';
 import 'package:aether/widgets/dashboard_top_bar.dart';
 /// ---------------------------------------------------------------------
 /// AETHER — Dashboard content
@@ -60,11 +62,60 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       setState(() {});
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => _syncTasks());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _syncTasks();
+      ref.read(scheduleServiceProvider).syncTemplates();
+    });
   }
 
   void _syncTasks() {
     ref.read(taskServiceProvider).syncTasksForDate(_dateKey);
+  }
+
+  String? _lastSyncedScheduleTemplateId;
+
+  /// Fires a one-off Supabase pull for this template's blocks the first
+  /// time it's resolved as "today's" template — same pattern as
+  /// ScheduleScreen. Cheap no-op on repeat builds.
+  void _maybeSyncScheduleBlocks(String? templateId) {
+    if (templateId == null || templateId == _lastSyncedScheduleTemplateId) {
+      return;
+    }
+    _lastSyncedScheduleTemplateId = templateId;
+    ref.read(scheduleServiceProvider).syncBlocks(templateId);
+  }
+
+  Set<int> _parseRepeatDays(String csv) => csv
+      .split(',')
+      .where((s) => s.trim().isNotEmpty)
+      .map((s) => int.tryParse(s.trim()))
+      .whereType<int>()
+      .toSet();
+
+  /// The template whose repeatDays include the viewed date's weekday —
+  /// same matching rule as ScheduleScreen, so both stay in sync.
+  ScheduleTemplate? _matchedScheduleTemplate(List<ScheduleTemplate> templates) {
+    final weekdayIndex = _selectedDate.weekday - 1;
+    for (final t in templates) {
+      if (_parseRepeatDays(t.repeatDays).contains(weekdayIndex)) return t;
+    }
+    return null;
+  }
+
+  /// Next 3 blocks to preview: for today, only ones still upcoming from
+  /// the current time; for any other viewed day, the first 3 in order.
+  List<ScheduleBlock> _nextScheduleBlocks(List<ScheduleBlock> blocks) {
+    if (blocks.isEmpty) return const [];
+    if (_dayOffset != 0) return blocks.take(3).toList();
+
+    final now = DateTime.now();
+    final nowMinutes = now.hour * 60 + now.minute;
+    final upcoming = blocks.where((b) {
+      final t = timeOfDayFromKey(b.startTime);
+      return (t.hour * 60 + t.minute) >= nowMinutes;
+    }).toList();
+    final source = upcoming.isNotEmpty ? upcoming : blocks;
+    return source.take(3).toList();
   }
 
   // DateTime _referenceDate = DateTime.now();
@@ -77,44 +128,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   static const int _habitsCompleted = 4;
   static const int _habitsTotal = 7;
   static const int _healthScore = 72;
-
-  static const List<_ScheduleItemData> _scheduleItems = [
-    _ScheduleItemData(
-      time: '9:00 AM',
-      title: 'Physics Class',
-      subtitle: 'Electromagnetism',
-      icon: Icons.menu_book_outlined,
-      color: DashboardScreen.purple,
-    ),
-    _ScheduleItemData(
-      time: '11:30 AM',
-      title: 'Maths Practice',
-      subtitle: 'Calculus & Integrals',
-      icon: Icons.calculate_outlined,
-      color: Color(0xFFE08A2E),
-    ),
-    _ScheduleItemData(
-      time: '3:00 PM',
-      title: 'Chemistry Revision',
-      subtitle: 'Organic Chemistry',
-      icon: Icons.science_outlined,
-      color: Color(0xFF3B82F6),
-    ),
-  ];
-
-  List<_TaskItemData> _tasks = const [
-    _TaskItemData(
-      title: 'Finish Physics Notes',
-      subtitle: 'Electromagnetism',
-      flagged: true,
-    ),
-    _TaskItemData(
-      title: 'Practice PYQs',
-      subtitle: 'JEE Main 2024',
-      flagged: true,
-    ),
-    _TaskItemData(title: 'Workout', subtitle: 'Completed', completed: true),
-  ];
 
   final List<_HabitItemData> _habits = const [
     _HabitItemData(
@@ -311,6 +324,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final allTasks = tasksAsync.value ?? const <Task>[];
     final previewTasks = _previewTasks(allTasks);
 
+    final templatesAsync = ref.watch(templatesProvider);
+    final templates = templatesAsync.value ?? const <ScheduleTemplate>[];
+    final matchedTemplate = _matchedScheduleTemplate(templates);
+    _maybeSyncScheduleBlocks(matchedTemplate?.id);
+
+    final blocksAsync = matchedTemplate == null
+        ? const AsyncValue<List<ScheduleBlock>>.data(<ScheduleBlock>[])
+        : ref.watch(scheduleBlocksProvider(matchedTemplate.id));
+    final upcomingBlocks = _nextScheduleBlocks(blocksAsync.value ?? const []);
+
     return Container(
       color: DashboardScreen.bg,
       child: SafeArea(
@@ -346,7 +369,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 onViewAll: _onViewAllSchedule,
               ),
               const SizedBox(height: 12),
-              const _ScheduleCard(items: _scheduleItems),
+              _ScheduleCard(
+                items: upcomingBlocks
+                    .map((b) => _ScheduleItemData(
+                          time: formatTimeInline(b.startTime),
+                          title: b.title,
+                          subtitle: formatDuration(
+                            minutesBetween(b.startTime, b.endTime),
+                          ),
+                          icon: iconForKey(b.icon),
+                          color: colorForHex(b.color),
+                        ))
+                    .toList(),
+                emptyMessage: matchedTemplate == null
+                    ? 'No schedule template set for today'
+                    : 'No time blocks added yet',
+              ),
               const SizedBox(height: 20),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -771,69 +809,30 @@ class _ScheduleItemData {
   });
 }
 
-class _ScheduleCard extends ConsumerWidget {
+class _ScheduleCard extends StatelessWidget {
   final List<_ScheduleItemData> items;
+  final String emptyMessage;
 
-  const _ScheduleCard({super.key, required this.items});
+  const _ScheduleCard({
+    required this.items,
+    this.emptyMessage = 'No schedule for today',
+  });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final coursesAsync = ref.watch(coursesProvider);
-    final today = DateTime.now();
-    final todayName = DateFormat('EEEE').format(today);
-
-    final todayItems = <_ScheduleItemData>[];
-
-    for (final c in coursesAsync.value ?? []) {
-      final lectures = ref.watch(lecturesProvider(c.id)).value ?? [];
-      for (final l in lectures) {
-        if (l.scheduledAt != null &&
-            l.scheduledAt!.year == today.year &&
-            l.scheduledAt!.month == today.month &&
-            l.scheduledAt!.day == today.day) {
-          final color = Color(int.parse(c.color.replaceFirst('#', '0xFF')));
-          todayItems.add(_ScheduleItemData(
-            time: DateFormat('h:mm a').format(l.scheduledAt!.toLocal()),
-            title: l.title,
-            subtitle: c.name,
-            icon: Icons.menu_book_outlined,
-            color: color,
-          ));
-        }
-      }
-
-      if (c.scheduleDays != null && c.scheduleStart != null) {
-        final days =
-            c.scheduleDays!.split(',').map((s) => s.trim().toLowerCase()).toList();
-        if (days.any((d) => d.startsWith(todayName.substring(0, 3).toLowerCase()))) {
-          if (!todayItems.any((i) => i.title == c.name)) {
-            final color = Color(int.parse(c.color.replaceFirst('#', '0xFF')));
-            todayItems.add(_ScheduleItemData(
-              time: c.scheduleStart!,
-              title: c.name,
-              subtitle: c.professor ?? 'No instructor',
-              icon: Icons.menu_book_outlined,
-              color: color,
-            ));
-          }
-        }
-      }
-    }
-
-    // Fall back to static items if no dynamic data
-    final displayItems = todayItems.isNotEmpty ? todayItems : items;
-
-    if (displayItems.isEmpty) {
+  Widget build(BuildContext context) {
+    if (items.isEmpty) {
       return GlassCard(
         padding: const EdgeInsets.all(20),
         borderRadius: BorderRadius.circular(16),
-        child: const Center(
+        child: Center(
           child: Column(
             children: [
-              Icon(Icons.event_busy, color: DashboardScreen.grey, size: 32),
-              SizedBox(height: 8),
-              Text('No classes scheduled today',
-                  style: TextStyle(color: DashboardScreen.grey, fontSize: 14)),
+              const Icon(Icons.event_busy, color: DashboardScreen.grey, size: 32),
+              const SizedBox(height: 8),
+              Text(
+                emptyMessage,
+                style: const TextStyle(color: DashboardScreen.grey, fontSize: 14),
+              ),
             ],
           ),
         ),
@@ -848,9 +847,9 @@ class _ScheduleCard extends ConsumerWidget {
         border: Border.all(color: DashboardScreen.cardBorder),
       ),
       child: Column(
-        children: List.generate(displayItems.length, (i) {
-          final item = displayItems[i];
-          final isLast = i == displayItems.length - 1;
+        children: List.generate(items.length, (i) {
+          final item = items[i];
+          final isLast = i == items.length - 1;
           return _ScheduleRow(item: item, showLine: !isLast);
         }),
       ),
@@ -950,19 +949,6 @@ class _ScheduleRow extends StatelessWidget {
 // Tasks card
 // ---------------------------------------------------------------------------
 
-class _TaskItemData {
-  final String title;
-  final String subtitle;
-  final bool completed;
-  final bool flagged;
-
-  const _TaskItemData({
-    required this.title,
-    required this.subtitle,
-    this.completed = false,
-    this.flagged = false,
-  });
-}
 class _TasksCard extends StatelessWidget {
   final List<Task> tasks;
   final VoidCallback onViewAll;

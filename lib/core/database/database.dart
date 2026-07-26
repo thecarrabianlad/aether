@@ -13,16 +13,28 @@ import 'tables/assignments.dart';
 import 'tables/habits.dart';
 import 'tables/sync_queue.dart'; // New sync queue table
 import 'tables/tasks.dart';
+import 'tables/schedule_templates.dart';
+import 'tables/schedule_blocks.dart';
 
 part 'database.g.dart';
 
-@DriftDatabase(tables: [Courses, Lectures, Assignments, Habits, HabitLogs, SyncQueue, Tasks])
+@DriftDatabase(tables: [
+  Courses,
+  Lectures,
+  Assignments,
+  Habits,
+  HabitLogs,
+  SyncQueue,
+  Tasks,
+  ScheduleTemplates,
+  ScheduleBlocks,
+])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
   @override
-int get schemaVersion => 3;
+int get schemaVersion => 4;
 
 @override
 MigrationStrategy get migration => MigrationStrategy(
@@ -37,6 +49,11 @@ MigrationStrategy get migration => MigrationStrategy(
     if (from < 3) {
       await m.createTable(tasks);
       await m.createTable(syncQueue);
+    }
+
+    if (from < 4) {
+      await m.createTable(scheduleTemplates);
+      await m.createTable(scheduleBlocks);
     }
   },
 );
@@ -54,4 +71,4 @@ LazyDatabase _openConnection() {
 
     return NativeDatabase.createInBackground(file);
   });
-}
+} 
