@@ -1325,6 +1325,7 @@ class _UpcomingCard extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
           ),
+          
         ],
       ),
     );
