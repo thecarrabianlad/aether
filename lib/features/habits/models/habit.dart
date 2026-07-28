@@ -73,6 +73,8 @@ class Habit {
   final bool isCompletedToday;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String? reminderTime; // 'HH:mm', null = no reminder
+  final String? reminderDays; // '1,3,5' ISO weekdays (1=Mon..7=Sun)
 
   const Habit({
     required this.id,
@@ -89,6 +91,8 @@ class Habit {
     required this.isCompletedToday,
     required this.createdAt,
     required this.updatedAt,
+    this.reminderTime,
+    this.reminderDays,
   });
 
   Habit copyWith({
@@ -106,6 +110,8 @@ class Habit {
     bool? isCompletedToday,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? reminderTime,
+    String? reminderDays,
   }) {
     return Habit(
       id: id ?? this.id,
@@ -122,6 +128,8 @@ class Habit {
       isCompletedToday: isCompletedToday ?? this.isCompletedToday,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      reminderTime: reminderTime ?? this.reminderTime,
+      reminderDays: reminderDays ?? this.reminderDays,
     );
   }
 }

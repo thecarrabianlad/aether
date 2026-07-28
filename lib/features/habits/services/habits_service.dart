@@ -1,6 +1,7 @@
 import 'package:aether/core/database/database.dart';
 import 'package:aether/core/services/supabase_service.dart';
-import 'package:aether/core/services/sync_queue_service.dart'; // Import SyncQueueService
+import 'package:aether/core/services/sync_queue_service.dart';
+import 'package:aether/core/services/notification_service.dart';
 import 'package:drift/drift.dart';
 import 'package:gotrue/gotrue.dart';
 import 'package:postgrest/postgrest.dart';
@@ -14,12 +15,17 @@ import 'package:aether/features/habits/models/habit.dart'; // Import for the Hab
 /// streams, so it updates instantly. Mutations write to Drift first
 /// (immediate UI reaction) then push to Supabase in the background.
 /// `sync*` methods pull remote data into the local DB.
+///
+/// After each local mutation, [NotificationService.scheduleHabitReminder]
+/// or [NotificationService.cancelHabitReminders] is called so that
+/// reminder notifications stay in sync with the user's habits.
 class HabitsService {
   final AppDatabase _db;
-  final SyncQueueService _syncQueueService; // Inject SyncQueueService
+  final SyncQueueService _syncQueueService;
+  final NotificationService _notificationService;
   final _supabase = SupabaseService.instance.client;
 
-  HabitsService(this._db, this._syncQueueService);
+  HabitsService(this._db, this._syncQueueService, this._notificationService);
 
   String? get _userId => _supabase.auth.currentUser?.id;
 
@@ -30,6 +36,11 @@ class HabitsService {
 
   Stream<List<HabitLog>> watchLogsForHabit(String habitId) =>
       (_db.select(_db.habitLogs)..where((l) => l.habitId.equals(habitId))).watch();
+
+  /// Read all habit entries (non-streaming). Used by reschedule-all flows
+  /// and by the settings controller when the user toggles notifications.
+  Future<List<HabitEntry>> getAllHabitEntries() =>
+      _db.select(_db.habits).get();
 
   Future<void> syncHabits() async {
     final userId = _userId;
@@ -70,6 +81,8 @@ class HabitsService {
     required String category,
     required String icon,
     required String color,
+    String? reminderTime,
+    String? reminderDays,
   }) async {
     final userId = _userId;
     if (userId == null) throw Exception('Not authenticated');
@@ -87,9 +100,12 @@ class HabitsService {
       longestStreak: 0,
       createdAt: now,
       updatedAt: now,
+      reminderTime: reminderTime,
+      reminderDays: reminderDays,
     );
 
     await _db.into(_db.habits).insert(entry);
+    await _notificationService.scheduleHabitReminder(entry);
     await _push(
       op: () => _supabase.from('habits').insert(_habitToRow(entry)),
       entityType: SyncEntityType.habit,
@@ -105,6 +121,7 @@ class HabitsService {
 
     final updated = habit.copyWith(updatedAt: DateTime.now());
     await (_db.update(_db.habits)..where((h) => h.id.equals(habit.id) & h.userId.equals(userId))).replace(updated);
+    await _notificationService.scheduleHabitReminder(updated);
     await _push(
       op: () => _supabase.from('habits').update(_habitToRow(updated)).eq('id', updated.id),
       entityType: SyncEntityType.habit,
@@ -120,6 +137,7 @@ class HabitsService {
 
     await (_db.delete(_db.habits)..where((h) => h.id.equals(habitId) & h.userId.equals(userId))).go();
     await (_db.delete(_db.habitLogs)..where((l) => l.habitId.equals(habitId))).go(); // Delete associated logs
+    await _notificationService.cancelHabitReminders(habitId);
     await _push(
       op: () => _supabase.from('habits').delete().eq('id', habitId),
       entityType: SyncEntityType.habit,
@@ -234,6 +252,8 @@ class HabitsService {
         longestStreak: r['longest_streak'] as int? ?? 0,
         createdAt: _parseDate(r['created_at']),
         updatedAt: _parseDate(r['updated_at']),
+        reminderTime: r['reminder_time'] as String?,
+        reminderDays: r['reminder_days'] as String?,
       );
 
   Map<String, dynamic> _habitToRow(HabitEntry h) => {
@@ -246,6 +266,8 @@ class HabitsService {
         'longest_streak': h.longestStreak,
         'created_at': h.createdAt.toIso8601String(),
         'updated_at': h.updatedAt.toIso8601String(),
+        'reminder_time': h.reminderTime,
+        'reminder_days': h.reminderDays,
       };
 
   HabitLog _habitLogFromRow(Map<String, dynamic> r) => HabitLog(

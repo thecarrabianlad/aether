@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:drift/drift.dart' show Value;
+import 'package:go_router/go_router.dart';
 import 'package:aether/core/providers.dart';
 import 'package:aether/features/academics/providers/academics_providers.dart';
 import 'package:aether/features/academics/widgets/course_summary_card.dart';
@@ -304,10 +305,10 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
   Widget _buildQuickAccessBar(AetherTheme aether) {
     // Fixed category colors — each shortcut keeps its own identity.
     final actions = [
-      (Icons.notes_rounded, 'All Notes', const Color(0xFF34C759)),
-      (Icons.assignment_rounded, 'Past Papers', const Color(0xFFE08A2E)),
-      (Icons.timer_rounded, 'Pomodoro', aether.accent),
-      (Icons.auto_stories_rounded, 'Flashcards', const Color(0xFF3B82F6)),
+      (Icons.notes_rounded, 'All Notes', const Color(0xFF34C759), '/notes'),
+      (Icons.assignment_rounded, 'Past Papers', const Color(0xFFE08A2E), '/past-papers'),
+      (Icons.timer_rounded, 'Pomodoro', aether.accent, '/pomodoro'),
+      (Icons.auto_stories_rounded, 'Flashcards', const Color(0xFF3B82F6), '/flashcards'),
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -327,7 +328,7 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
                         icon: a.$1,
                         label: a.$2,
                         color: a.$3,
-                        onTap: () {},
+                        onTap: () => context.push(a.$4),
                       ),
                     ),
                   ))

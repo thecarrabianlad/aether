@@ -116,17 +116,26 @@ class AcademicsService {
             ..orderBy([(l) => OrderingTerm(expression: l.scheduledAt)]))
           .watch();
 
-  Future<void> syncLectures(String courseId) async {
+  Future<void> syncLectures({String? courseId}) async {
     final userId = _userId;
     if (userId == null) return;
 
-    final remote = await _supabase
-        .from('lectures')
-        .select()
-        .eq('user_id', userId)
-        .eq('course_id', courseId);
-    for (final row in remote) {
-      await _db.into(_db.lectures).insertOnConflictUpdate(_lectureFromRow(row, userId));
+    if (courseId != null && courseId.isNotEmpty) {
+      // Sync lectures for a specific course
+      final remote = await _supabase
+          .from('lectures')
+          .select()
+          .eq('user_id', userId)
+          .eq('course_id', courseId);
+      for (final row in remote) {
+        await _db.into(_db.lectures).insertOnConflictUpdate(_lectureFromRow(row, userId));
+      }
+    } else {
+      // Sync all lectures across all courses
+      final courses = await _db.select(_db.courses).get(); // Get all local courses for this user
+      for (final course in courses) {
+        await syncLectures(courseId: course.id); // Recursively call for each course
+      }
     }
   }
 
@@ -222,17 +231,26 @@ class AcademicsService {
             ..orderBy([(a) => OrderingTerm(expression: a.dueDate)]))
           .watch();
 
-  Future<void> syncAssignments(String courseId) async {
+  Future<void> syncAssignments({String? courseId}) async {
     final userId = _userId;
     if (userId == null) return;
 
-    final remote = await _supabase
-        .from('assignments')
-        .select()
-        .eq('user_id', userId)
-        .eq('course_id', courseId);
-    for (final row in remote) {
-      await _db.into(_db.assignments).insertOnConflictUpdate(_assignmentFromRow(row, userId));
+    if (courseId != null && courseId.isNotEmpty) {
+      // Sync assignments for a specific course
+      final remote = await _supabase
+          .from('assignments')
+          .select()
+          .eq('user_id', userId)
+          .eq('course_id', courseId);
+      for (final row in remote) {
+        await _db.into(_db.assignments).insertOnConflictUpdate(_assignmentFromRow(row, userId));
+      }
+    } else {
+      // Sync all assignments across all courses
+      final courses = await _db.select(_db.courses).get(); // Get all local courses for this user
+      for (final course in courses) {
+        await syncAssignments(courseId: course.id); // Recursively call for each course
+      }
     }
   }
 
@@ -352,6 +370,32 @@ class AcademicsService {
         payload: payload,
       );
     }
+  }
+
+  /// Direct push/upsert to Supabase without touching local DB.
+  /// Used by SyncQueueService retries to avoid duplicating local rows.
+  Future<void> pushCourseToRemote(Course course) async {
+    await _supabase.from('courses').upsert(_courseToRow(course));
+  }
+
+  Future<void> pushLectureToRemote(Lecture lecture) async {
+    await _supabase.from('lectures').upsert(_lectureToRow(lecture));
+  }
+
+  Future<void> pushAssignmentToRemote(Assignment assignment) async {
+    await _supabase.from('assignments').upsert(_assignmentToRow(assignment));
+  }
+
+  Future<void> deleteCourseRemote(String courseId) async {
+    await _supabase.from('courses').delete().eq('id', courseId);
+  }
+
+  Future<void> deleteLectureRemote(String lectureId) async {
+    await _supabase.from('lectures').delete().eq('id', lectureId);
+  }
+
+  Future<void> deleteAssignmentRemote(String assignmentId) async {
+    await _supabase.from('assignments').delete().eq('id', assignmentId);
   }
 
   Course _courseFromRow(Map<String, dynamic> r, String userId) => Course(

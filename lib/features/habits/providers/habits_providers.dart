@@ -187,6 +187,8 @@ Habit _calculateHabitMetrics(HabitEntry entry, List<HabitLog> logs) {
     isCompletedToday: completedToday,
     createdAt: entry.createdAt,
     updatedAt: entry.updatedAt,
+    reminderTime: entry.reminderTime,
+    reminderDays: entry.reminderDays,
   );
 }
 

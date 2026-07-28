@@ -13,8 +13,8 @@ class SyncService {
     // Perform sync operations in parallel
     await Future.wait([
       _academicsService.syncCourses(),
-      _academicsService.syncLectures(''), // Assuming an empty string or all courses
-      _academicsService.syncAssignments(''), // Assuming an empty string or all courses
+      _academicsService.syncLectures(), // Now optional
+      _academicsService.syncAssignments(), // Now optional
       _habitsService.syncHabits(),
       _habitsService.syncHabitLogs(),
     ]);

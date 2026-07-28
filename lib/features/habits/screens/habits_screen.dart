@@ -5,6 +5,7 @@ import 'package:aether/core/providers.dart';
 import 'package:aether/features/habits/models/habit.dart';
 import 'package:aether/features/habits/providers/habits_providers.dart';
 import 'package:aether/core/database/database.dart'; // For HabitEntry
+import 'package:aether/core/services/notification_service.dart';
 import 'package:aether/features/habits/widgets/habits_app_bar.dart';
 import 'package:aether/features/habits/widgets/date_navigator.dart';
 import 'package:aether/features/habits/widgets/overview_metrics.dart';
@@ -15,7 +16,7 @@ import 'package:aether/features/habits/widgets/category_stats.dart';
 import 'package:aether/features/habits/widgets/add_habit_tile.dart';
 import 'package:aether/features/habits/widgets/add_habit_dialog.dart';
 import 'package:aether/features/habits/widgets/empty_habits.dart';
-import 'package:aether/features/habits/models/habit_codec.dart'; // New import
+import 'package:aether/features/habits/models/habit_codec.dart';
 
 class HabitsScreen extends ConsumerStatefulWidget {
   final VoidCallback? onMenuTap;
@@ -41,6 +42,8 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
           category: result.category.name,
           icon: iconString,
           color: colorString,
+          reminderTime: result.reminderTime,
+          reminderDays: result.reminderDays,
         );
   }
 
@@ -49,6 +52,8 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
       context,
       currentName: habit.name,
       currentCategory: habit.category,
+      currentReminderTime: habit.reminderTime,
+      currentReminderDays: habit.reminderDays,
     );
     if (result == null || !mounted) return;
     final iconString = HabitCodec.iconToString(result.icon);
@@ -64,6 +69,8 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
             longestStreak: habit.longestStreak,
             createdAt: habit.createdAt,
             updatedAt: DateTime.now(),
+            reminderTime: result.reminderTime,
+            reminderDays: result.reminderDays,
           ),
         );
   }
@@ -112,8 +119,23 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
     Future.microtask(() {
       if (mounted) {
         ref.read(globalAddActionProvider.notifier).state = _addHabitAction;
+        _rescheduleAllHabitReminders();
       }
     });
+  }
+
+  /// Reschedule all habit notifications on app start and settings changes.
+  /// Gated on [NotificationSettings.enabled] && [NotificationSettings.habits].
+  Future<void> _rescheduleAllHabitReminders() async {
+    final settings = ref.read(notificationSettingsProvider);
+    final notificationService = ref.read(notificationServiceProvider);
+    if (settings.enabled && settings.habits) {
+      final entries = await ref.read(
+        habitsServiceProvider).getAllHabitEntries();
+      await notificationService.rescheduleAll(entries);
+    } else {
+      await notificationService.cancelAll();
+    }
   }
 
   @override

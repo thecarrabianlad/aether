@@ -4,6 +4,7 @@ import 'package:aether/core/services/academics_service.dart';
 import 'package:aether/core/services/auth_service.dart';
 import 'package:aether/core/services/profile_service.dart';
 import 'package:aether/core/services/settings_service.dart';
+import 'package:aether/core/services/notification_service.dart';
 import 'package:aether/core/services/sync_queue_service.dart';
 import 'package:aether/core/services/sync_service.dart';
 import 'package:aether/core/theme/app_theme.dart';
@@ -16,6 +17,11 @@ final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase();
   ref.onDispose(db.close);
   return db;
+});
+
+/// Singleton notification service — initialised in [main] before runApp.
+final notificationServiceProvider = Provider<NotificationService>((ref) {
+  return NotificationService.instance;
 });
 
 final authProvider = Provider<AuthService>((ref) => AuthService.instance);
@@ -37,7 +43,8 @@ final Provider<HabitsService> habitsServiceProvider =
     Provider<HabitsService>((ref) {
   final db = ref.watch(databaseProvider);
   final syncQueueService = ref.watch(syncQueueServiceProvider);
-  return HabitsService(db, syncQueueService);
+  final notificationService = ref.watch(notificationServiceProvider);
+  return HabitsService(db, syncQueueService, notificationService);
 });
 
 /// Service provider for sync queue operations
@@ -144,11 +151,16 @@ class ThemeController extends StateNotifier<AppThemeState> {
   }
 }
 
-/// Notification preference toggles, persisted locally. FCM isn't wired
-/// up yet — these take effect once notifications land.
+/// Notification preference toggles, persisted locally.
+/// When toggling [enabled] or [habits] the controller cancels or
+/// re-schedules all habit reminders through [NotificationService].
 final notificationSettingsProvider = StateNotifierProvider<
     NotificationSettingsController, NotificationSettings>((ref) {
-  return NotificationSettingsController(ref.watch(settingsServiceProvider));
+  return NotificationSettingsController(
+    ref.watch(settingsServiceProvider),
+    ref.watch(notificationServiceProvider),
+    () => ref.read(habitsServiceProvider).getAllHabitEntries(),
+  );
 });
 
 @immutable
@@ -183,9 +195,14 @@ class NotificationSettings {
 class NotificationSettingsController
     extends StateNotifier<NotificationSettings> {
   final SettingsService _settings;
+  final NotificationService _notificationService;
+  final Future<List<HabitEntry>> Function() _getHabits;
 
-  NotificationSettingsController(this._settings)
-      : super(NotificationSettings(
+  NotificationSettingsController(
+    this._settings,
+    this._notificationService,
+    this._getHabits,
+  ) : super(NotificationSettings(
           enabled: _settings.notificationsEnabled,
           tasks: _settings.notifyTasks,
           habits: _settings.notifyHabits,
@@ -195,6 +212,7 @@ class NotificationSettingsController
   Future<void> setEnabled(bool value) async {
     state = state.copyWith(enabled: value);
     await _settings.setNotificationsEnabled(value);
+    await _rescheduleHabits();
   }
 
   Future<void> setTasks(bool value) async {
@@ -205,11 +223,22 @@ class NotificationSettingsController
   Future<void> setHabits(bool value) async {
     state = state.copyWith(habits: value);
     await _settings.setNotifyHabits(value);
+    await _rescheduleHabits();
   }
 
   Future<void> setLectures(bool value) async {
     state = state.copyWith(lectures: value);
     await _settings.setNotifyLectures(value);
+  }
+
+  /// Cancel or reschedule habit reminders depending on [enabled] && [habits].
+  Future<void> _rescheduleHabits() async {
+    if (state.enabled && state.habits) {
+      final habits = await _getHabits();
+      await _notificationService.rescheduleAll(habits);
+    } else {
+      await _notificationService.cancelAll();
+    }
   }
 }
 

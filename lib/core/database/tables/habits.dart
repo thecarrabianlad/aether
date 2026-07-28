@@ -12,6 +12,8 @@ class Habits extends Table {
   IntColumn get longestStreak => integer().withDefault(const Constant(0))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
+  TextColumn get reminderTime => text().nullable()(); // 'HH:mm', null = no reminder
+  TextColumn get reminderDays => text().nullable()(); // '1,3,5' ISO weekdays (1=Mon..7=Sun)
 
   @override
   Set<Column> get primaryKey => {id};

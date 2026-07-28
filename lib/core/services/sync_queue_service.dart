@@ -102,25 +102,13 @@ class SyncQueueService {
     switch (operation) {
       case SyncOperation.insert:
       case SyncOperation.upsert:
-        await _academicsService.createCourse(
-          name: course.name,
-          code: course.code,
-          professor: course.professor,
-          color: course.color,
-          icon: course.icon,
-          semester: course.semester,
-          location: course.location,
-          credits: course.credits,
-          scheduleDays: course.scheduleDays,
-          scheduleStart: course.scheduleStart,
-          scheduleEnd: course.scheduleEnd,
-        );
+        await _academicsService.pushCourseToRemote(course);
         return true;
       case SyncOperation.update:
-        await _academicsService.updateCourse(course);
+        await _academicsService.pushCourseToRemote(course);
         return true;
       case SyncOperation.delete:
-        await _academicsService.deleteCourse(entityId);
+        await _academicsService.deleteCourseRemote(entityId);
         return true;
     }
   }
@@ -131,18 +119,13 @@ class SyncQueueService {
     switch (operation) {
       case SyncOperation.insert:
       case SyncOperation.upsert:
-        await _academicsService.createLecture(
-          lecture.courseId,
-          lecture.title,
-          chapter: lecture.chapter,
-          scheduledAt: lecture.scheduledAt,
-        );
+        await _academicsService.pushLectureToRemote(lecture);
         return true;
       case SyncOperation.update:
-        await _academicsService.updateLecture(lecture);
+        await _academicsService.pushLectureToRemote(lecture);
         return true;
       case SyncOperation.delete:
-        await _academicsService.deleteLecture(entityId);
+        await _academicsService.deleteLectureRemote(entityId);
         return true;
     }
   }
@@ -153,18 +136,13 @@ class SyncQueueService {
     switch (operation) {
       case SyncOperation.insert:
       case SyncOperation.upsert:
-        await _academicsService.createAssignment(
-          assignment.courseId,
-          assignment.title,
-          description: assignment.description,
-          dueDate: assignment.dueDate,
-        );
+        await _academicsService.pushAssignmentToRemote(assignment);
         return true;
       case SyncOperation.update:
-        await _academicsService.updateAssignment(assignment);
+        await _academicsService.pushAssignmentToRemote(assignment);
         return true;
       case SyncOperation.delete:
-        await _academicsService.deleteAssignment(entityId);
+        await _academicsService.deleteAssignmentRemote(entityId);
         return true;
     }
   }

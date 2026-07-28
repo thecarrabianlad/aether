@@ -15,6 +15,10 @@ import 'tables/sync_queue.dart'; // New sync queue table
 import 'tables/tasks.dart';
 import 'tables/schedule_templates.dart';
 import 'tables/schedule_blocks.dart';
+import 'tables/notes.dart';
+import 'tables/past_papers.dart';
+import 'tables/pomodoro.dart';
+import 'tables/flashcards.dart';
 
 part 'database.g.dart';
 
@@ -28,13 +32,17 @@ part 'database.g.dart';
   Tasks,
   ScheduleTemplates,
   ScheduleBlocks,
+  Notes,
+  PastPapers,
+  PomodoroSessions,
+  FlashcardDecks,
+  Flashcards,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  @override
-int get schemaVersion => 4;
+  int get schemaVersion => 6;
 
 @override
 MigrationStrategy get migration => MigrationStrategy(
@@ -54,6 +62,19 @@ MigrationStrategy get migration => MigrationStrategy(
     if (from < 4) {
       await m.createTable(scheduleTemplates);
       await m.createTable(scheduleBlocks);
+    }
+
+    if (from < 5) {
+      await m.addColumn(habits, habits.reminderTime);
+      await m.addColumn(habits, habits.reminderDays);
+    }
+
+    if (from < 6) {
+      await m.createTable(notes);
+      await m.createTable(pastPapers);
+      await m.createTable(pomodoroSessions);
+      await m.createTable(flashcardDecks);
+      await m.createTable(flashcards);
     }
   },
 );

@@ -5,10 +5,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show AuthState;
 import 'package:aether/features/auth/screens/login_screen.dart';
+import 'package:aether/features/auth/screens/profile_screen.dart';
 import 'package:aether/features/auth/screens/signup_screen.dart';
 import 'package:aether/core/services/auth_service.dart';
 import 'package:aether/screens/home_screen.dart';
 import 'package:aether/features/academics/screens/academics_screen.dart';
+import 'package:aether/features/notes/screens/notes_screen.dart';
+import 'package:aether/features/past_papers/screens/past_papers_screen.dart';
+import 'package:aether/features/pomodoro/screens/pomodoro_screen.dart';
+import 'package:aether/features/flashcards/screens/flashcards_screen.dart';
 import 'package:aether/features/habits/screens/habits_screen.dart';
 import 'package:aether/screens/health/health_screen.dart';
 import 'package:aether/features/settings/screens/settings_screen.dart';
@@ -43,6 +48,22 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/settings',
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: '/notes',
+        builder: (context, state) => const NotesScreen(),
+      ),
+      GoRoute(
+        path: '/past-papers',
+        builder: (context, state) => const PastPapersScreen(),
+      ),
+      GoRoute(
+        path: '/pomodoro',
+        builder: (context, state) => const PomodoroScreen(),
+      ),
+      GoRoute(
+        path: '/flashcards',
+        builder: (context, state) => const FlashcardsScreen(),
       ),
       ShellRoute(
         builder: (context, state, child) {

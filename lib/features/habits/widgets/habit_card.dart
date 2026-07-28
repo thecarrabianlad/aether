@@ -55,12 +55,35 @@ class HabitCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 3),
-                Text(
-                  habit.category.label,
-                  style: TextStyle(
-                    color: context.aether.textMuted,
-                    fontSize: 12,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      habit.category.label,
+                      style: TextStyle(
+                        color: context.aether.textMuted,
+                        fontSize: 12,
+                      ),
+                    ),
+                    if (habit.reminderTime != null &&
+                        habit.reminderDays != null &&
+                        habit.reminderDays!.isNotEmpty) ...[
+                      const SizedBox(width: 8),
+                      Icon(
+                        Icons.notifications_outlined,
+                        color: context.aether.accent,
+                        size: 12,
+                      ),
+                      const SizedBox(width: 3),
+                      Text(
+                        habit.reminderTime!,
+                        style: TextStyle(
+                          color: context.aether.accent,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 const SizedBox(height: 8),
                 Row(
