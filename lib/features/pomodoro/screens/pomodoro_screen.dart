@@ -1,7 +1,7 @@
 import 'dart:async';
+import 'package:aether/core/database/database.dart' show PomodoroSession;
 import 'package:aether/core/theme/app_theme.dart';
 import 'package:aether/features/pomodoro/providers/pomodoro_providers.dart';
-import 'package:aether/features/pomodoro/services/pomodoro_service.dart';
 import 'package:aether/widgets/common/glass_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

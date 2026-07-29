@@ -50,7 +50,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
     // Navigate based on item id
     switch (itemId) {
       case 'profile':
-        // TODO: Navigate to profile screen
+        GoRouter.of(context).go('/profile');
         break;
       case 'premium':
         // TODO: Navigate to premium screen

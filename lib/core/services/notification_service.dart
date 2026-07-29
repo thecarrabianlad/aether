@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
@@ -184,7 +185,6 @@ class NotificationService {
   }
 
   /// Navigate to the habits screen when a habit-reminder notification is tapped.
-  @visibleForTesting
   static void _handleTap(String? payload) {
     // payload carries the habitId for future habit-detail deep linking.
     _router?.go('/habits');

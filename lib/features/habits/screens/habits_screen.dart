@@ -1,11 +1,11 @@
 import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:aether/core/providers.dart';
 import 'package:aether/features/habits/models/habit.dart';
 import 'package:aether/features/habits/providers/habits_providers.dart';
 import 'package:aether/core/database/database.dart'; // For HabitEntry
-import 'package:aether/core/services/notification_service.dart';
 import 'package:aether/features/habits/widgets/habits_app_bar.dart';
 import 'package:aether/features/habits/widgets/date_navigator.dart';
 import 'package:aether/features/habits/widgets/overview_metrics.dart';
@@ -213,7 +213,8 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
             HabitsAppBar(
               onMenuTap: widget.onMenuTap ??
                   () => ref.read(drawerProvider.notifier).state = true,
-              onProfileTap: widget.onProfileTap ?? () {},
+              onProfileTap: widget.onProfileTap ??
+                  () => context.push('/profile'),
             ),
             Expanded(
               child: SingleChildScrollView(
@@ -234,7 +235,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
                     overviewMetricsAsync.when(
                       data: (overviewMetrics) => OverviewMetricsSection(
                         metrics: overviewMetrics,
-                        onViewCalendar: () {},
+                        onViewCalendar: () => context.push('/habits/calendar'),
                       ),
                       loading: () => const Center(child: CircularProgressIndicator()),
                       error: (err, stack) => Text('Error: $err'),
@@ -257,13 +258,17 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
                             children: filteredHabits.map(
                               (habit) => Padding(
                                 padding: const EdgeInsets.only(bottom: 10),
-                                child: HabitCard(
-                                  habit: habit,
-                                  onToggle: () => ref
-                                      .read(habitsServiceProvider)
-                                      .toggleCompletion(habit.id, !habit.isCompletedToday),
-                                  onEdit: () => _showEditHabitDialog(habit),
-                                  onDelete: () => _confirmDeleteHabit(habit),
+                                child: InkWell(
+                                  onTap: () => context.push('/habit-detail/${habit.id}'),
+                                  borderRadius: BorderRadius.circular(14),
+                                  child: HabitCard(
+                                    habit: habit,
+                                    onToggle: () => ref
+                                        .read(habitsServiceProvider)
+                                        .toggleCompletion(habit.id, !habit.isCompletedToday),
+                                    onEdit: () => _showEditHabitDialog(habit),
+                                    onDelete: () => _confirmDeleteHabit(habit),
+                                  ),
                                 ),
                               ),
                             ).toList(),

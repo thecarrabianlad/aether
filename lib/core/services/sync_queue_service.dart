@@ -98,51 +98,45 @@ class SyncQueueService {
   // --- Academics Retry Operations ---
   Future<bool> _retryCourseOperation(SyncOperation operation, String entityId, Map<String, dynamic>? payload) async {
     if (payload == null) return false;
-    final course = Course.fromJson(payload);
+    final course = Course.fromJson(payload); // fromJson now exists
     switch (operation) {
       case SyncOperation.insert:
       case SyncOperation.upsert:
-        await _academicsService.pushCourseToRemote(course);
-        return true;
       case SyncOperation.update:
-        await _academicsService.pushCourseToRemote(course);
+        await _academicsService._directUpsertCourseToRemote(course);
         return true;
       case SyncOperation.delete:
-        await _academicsService.deleteCourseRemote(entityId);
+        await _academicsService._directDeleteCourseToRemote(entityId);
         return true;
     }
   }
 
   Future<bool> _retryLectureOperation(SyncOperation operation, String entityId, Map<String, dynamic>? payload) async {
     if (payload == null) return false;
-    final lecture = Lecture.fromJson(payload);
+    final lecture = Lecture.fromJson(payload); // fromJson now exists
     switch (operation) {
       case SyncOperation.insert:
       case SyncOperation.upsert:
-        await _academicsService.pushLectureToRemote(lecture);
-        return true;
       case SyncOperation.update:
-        await _academicsService.pushLectureToRemote(lecture);
+        await _academicsService._directUpsertLectureToRemote(lecture);
         return true;
       case SyncOperation.delete:
-        await _academicsService.deleteLectureRemote(entityId);
+        await _academicsService._directDeleteLectureToRemote(entityId);
         return true;
     }
   }
 
   Future<bool> _retryAssignmentOperation(SyncOperation operation, String entityId, Map<String, dynamic>? payload) async {
     if (payload == null) return false;
-    final assignment = Assignment.fromJson(payload);
+    final assignment = Assignment.fromJson(payload); // fromJson now exists
     switch (operation) {
       case SyncOperation.insert:
       case SyncOperation.upsert:
-        await _academicsService.pushAssignmentToRemote(assignment);
-        return true;
       case SyncOperation.update:
-        await _academicsService.pushAssignmentToRemote(assignment);
+        await _academicsService._directUpsertAssignmentToRemote(assignment);
         return true;
       case SyncOperation.delete:
-        await _academicsService.deleteAssignmentRemote(entityId);
+        await _academicsService._directDeleteAssignmentToRemote(entityId);
         return true;
     }
   }
@@ -150,19 +144,21 @@ class SyncQueueService {
   // --- Habits Retry Operations ---
   Future<bool> _retryHabitOperation(SyncOperation operation, String entityId, Map<String, dynamic>? payload) async {
     if (payload == null) return false;
+    // HabitEntry.fromJson needs to be added (from database.g.dart)
     final habitEntry = HabitEntry.fromJson(payload);
     switch (operation) {
       case SyncOperation.insert:
       case SyncOperation.upsert:
+      case SyncOperation.update:
         await _habitsService.createHabit(
+          id: habitEntry.id, // Ensure ID is passed for upsert
           name: habitEntry.name,
           category: habitEntry.category,
           icon: habitEntry.icon,
           color: habitEntry.color,
+          reminderTime: habitEntry.reminderTime,
+          reminderDays: habitEntry.reminderDays,
         );
-        return true;
-      case SyncOperation.update:
-        await _habitsService.updateHabit(habitEntry);
         return true;
       case SyncOperation.delete:
         await _habitsService.deleteHabit(entityId);
@@ -172,6 +168,7 @@ class SyncQueueService {
 
   Future<bool> _retryHabitLogOperation(SyncOperation operation, String entityId, Map<String, dynamic>? payload) async {
     if (payload == null) return false;
+    // HabitLog.fromJson needs to be added (from database.g.dart)
     final habitLog = HabitLog.fromJson(payload);
     switch (operation) {
       case SyncOperation.insert:

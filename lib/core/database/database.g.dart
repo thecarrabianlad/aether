@@ -7664,7 +7664,7 @@ class $FlashcardsTable extends Flashcards
     false,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
-    defaultValue: const Constant(DateTime.fromMillisecondsSinceEpoch(0)),
+    defaultValue: Constant(DateTime.fromMillisecondsSinceEpoch(0)),
   );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',

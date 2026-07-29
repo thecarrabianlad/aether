@@ -47,7 +47,7 @@ class FlashcardsService {
   Stream<List<Flashcard>> watchCardsForDeck(String deckId) {
     return (_db.select(_db.flashcards)
           ..where((c) => c.deckId.equals(deckId))
-          ..orderBy([(c) => OrderingTerm(c.position)]))
+          ..orderBy([(c) => OrderingTerm(expression: c.position)]))
         .watch();
   }
 
@@ -58,7 +58,7 @@ class FlashcardsService {
           ..where((c) =>
               c.deckId.equals(deckId) &
               c.nextReviewAt.isSmallerOrEqualValue(now))
-          ..orderBy([(c) => OrderingTerm(c.position)]))
+          ..orderBy([(c) => OrderingTerm(expression: c.position)]))
         .watch();
   }
 

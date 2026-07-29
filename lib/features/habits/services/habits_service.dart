@@ -3,8 +3,7 @@ import 'package:aether/core/services/supabase_service.dart';
 import 'package:aether/core/services/sync_queue_service.dart';
 import 'package:aether/core/services/notification_service.dart';
 import 'package:drift/drift.dart';
-import 'package:gotrue/gotrue.dart';
-import 'package:postgrest/postgrest.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:aether/features/habits/models/habit.dart'; // Import for the Habit model and HabitCategory

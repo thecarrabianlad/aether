@@ -113,6 +113,7 @@ final weeklyProgressProvider = Provider<AsyncValue<WeeklyProgressData>>((ref) {
   });
 });
 
+
 // ── Helper methods for Habit model transformation ──────────────────────────
 // This could be moved into HabitsService or a dedicated transformer utility.
 

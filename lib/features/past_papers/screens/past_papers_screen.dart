@@ -1,11 +1,11 @@
+import 'dart:typed_data';
 import 'package:aether/core/database/database.dart';
 import 'package:aether/core/theme/app_theme.dart';
 import 'package:aether/features/past_papers/providers/past_papers_providers.dart';
-import 'package:aether/features/past_papers/services/past_papers_service.dart';
 import 'package:aether/widgets/common/glass_card.dart';
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 class PastPapersScreen extends ConsumerStatefulWidget {
   const PastPapersScreen({super.key});
@@ -15,7 +15,6 @@ class PastPapersScreen extends ConsumerStatefulWidget {
 }
 
 class _PastPapersScreenState extends ConsumerState<PastPapersScreen> {
-  static const _examTypes = ['midterm', 'final', 'quiz', 'assignment', 'other'];
   static const _examColors = {
     'midterm': Color(0xFF8B5CF6),
     'final': Color(0xFFFF3B30),
@@ -113,12 +112,13 @@ class _PastPapersScreenState extends ConsumerState<PastPapersScreen> {
               fileName: storedName,
             );
           } else {
+            // drift's copyWith wraps nullable fields in Value<> for null-safety
             await service.updatePaper(paper.copyWith(
               title: title,
-              year: year,
-              examType: examType,
-              fileUrl: fileUrl ?? paper.fileUrl,
-              fileName: storedName ?? paper.fileName,
+              year: Value<String?>(year),
+              examType: Value<String?>(examType),
+              fileUrl: Value<String?>(fileUrl ?? paper.fileUrl),
+              fileName: Value<String?>(storedName ?? paper.fileName),
             ));
           }
         },

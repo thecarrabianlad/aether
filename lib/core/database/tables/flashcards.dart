@@ -29,7 +29,7 @@ class Flashcards extends Table {
   IntColumn get intervalDays => integer().withDefault(const Constant(1))();
   IntColumn get easeFactor => integer().withDefault(const Constant(250))(); // 2.5 * 100
   IntColumn get repetitions => integer().withDefault(const Constant(0))();
-  DateTimeColumn get nextReviewAt => dateTime().withDefault(const Constant(DateTime.fromMillisecondsSinceEpoch(0)))();
+  DateTimeColumn get nextReviewAt => dateTime().withDefault(Constant(DateTime.fromMillisecondsSinceEpoch(0)))();
 
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();

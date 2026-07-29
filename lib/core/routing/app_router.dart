@@ -14,6 +14,8 @@ import 'package:aether/features/notes/screens/notes_screen.dart';
 import 'package:aether/features/past_papers/screens/past_papers_screen.dart';
 import 'package:aether/features/pomodoro/screens/pomodoro_screen.dart';
 import 'package:aether/features/flashcards/screens/flashcards_screen.dart';
+import 'package:aether/features/habits/screens/habit_detail_screen.dart';
+import 'package:aether/features/habits/screens/habits_calendar_screen.dart';
 import 'package:aether/features/habits/screens/habits_screen.dart';
 import 'package:aether/screens/health/health_screen.dart';
 import 'package:aether/features/settings/screens/settings_screen.dart';
@@ -83,6 +85,21 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/habits',
             builder: (context, state) => const HabitsScreen(),
+          ),
+          GoRoute(
+            path: '/habit-detail/:id',
+            builder: (context, state) {
+              final id = state.pathParameters['id']!;
+              return HabitDetailScreen(habitId: id);
+            },
+          ),
+          GoRoute(
+            path: '/habits/calendar',
+            builder: (context, state) => const HabitsCalendarScreen(),
+          ),
+          GoRoute(
+            path: '/profile',
+            builder: (context, state) => const ProfileScreen(),
           ),
           GoRoute(
             path: '/health',

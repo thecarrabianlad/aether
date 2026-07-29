@@ -171,8 +171,8 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
                         course: c,
                         onTap: () {
                           final service = ref.read(academicsServiceProvider);
-                          service.syncLectures(c.id);
-                          service.syncAssignments(c.id);
+                          service.syncLectures(courseId: c.id);
+                          service.syncAssignments(courseId: c.id);
                           ref.read(selectedCourseProvider.notifier).state = c;
                         },
                       );

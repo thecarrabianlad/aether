@@ -83,9 +83,9 @@ class PomodoroService {
     final actualMinutes = now.difference(session.startedAt).inMinutes;
 
     final updated = session.copyWith(
-      endedAt: Value(now),
+      endedAt: Value(now), // uses Value<DateTime?> — correct for copyWith
       actualMinutes: Value(actualMinutes),
-      completed: Value(completed),
+      completed: completed,
     );
 
     await (_db.update(_db.pomodoroSessions)..where((s) => s.id.equals(sessionId)))

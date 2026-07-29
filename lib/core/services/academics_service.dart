@@ -2,8 +2,7 @@ import 'package:aether/core/database/database.dart';
 import 'package:aether/core/services/supabase_service.dart';
 import 'package:aether/core/services/sync_queue_service.dart';
 import 'package:drift/drift.dart';
-import 'package:gotrue/gotrue.dart';
-import 'package:postgrest/postgrest.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'; // Unified Supabase import
 import 'package:uuid/uuid.dart';
 
 
@@ -24,7 +23,8 @@ class AcademicsService {
 
   // ── Courses ──────────────────────────────────────────
 
-  Stream<List<Course>> watchCourses() => _db.select(_db.courses).watch();
+  Stream<List<Course>> watchCourses() =>
+      (_db.select(_db.courses)..where((c) => c.userId.equals(_userId!))).watch();
 
   Future<void> syncCourses() async {
     final userId = _userId;
@@ -36,7 +36,9 @@ class AcademicsService {
     }
   }
 
+
   Future<Course> createCourse({
+    String? id,
     required String name,
     String? code,
     String? professor,
@@ -53,7 +55,7 @@ class AcademicsService {
     if (userId == null) throw Exception('Not authenticated');
 
     final course = Course(
-      id: const Uuid().v4(),
+      id: id ?? const Uuid().v4(),
       userId: userId,
       name: name,
       code: code,
@@ -72,7 +74,7 @@ class AcademicsService {
 
     await _db.into(_db.courses).insert(course);
     await _push(
-      op: () => _supabase.from('courses').insert(_courseToRow(course)),
+      op: () => _directUpsertCourseToRemote(course), // Use direct upsert
       entityType: SyncEntityType.course,
       operation: SyncOperation.insert,
       entityId: course.id,
@@ -85,10 +87,7 @@ class AcademicsService {
     final updated = course.copyWith(updatedAt: DateTime.now());
     await _db.update(_db.courses).replace(updated);
     await _push(
-      op: () => _supabase
-          .from('courses')
-          .update(_courseToRow(updated))
-          .eq('id', updated.id),
+      op: () => _directUpsertCourseToRemote(updated), // Use direct upsert
       entityType: SyncEntityType.course,
       operation: SyncOperation.update,
       entityId: updated.id,
@@ -97,11 +96,11 @@ class AcademicsService {
   }
 
   Future<void> deleteCourse(String courseId) async {
-    await (_db.delete(_db.courses)..where((t) => t.id.equals(courseId))).go();
-    await (_db.delete(_db.lectures)..where((t) => t.courseId.equals(courseId))).go();
-    await (_db.delete(_db.assignments)..where((t) => t.courseId.equals(courseId))).go();
+    await (_db.delete(_db.courses)..where((c) => c.id.equals(courseId))).go();
+    await (_db.delete(_db.lectures)..where((l) => l.courseId.equals(courseId))).go();
+    await (_db.delete(_db.assignments)..where((a) => a.courseId.equals(courseId))).go();
     await _push(
-      op: () => _supabase.from('courses').delete().eq('id', courseId),
+      op: () => _directDeleteCourseRemote(courseId), // Use direct delete
       entityType: SyncEntityType.course,
       operation: SyncOperation.delete,
       entityId: courseId,
@@ -120,92 +119,63 @@ class AcademicsService {
     final userId = _userId;
     if (userId == null) return;
 
-    if (courseId != null && courseId.isNotEmpty) {
-      // Sync lectures for a specific course
-      final remote = await _supabase
-          .from('lectures')
-          .select()
-          .eq('user_id', userId)
-          .eq('course_id', courseId);
-      for (final row in remote) {
-        await _db.into(_db.lectures).insertOnConflictUpdate(_lectureFromRow(row, userId));
-      }
+    PostgrestFilterBuilder query = _supabase.from('lectures').select();
+    if (courseId != null) {
+      query = query.eq('course_id', courseId);
     } else {
-      // Sync all lectures across all courses
-      final courses = await _db.select(_db.courses).get(); // Get all local courses for this user
-      for (final course in courses) {
-        await syncLectures(courseId: course.id); // Recursively call for each course
-      }
+      query = query.eq('user_id', userId);
+    }
+    final remote = await query;
+    for (final row in remote) {
+      await _db.into(_db.lectures).insertOnConflictUpdate(_lectureFromRow(row, userId));
     }
   }
 
-  Future<void> createLecture(
-    String courseId,
-    String title, {
+  Future<Lecture> createLecture({
+    String? id,
+    required String courseId,
+    required String title,
     String? chapter,
+    String? tag,
     DateTime? scheduledAt,
+    int? durationMinutes,
+    bool? isCompleted,
+    DateTime? completedAt,
   }) async {
     final userId = _userId;
     if (userId == null) throw Exception('Not authenticated');
 
     final lecture = Lecture(
-      id: const Uuid().v4(),
+      id: id ?? const Uuid().v4(),
       courseId: courseId,
       userId: userId,
       title: title,
       chapter: chapter,
-      tag: 'Upcoming',
+      tag: tag,
       scheduledAt: scheduledAt,
-      durationMinutes: 90,
-      isCompleted: false,
+      durationMinutes: durationMinutes,
+      isCompleted: isCompleted ?? false,
+      completedAt: completedAt,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );
 
     await _db.into(_db.lectures).insert(lecture);
     await _push(
-      op: () => _supabase.from('lectures').insert(_lectureToRow(lecture)),
+      op: () => _directUpsertLectureToRemote(lecture), // Use direct upsert
       entityType: SyncEntityType.lecture,
       operation: SyncOperation.insert,
       entityId: lecture.id,
       payload: _lectureToRow(lecture),
     );
-  }
-
-  Future<void> toggleLectureCompletion(String lectureId, bool completed) async {
-    final now = DateTime.now();
-    await (_db.update(_db.lectures)..where((l) => l.id.equals(lectureId)))
-        .write(LecturesCompanion(
-      isCompleted: Value(completed),
-      completedAt: Value(completed ? now : null),
-      updatedAt: Value(now),
-    ));
-    await _push(
-      op: () => _supabase.from('lectures').update({
-        'is_completed': completed,
-        'completed_at': completed ? now.toIso8601String() : null,
-        'updated_at': now.toIso8601String(),
-      }).eq('id', lectureId),
-      entityType: SyncEntityType.lecture,
-      operation: SyncOperation.update,
-      entityId: lectureId,
-      payload: {
-        'id': lectureId,
-        'is_completed': completed,
-        'completed_at': completed ? now.toIso8601String() : null,
-        'updated_at': now.toIso8601String(),
-      },
-    );
+    return lecture;
   }
 
   Future<void> updateLecture(Lecture lecture) async {
     final updated = lecture.copyWith(updatedAt: DateTime.now());
-    await (_db.update(_db.lectures)..where((l) => l.id.equals(lecture.id))).replace(updated);
+    await _db.update(_db.lectures).replace(updated);
     await _push(
-      op: () => _supabase
-          .from('lectures')
-          .update(_lectureToRow(updated))
-          .eq('id', updated.id),
+      op: () => _directUpsertLectureToRemote(updated), // Use direct upsert
       entityType: SyncEntityType.lecture,
       operation: SyncOperation.update,
       entityId: updated.id,
@@ -216,7 +186,7 @@ class AcademicsService {
   Future<void> deleteLecture(String lectureId) async {
     await (_db.delete(_db.lectures)..where((l) => l.id.equals(lectureId))).go();
     await _push(
-      op: () => _supabase.from('lectures').delete().eq('id', lectureId),
+      op: () => _directDeleteLectureRemote(lectureId), // Use direct delete
       entityType: SyncEntityType.lecture,
       operation: SyncOperation.delete,
       entityId: lectureId,
@@ -235,64 +205,59 @@ class AcademicsService {
     final userId = _userId;
     if (userId == null) return;
 
-    if (courseId != null && courseId.isNotEmpty) {
-      // Sync assignments for a specific course
-      final remote = await _supabase
-          .from('assignments')
-          .select()
-          .eq('user_id', userId)
-          .eq('course_id', courseId);
-      for (final row in remote) {
-        await _db.into(_db.assignments).insertOnConflictUpdate(_assignmentFromRow(row, userId));
-      }
+    PostgrestFilterBuilder query = _supabase.from('assignments').select();
+    if (courseId != null) {
+      query = query.eq('course_id', courseId);
     } else {
-      // Sync all assignments across all courses
-      final courses = await _db.select(_db.courses).get(); // Get all local courses for this user
-      for (final course in courses) {
-        await syncAssignments(courseId: course.id); // Recursively call for each course
-      }
+      query = query.eq('user_id', userId);
+    }
+    final remote = await query;
+    for (final row in remote) {
+      await _db.into(_db.assignments).insertOnConflictUpdate(_assignmentFromRow(row, userId));
     }
   }
 
-  Future<void> createAssignment(
-    String courseId,
-    String title, {
+  Future<Assignment> createAssignment({
+    String? id,
+    required String courseId,
+    required String title,
     String? description,
     DateTime? dueDate,
+    bool? isCompleted,
+    DateTime? completedAt,
   }) async {
     final userId = _userId;
     if (userId == null) throw Exception('Not authenticated');
 
     final assignment = Assignment(
-      id: const Uuid().v4(),
+      id: id ?? const Uuid().v4(),
       courseId: courseId,
       userId: userId,
       title: title,
       description: description,
       dueDate: dueDate,
-      isCompleted: false,
+      isCompleted: isCompleted ?? false,
+      completedAt: completedAt,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );
 
     await _db.into(_db.assignments).insert(assignment);
     await _push(
-      op: () => _supabase.from('assignments').insert(_assignmentToRow(assignment)),
+      op: () => _directUpsertAssignmentToRemote(assignment), // Use direct upsert
       entityType: SyncEntityType.assignment,
       operation: SyncOperation.insert,
       entityId: assignment.id,
       payload: _assignmentToRow(assignment),
     );
+    return assignment;
   }
 
   Future<void> updateAssignment(Assignment assignment) async {
     final updated = assignment.copyWith(updatedAt: DateTime.now());
-    await (_db.update(_db.assignments)..where((a) => a.id.equals(assignment.id))).replace(updated);
+    await _db.update(_db.assignments).replace(updated);
     await _push(
-      op: () => _supabase
-          .from('assignments')
-          .update(_assignmentToRow(updated))
-          .eq('id', updated.id),
+      op: () => _directUpsertAssignmentToRemote(updated), // Use direct upsert
       entityType: SyncEntityType.assignment,
       operation: SyncOperation.update,
       entityId: updated.id,
@@ -300,36 +265,10 @@ class AcademicsService {
     );
   }
 
-  Future<void> toggleAssignmentCompletion(String assignmentId, bool completed) async {
-    final now = DateTime.now();
-    await (_db.update(_db.assignments)..where((a) => a.id.equals(assignmentId)))
-        .write(AssignmentsCompanion(
-      isCompleted: Value(completed),
-      completedAt: Value(completed ? now : null),
-      updatedAt: Value(now),
-    ));
-    await _push(
-      op: () => _supabase.from('assignments').update({
-        'is_completed': completed,
-        'completed_at': completed ? now.toIso8601String() : null,
-        'updated_at': now.toIso8601String(),
-      }).eq('id', assignmentId),
-      entityType: SyncEntityType.assignment,
-      operation: SyncOperation.update,
-      entityId: assignmentId,
-      payload: {
-        'id': assignmentId,
-        'is_completed': completed,
-        'completed_at': completed ? now.toIso8601String() : null,
-        'updated_at': now.toIso8601String(),
-      },
-    );
-  }
-
   Future<void> deleteAssignment(String assignmentId) async {
     await (_db.delete(_db.assignments)..where((a) => a.id.equals(assignmentId))).go();
     await _push(
-      op: () => _supabase.from('assignments').delete().eq('id', assignmentId),
+      op: () => _directDeleteAssignmentRemote(assignmentId), // Use direct delete
       entityType: SyncEntityType.assignment,
       operation: SyncOperation.delete,
       entityId: assignmentId,
@@ -372,31 +311,7 @@ class AcademicsService {
     }
   }
 
-  /// Direct push/upsert to Supabase without touching local DB.
-  /// Used by SyncQueueService retries to avoid duplicating local rows.
-  Future<void> pushCourseToRemote(Course course) async {
-    await _supabase.from('courses').upsert(_courseToRow(course));
-  }
-
-  Future<void> pushLectureToRemote(Lecture lecture) async {
-    await _supabase.from('lectures').upsert(_lectureToRow(lecture));
-  }
-
-  Future<void> pushAssignmentToRemote(Assignment assignment) async {
-    await _supabase.from('assignments').upsert(_assignmentToRow(assignment));
-  }
-
-  Future<void> deleteCourseRemote(String courseId) async {
-    await _supabase.from('courses').delete().eq('id', courseId);
-  }
-
-  Future<void> deleteLectureRemote(String lectureId) async {
-    await _supabase.from('lectures').delete().eq('id', lectureId);
-  }
-
-  Future<void> deleteAssignmentRemote(String assignmentId) async {
-    await _supabase.from('assignments').delete().eq('id', assignmentId);
-  }
+  // ── Data Mappers ────────────────────────────────────
 
   Course _courseFromRow(Map<String, dynamic> r, String userId) => Course(
         id: r['id'] as String,
@@ -409,9 +324,7 @@ class AcademicsService {
         semester: r['semester'] as String?,
         location: r['location'] as String?,
         credits: r['credits'] as int?,
-        scheduleDays: r['schedule_days'] is List
-            ? (r['schedule_days'] as List).join(',')
-            : r['schedule_days'] as String?,
+        scheduleDays: (r['schedule_days'] as List?)?.map((e) => e as String).toList(),
         scheduleStart: r['schedule_start'] as String?,
         scheduleEnd: r['schedule_end'] as String?,
         createdAt: _parseDate(r['created_at']),
@@ -429,7 +342,7 @@ class AcademicsService {
         'semester': c.semester,
         'location': c.location,
         'credits': c.credits,
-        'schedule_days': c.scheduleDays?.split(',').map((s) => s.trim()).toList(),
+        'schedule_days': c.scheduleDays,
         'schedule_start': c.scheduleStart,
         'schedule_end': c.scheduleEnd,
         'created_at': c.createdAt.toIso8601String(),
@@ -443,10 +356,10 @@ class AcademicsService {
         title: r['title'] as String? ?? '',
         chapter: r['chapter'] as String?,
         tag: r['tag'] as String?,
-        scheduledAt: r['scheduled_at'] != null ? DateTime.parse(r['scheduled_at'] as String) : null,
-        durationMinutes: r['duration_minutes'] as int? ?? 90,
+        scheduledAt: _parseDate(r['scheduled_at']),
+        durationMinutes: r['duration_minutes'] as int?,
         isCompleted: r['is_completed'] as bool? ?? false,
-        completedAt: r['completed_at'] != null ? DateTime.parse(r['completed_at'] as String) : null,
+        completedAt: _parseDate(r['completed_at']),
         createdAt: _parseDate(r['created_at']),
         updatedAt: _parseDate(r['updated_at']),
       );
@@ -472,9 +385,9 @@ class AcademicsService {
         userId: r['user_id'] as String? ?? userId,
         title: r['title'] as String? ?? '',
         description: r['description'] as String?,
-        dueDate: r['due_date'] != null ? DateTime.parse(r['due_date'] as String) : null,
+        dueDate: _parseDate(r['due_date']),
         isCompleted: r['is_completed'] as bool? ?? false,
-        completedAt: r['completed_at'] != null ? DateTime.parse(r['completed_at'] as String) : null,
+        completedAt: _parseDate(r['completed_at']),
         createdAt: _parseDate(r['created_at']),
         updatedAt: _parseDate(r['updated_at']),
       );
@@ -492,6 +405,34 @@ class AcademicsService {
         'updated_at': a.updatedAt.toIso8601String(),
       };
 
-  DateTime _parseDate(dynamic v) =>
-      v is String ? DateTime.parse(v) : DateTime.now();
+  DateTime _parseDate(dynamic v) {
+    if (v == null) return DateTime.now();
+    return v is String ? DateTime.parse(v) : DateTime.now();
+  }
+
+  // ── Direct Supabase interaction (for SyncQueue retry) ────────────────────
+
+  Future<void> _directUpsertCourseToRemote(Course course) async {
+    await _supabase.from('courses').upsert(_courseToRow(course));
+  }
+
+  Future<void> _directDeleteCourseRemote(String courseId) async {
+    await _supabase.from('courses').delete().eq('id', courseId);
+  }
+
+  Future<void> _directUpsertLectureToRemote(Lecture lecture) async {
+    await _supabase.from('lectures').upsert(_lectureToRow(lecture));
+  }
+
+  Future<void> _directDeleteLectureToRemote(String lectureId) async {
+    await _supabase.from('lectures').delete().eq('id', lectureId);
+  }
+
+  Future<void> _directUpsertAssignmentToRemote(Assignment assignment) async {
+    await _supabase.from('assignments').upsert(_assignmentToRow(assignment));
+  }
+
+  Future<void> _directDeleteAssignmentToRemote(String assignmentId) async {
+    await _supabase.from('assignments').delete().eq('id', assignmentId);
+  }
 }
