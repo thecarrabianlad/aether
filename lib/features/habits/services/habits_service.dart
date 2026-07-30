@@ -180,27 +180,21 @@ class HabitsService {
     await (_db.update(_db.habits)..where((h) => h.id.equals(habitId))).write(HabitsCompanion(updatedAt: Value(DateTime.now())));
 
     // Push log to Supabase
-    await _push(
-      op: () async {
-        final logRows = await (_db.select(_db.habitLogs)
-              ..where((l) =>
-                  l.habitId.equals(habitId) & l.date.equals(today)))
-            .get();
-        if (logRows.isNotEmpty) {
-          final log = logRows.first;
-          await _supabase.from('habit_logs').upsert(_habitLogToRow(log));
-        }
-      },
-      entityType: SyncEntityType.habitLog,
-      operation: SyncOperation.upsert, // Use upsert for logs as it's an insert/update
-      entityId: habitId, // This will be the log ID when fully implemented
-      payload: {
-        'id': const Uuid().v4(), // Placeholder, actual log ID will be determined during retry
-        'habit_id': habitId,
-        'date': today.toIso8601String().split('T').first,
-        'is_completed': completed,
-      },
-    );
+    // We get the log from the local DB after insert/update to ensure it has all fields
+    final logRows = await (_db.select(_db.habitLogs)
+          ..where((l) =>
+              l.habitId.equals(habitId) & l.date.equals(today)))
+        .get();
+    if (logRows.isNotEmpty) {
+      final log = logRows.first;
+      await _push(
+        op: () => _supabase.from('habit_logs').upsert(_habitLogToRow(log)),
+        entityType: SyncEntityType.habitLog,
+        operation: SyncOperation.upsert,
+        entityId: log.id, // Use log.id for the entityId in the queue
+        payload: _habitLogToRow(log),
+      );
+    }
   }
 
   // ── Helpers ──────────────────────────────────────────
@@ -286,4 +280,7 @@ class HabitsService {
   DateTime _parseDate(dynamic v) => v is String ? DateTime.parse(v) : DateTime.now();
 
   DateTime _normalizeDate(DateTime dt) => DateTime(dt.year, dt.month, dt.day);
+
+  // ── Direct Supabase interaction (for SyncQueue retry) ────────────────────
+
 }

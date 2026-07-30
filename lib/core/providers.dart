@@ -51,11 +51,7 @@ final Provider<HabitsService> habitsServiceProvider =
 final Provider<SyncQueueService> syncQueueServiceProvider =
     Provider<SyncQueueService>((ref) {
   final db = ref.watch(databaseProvider);
-  return SyncQueueService(
-    db,
-    () => ref.read(academicsServiceProvider),
-    () => ref.read(habitsServiceProvider),
-  );
+  return SyncQueueService(db);
 });
 
 /// Service provider for sync operations

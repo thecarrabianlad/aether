@@ -74,7 +74,7 @@ class AcademicsService {
 
     await _db.into(_db.courses).insert(course);
     await _push(
-      op: () => _directUpsertCourseToRemote(course), // Use direct upsert
+      op: () => _supabase.from('courses').upsert(_courseToRow(course)),
       entityType: SyncEntityType.course,
       operation: SyncOperation.insert,
       entityId: course.id,
@@ -87,7 +87,7 @@ class AcademicsService {
     final updated = course.copyWith(updatedAt: DateTime.now());
     await _db.update(_db.courses).replace(updated);
     await _push(
-      op: () => _directUpsertCourseToRemote(updated), // Use direct upsert
+      op: () => _supabase.from('courses').update(_courseToRow(updated)).eq('id', updated.id),
       entityType: SyncEntityType.course,
       operation: SyncOperation.update,
       entityId: updated.id,
@@ -100,7 +100,7 @@ class AcademicsService {
     await (_db.delete(_db.lectures)..where((l) => l.courseId.equals(courseId))).go();
     await (_db.delete(_db.assignments)..where((a) => a.courseId.equals(courseId))).go();
     await _push(
-      op: () => _directDeleteCourseRemote(courseId), // Use direct delete
+      op: () => _supabase.from('courses').delete().eq('id', courseId),
       entityType: SyncEntityType.course,
       operation: SyncOperation.delete,
       entityId: courseId,
@@ -153,7 +153,7 @@ class AcademicsService {
       chapter: chapter,
       tag: tag,
       scheduledAt: scheduledAt,
-      durationMinutes: durationMinutes,
+      durationMinutes: durationMinutes ?? 90,
       isCompleted: isCompleted ?? false,
       completedAt: completedAt,
       createdAt: DateTime.now(),
@@ -162,7 +162,7 @@ class AcademicsService {
 
     await _db.into(_db.lectures).insert(lecture);
     await _push(
-      op: () => _directUpsertLectureToRemote(lecture), // Use direct upsert
+      op: () => _supabase.from('lectures').upsert(_lectureToRow(lecture)),
       entityType: SyncEntityType.lecture,
       operation: SyncOperation.insert,
       entityId: lecture.id,
@@ -175,7 +175,7 @@ class AcademicsService {
     final updated = lecture.copyWith(updatedAt: DateTime.now());
     await _db.update(_db.lectures).replace(updated);
     await _push(
-      op: () => _directUpsertLectureToRemote(updated), // Use direct upsert
+      op: () => _supabase.from('lectures').update(_lectureToRow(updated)).eq('id', updated.id),
       entityType: SyncEntityType.lecture,
       operation: SyncOperation.update,
       entityId: updated.id,
@@ -186,7 +186,7 @@ class AcademicsService {
   Future<void> deleteLecture(String lectureId) async {
     await (_db.delete(_db.lectures)..where((l) => l.id.equals(lectureId))).go();
     await _push(
-      op: () => _directDeleteLectureRemote(lectureId), // Use direct delete
+      op: () => _supabase.from('lectures').delete().eq('id', lectureId),
       entityType: SyncEntityType.lecture,
       operation: SyncOperation.delete,
       entityId: lectureId,
@@ -244,7 +244,7 @@ class AcademicsService {
 
     await _db.into(_db.assignments).insert(assignment);
     await _push(
-      op: () => _directUpsertAssignmentToRemote(assignment), // Use direct upsert
+      op: () => _supabase.from('assignments').upsert(_assignmentToRow(assignment)),
       entityType: SyncEntityType.assignment,
       operation: SyncOperation.insert,
       entityId: assignment.id,
@@ -257,7 +257,7 @@ class AcademicsService {
     final updated = assignment.copyWith(updatedAt: DateTime.now());
     await _db.update(_db.assignments).replace(updated);
     await _push(
-      op: () => _directUpsertAssignmentToRemote(updated), // Use direct upsert
+      op: () => _supabase.from('assignments').update(_assignmentToRow(updated)).eq('id', updated.id),
       entityType: SyncEntityType.assignment,
       operation: SyncOperation.update,
       entityId: updated.id,
@@ -268,10 +268,33 @@ class AcademicsService {
   Future<void> deleteAssignment(String assignmentId) async {
     await (_db.delete(_db.assignments)..where((a) => a.id.equals(assignmentId))).go();
     await _push(
-      op: () => _directDeleteAssignmentRemote(assignmentId), // Use direct delete
+      op: () => _supabase.from('assignments').delete().eq('id', assignmentId),
       entityType: SyncEntityType.assignment,
       operation: SyncOperation.delete,
       entityId: assignmentId,
+    );
+  }
+
+  // ── Completion Toggles ─────────────────────────────────
+
+  Future<void> toggleLectureCompletion(String lectureId, bool completed) async {
+    final lecture = await (_db.select(_db.lectures)..where((l) => l.id.equals(lectureId))).getSingle();
+    await (_db.update(_db.lectures)..where((l) => l.id.equals(lectureId))).write(
+      LecturesCompanion(
+        isCompleted: Value(completed),
+        completedAt: Value(completed ? DateTime.now() : null),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
+  Future<void> toggleAssignmentCompletion(String assignmentId, bool completed) async {
+    await (_db.update(_db.assignments)..where((a) => a.id.equals(assignmentId))).write(
+      AssignmentsCompanion(
+        isCompleted: Value(completed),
+        completedAt: Value(completed ? DateTime.now() : null),
+        updatedAt: Value(DateTime.now()),
+      ),
     );
   }
 
@@ -324,7 +347,7 @@ class AcademicsService {
         semester: r['semester'] as String?,
         location: r['location'] as String?,
         credits: r['credits'] as int?,
-        scheduleDays: (r['schedule_days'] as List?)?.map((e) => e as String).toList(),
+        scheduleDays: r['schedule_days'] as String?, // comma-separated string
         scheduleStart: r['schedule_start'] as String?,
         scheduleEnd: r['schedule_end'] as String?,
         createdAt: _parseDate(r['created_at']),
@@ -357,7 +380,7 @@ class AcademicsService {
         chapter: r['chapter'] as String?,
         tag: r['tag'] as String?,
         scheduledAt: _parseDate(r['scheduled_at']),
-        durationMinutes: r['duration_minutes'] as int?,
+        durationMinutes: r['duration_minutes'] as int? ?? 90,
         isCompleted: r['is_completed'] as bool? ?? false,
         completedAt: _parseDate(r['completed_at']),
         createdAt: _parseDate(r['created_at']),
@@ -408,31 +431,5 @@ class AcademicsService {
   DateTime _parseDate(dynamic v) {
     if (v == null) return DateTime.now();
     return v is String ? DateTime.parse(v) : DateTime.now();
-  }
-
-  // ── Direct Supabase interaction (for SyncQueue retry) ────────────────────
-
-  Future<void> _directUpsertCourseToRemote(Course course) async {
-    await _supabase.from('courses').upsert(_courseToRow(course));
-  }
-
-  Future<void> _directDeleteCourseRemote(String courseId) async {
-    await _supabase.from('courses').delete().eq('id', courseId);
-  }
-
-  Future<void> _directUpsertLectureToRemote(Lecture lecture) async {
-    await _supabase.from('lectures').upsert(_lectureToRow(lecture));
-  }
-
-  Future<void> _directDeleteLectureToRemote(String lectureId) async {
-    await _supabase.from('lectures').delete().eq('id', lectureId);
-  }
-
-  Future<void> _directUpsertAssignmentToRemote(Assignment assignment) async {
-    await _supabase.from('assignments').upsert(_assignmentToRow(assignment));
-  }
-
-  Future<void> _directDeleteAssignmentToRemote(String assignmentId) async {
-    await _supabase.from('assignments').delete().eq('id', assignmentId);
   }
 }

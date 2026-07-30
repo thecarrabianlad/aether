@@ -574,8 +574,8 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
                 if (!formKey.currentState!.validate()) return;
                 try {
                   await ref.read(academicsServiceProvider).createLecture(
-                        courseId,
-                        titleCtrl.text.trim(),
+                        courseId: courseId,
+                        title: titleCtrl.text.trim(),
                         chapter: chapterCtrl.text.isEmpty ? null : chapterCtrl.text.trim(),
                         scheduledAt: scheduledAt,
                       );
@@ -634,8 +634,8 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
                 if (!formKey.currentState!.validate()) return;
                 try {
                   await ref.read(academicsServiceProvider).createAssignment(
-                        courseId,
-                        titleCtrl.text.trim(),
+                        courseId: courseId,
+                        title: titleCtrl.text.trim(),
                         description: descCtrl.text.isEmpty ? null : descCtrl.text.trim(),
                         dueDate: dueDate,
                       );
