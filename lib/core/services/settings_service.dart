@@ -14,6 +14,7 @@ class SettingsService {
   static const _keyNotifyHabits = 'settings.notifications.habits';
   static const _keyNotifyLectures = 'settings.notifications.lectures';
   static const _keyLastSyncedAt = 'settings.sync.lastSyncedAt';
+  static const _keyReduceMotion = 'settings.accessibility.reduceMotion';
 
   final SharedPreferences _prefs;
 
@@ -61,4 +62,13 @@ class SettingsService {
 
   Future<void> setLastSyncedAt(DateTime time) =>
       _prefs.setInt(_keyLastSyncedAt, time.millisecondsSinceEpoch);
+
+  // --- Accessibility ---
+
+  /// Manual "Reduce motion" preference. When on, all decorative animation
+  /// collapses to instant state changes (see `reduceMotion` in app_theme).
+  bool get reduceMotion => _prefs.getBool(_keyReduceMotion) ?? false;
+
+  Future<void> setReduceMotion(bool value) =>
+      _prefs.setBool(_keyReduceMotion, value);
 }

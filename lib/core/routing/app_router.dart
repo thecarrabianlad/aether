@@ -4,8 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show AuthState;
+import 'package:aether/core/errors/app_exception.dart';
+import 'package:aether/core/routing/aether_page.dart';
+import 'package:aether/widgets/common/error_state.dart';
 import 'package:aether/features/auth/screens/login_screen.dart';
+import 'package:aether/features/auth/screens/otp_verification_screen.dart';
 import 'package:aether/features/auth/screens/profile_screen.dart';
+import 'package:aether/features/auth/screens/reset_password_screen.dart';
 import 'package:aether/features/auth/screens/signup_screen.dart';
 import 'package:aether/core/services/auth_service.dart';
 import 'package:aether/screens/home_screen.dart';
@@ -30,42 +35,115 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable: _GoRouterRefreshStream(authService),
     redirect: (BuildContext context, GoRouterState state) {
       final loggedIn = authService.isLoggedIn;
-      final authenticating = state.matchedLocation == '/login' || state.matchedLocation == '/signup';
+      final loc = state.matchedLocation;
 
-      if (!loggedIn && !authenticating) return '/login';
-      if (loggedIn && authenticating) return '/';
+      // Routes reachable without a session.
+      const unauthenticatedRoutes = {'/login', '/signup', '/verify-otp'};
+
+      // /verify-otp is useless without an email to verify.
+      if (loc == '/verify-otp' &&
+          (state.uri.queryParameters['email'] ?? '').isEmpty) {
+        return '/login';
+      }
+
+      // /reset-password is intentionally NOT unauthenticated — it needs the
+      // session created by the recovery OTP verify, so a cold visit without
+      // a session correctly falls through to /login here.
+      if (!loggedIn && !unauthenticatedRoutes.contains(loc)) return '/login';
+
+      // Only bounce login/signup when authenticated. /verify-otp stays put
+      // after verifyOTP creates a session so its success animation can play
+      // and the recovery flow can reach /reset-password uninterrupted.
+      if (loggedIn && (loc == '/login' || loc == '/signup')) return '/';
 
       return null;
     },
+    // Unknown routes get a graceful "Page not found" instead of a blank
+    // screen. The user always has an answer (Go home).
+    errorBuilder: (context, state) => const ErrorStateView(
+      exception: NotFoundError(
+        message: 'Page not found.',
+        action: AppErrorAction.retry,
+      ),
+    ),
     routes: [
       GoRoute(
         path: '/login',
-        builder: (context, state) => const LoginScreen(),
+        pageBuilder: (context, state) => AetherPage(
+          key: state.pageKey,
+          name: state.name,
+          child: const LoginScreen(),
+        ),
       ),
       GoRoute(
         path: '/signup',
-        builder: (context, state) => const SignUpScreen(),
+        pageBuilder: (context, state) => AetherPage(
+          key: state.pageKey,
+          name: state.name,
+          child: const SignUpScreen(),
+        ),
       ),
-      // Full-screen page without the bottom navbar shell.
+      GoRoute(
+        path: '/verify-otp',
+        pageBuilder: (context, state) => AetherPage(
+          key: state.pageKey,
+          name: state.name,
+          child: OtpVerificationScreen(
+            email: state.uri.queryParameters['email'] ?? '',
+            flow: state.uri.queryParameters['flow'] == 'recovery'
+                ? OtpFlow.recovery
+                : OtpFlow.signup,
+          ),
+        ),
+      ),
+      GoRoute(
+        path: '/reset-password',
+        pageBuilder: (context, state) => AetherPage(
+          key: state.pageKey,
+          name: state.name,
+          child: const ResetPasswordScreen(),
+        ),
+      ),
+      // Full-screen routes outside the bottom navbar shell.
       GoRoute(
         path: '/settings',
-        builder: (context, state) => const SettingsScreen(),
+        pageBuilder: (context, state) => AetherPage(
+          key: state.pageKey,
+          name: state.name,
+          child: const SettingsScreen(),
+        ),
       ),
       GoRoute(
         path: '/notes',
-        builder: (context, state) => const NotesScreen(),
+        pageBuilder: (context, state) => AetherPage(
+          key: state.pageKey,
+          name: state.name,
+          child: const NotesScreen(),
+        ),
       ),
       GoRoute(
         path: '/past-papers',
-        builder: (context, state) => const PastPapersScreen(),
+        pageBuilder: (context, state) => AetherPage(
+          key: state.pageKey,
+          name: state.name,
+          child: const PastPapersScreen(),
+        ),
       ),
       GoRoute(
         path: '/pomodoro',
-        builder: (context, state) => const PomodoroScreen(),
+        pageBuilder: (context, state) => AetherPage(
+          key: state.pageKey,
+          name: state.name,
+          child: const PomodoroScreen(),
+        ),
       ),
       GoRoute(
         path: '/flashcards',
-        builder: (context, state) => const FlashcardsScreen(),
+        pageBuilder: (context, state) => AetherPage(
+          key: state.pageKey,
+          name: state.name,
+          child: const FlashcardsScreen(),
+        ),
       ),
       ShellRoute(
         builder: (context, state, child) {
@@ -74,36 +152,62 @@ final routerProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: '/',
-            builder: (context, state) {
-              return const HomeScreen();
-            },
+            pageBuilder: (context, state) => AetherPage(
+              key: state.pageKey,
+              name: state.name,
+              child: const HomeScreen(),
+            ),
           ),
           GoRoute(
             path: '/academics',
-            builder: (context, state) => const AcademicsScreen(),
+            pageBuilder: (context, state) => AetherPage(
+              key: state.pageKey,
+              name: state.name,
+              child: const AcademicsScreen(),
+            ),
           ),
           GoRoute(
             path: '/habits',
-            builder: (context, state) => const HabitsScreen(),
+            pageBuilder: (context, state) => AetherPage(
+              key: state.pageKey,
+              name: state.name,
+              child: const HabitsScreen(),
+            ),
           ),
           GoRoute(
             path: '/habit-detail/:id',
-            builder: (context, state) {
+            pageBuilder: (context, state) {
               final id = state.pathParameters['id']!;
-              return HabitDetailScreen(habitId: id);
+              return AetherPage(
+                key: state.pageKey,
+                name: state.name,
+                child: HabitDetailScreen(habitId: id),
+              );
             },
           ),
           GoRoute(
             path: '/habits/calendar',
-            builder: (context, state) => const HabitsCalendarScreen(),
+            pageBuilder: (context, state) => AetherPage(
+              key: state.pageKey,
+              name: state.name,
+              child: const HabitsCalendarScreen(),
+            ),
           ),
           GoRoute(
             path: '/profile',
-            builder: (context, state) => const ProfileScreen(),
+            pageBuilder: (context, state) => AetherPage(
+              key: state.pageKey,
+              name: state.name,
+              child: const ProfileScreen(),
+            ),
           ),
           GoRoute(
             path: '/health',
-            builder: (context, state) => const HealthScreen(),
+            pageBuilder: (context, state) => AetherPage(
+              key: state.pageKey,
+              name: state.name,
+              child: const HealthScreen(),
+            ),
           ),
         ],
       ),

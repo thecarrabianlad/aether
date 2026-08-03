@@ -47,6 +47,20 @@ final Provider<HabitsService> habitsServiceProvider =
   return HabitsService(db, syncQueueService, notificationService);
 });
 
+import 'package:connectivity_plus/connectivity_plus.dart';
+
+/// Stream of connectivity status changes.
+final connectivityProvider = StreamProvider<List<ConnectivityResult>>((ref) {
+  return Connectivity().onConnectivityChanged;
+});
+
+/// Simplified connectivity status: true if connected to any network.
+final isConnectedProvider = Provider<bool>((ref) {
+  final results = ref.watch(connectivityProvider).value ?? [];
+  if (results.isEmpty) return true; // Assume connected during init
+  return !results.contains(ConnectivityResult.none);
+});
+
 /// Service provider for sync queue operations
 final Provider<SyncQueueService> syncQueueServiceProvider =
     Provider<SyncQueueService>((ref) {
@@ -58,7 +72,54 @@ final Provider<SyncQueueService> syncQueueServiceProvider =
 final syncServiceProvider = Provider<SyncService>((ref) {
   final academicsService = ref.watch(academicsServiceProvider);
   final habitsService = ref.watch(habitsServiceProvider);
-  return SyncService(academicsService, habitsService);
+  final syncQueueService = ref.watch(syncQueueServiceProvider);
+  return SyncService(academicsService, habitsService, syncQueueService);
+});
+
+/// Live sync status for UI indicators (top bar spinner / warning icon).
+final syncStatusProvider = Provider<SyncStatus>((ref) {
+  final service = ref.watch(syncServiceProvider);
+  // Re-expose the ValueNotifier through Riverpod so widgets rebuild on change.
+  final listener = () => ref.state = service.status.value;
+  service.status.addListener(listener);
+  ref.onDispose(() => service.status.removeListener(listener));
+  return service.status.value;
+});
+
+/// Orchestrates automatic sync:
+/// - on reconnect (connectivity restored): reset backoff, sync immediately
+/// - every 1 minute while the app is open (skipped while offline, already
+///   syncing, or inside a backoff window)
+///
+/// Watch this once from the shell (MainScaffold) to keep it alive.
+final syncOrchestratorProvider = Provider<void>((ref) {
+  final syncService = ref.watch(syncServiceProvider);
+
+  // React to connectivity changes.
+  ref.listen<bool>(isConnectedProvider, (previous, next) {
+    if (previous == false && next) {
+      // Back online: clear any backoff and push/pull right away.
+      syncService.resetBackoff();
+      if (AuthService.instance.isLoggedIn) syncService.syncAllData();
+    } else if (!next) {
+      syncService.markOffline();
+    }
+  });
+
+  // Periodic sync while the app runs (1-minute cadence per user decision).
+  final timer = Timer.periodic(const Duration(minutes: 1), (_) {
+    final connected = ref.read(isConnectedProvider);
+    if (!connected) return;
+    if (!AuthService.instance.isLoggedIn) return;
+    if (!syncService.canAutoSync) return;
+    syncService.syncAllData();
+  });
+  ref.onDispose(timer.cancel);
+});
+
+/// Poisoned sync-queue rows (failed 5+ times), for the Settings surface.
+final poisonedRowsProvider = FutureProvider.autoDispose((ref) {
+  return ref.watch(syncQueueServiceProvider).poisonedRows();
 });
 
 /// Global provider for the "Add" button action in the BottomNavbar.
@@ -130,6 +191,23 @@ final themeControllerProvider =
     StateNotifierProvider<ThemeController, AppThemeState>((ref) {
   return ThemeController(ref.watch(settingsServiceProvider));
 });
+
+/// Manual "Reduce motion" preference (Settings → Accessibility). Consumed
+/// by `reduceMotion(context)` alongside the OS `disableAnimations` flag.
+final reduceMotionProvider = StateProvider<bool>((ref) {
+  return ref.watch(settingsServiceProvider).reduceMotion;
+});
+
+class ReduceMotionController extends StateNotifier<bool> {
+  final SettingsService _settings;
+
+  ReduceMotionController(this._settings) : super(_settings.reduceMotion);
+
+  Future<void> setReduceMotion(bool value) async {
+    state = value;
+    await _settings.setReduceMotion(value);
+  }
+}
 
 class ThemeController extends StateNotifier<AppThemeState> {
   final SettingsService _settings;

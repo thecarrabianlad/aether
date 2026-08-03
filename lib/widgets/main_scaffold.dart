@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show AuthState, AuthChangeEvent;
+import 'package:aether/widgets/common/offline_banner.dart';
 import 'package:aether/widgets/bottom_navbar.dart';
 import 'package:aether/widgets/side_drawer.dart'; // New import for SideDrawer
 import 'package:aether/widgets/first_login_dialog.dart'; // New import for FirstLoginDialog
@@ -176,6 +177,18 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
               }
             },
           ),
+        ),
+        // Offline banner at the top.
+        Consumer(
+          builder: (context, ref, _) {
+            final isConnected = ref.watch(isConnectedProvider);
+            return Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: OfflineBanner(visible: !isConnected),
+            );
+          },
         ),
         // Side drawer overlay. Watched inside its own Consumer so toggling
         // the drawer rebuilds just this subtree, not the whole scaffold.

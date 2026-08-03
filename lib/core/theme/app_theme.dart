@@ -202,7 +202,130 @@ extension AetherThemeX on BuildContext {
   AetherTheme get aether =>
       Theme.of(this).extension<AetherTheme>() ??
       AetherTheme.fromState(const AppThemeState());
+
+  /// Motion tokens: `context.motion.base` (or `context.motion.d(200)`).
+  AetherMotion get motion => Theme.of(this).extension<AetherMotion>() ??
+      const AetherMotion();
 }
+
+/// Shared motion tokens for the app's UX animations.
+///
+/// Widgets should read durations/curves from here instead of hardcoding:
+/// ```dart
+/// AnimatedContainer(duration: context.motion.fast, curve: context.motion.easeOut)
+/// ```
+/// The [AetherMotion.of] duration lookup collapses every duration to zero
+/// when reduced motion is active.
+class AetherMotion extends ThemeExtension<AetherMotion> {
+  const AetherMotion({
+    this.instant = const Duration(milliseconds: 100),
+    this.fast = const Duration(milliseconds: 150),
+    this.base = const Duration(milliseconds: 250),
+    this.slow = const Duration(milliseconds: 400),
+    this.hero = const Duration(milliseconds: 600),
+    this.stagger = const Duration(milliseconds: 40),
+    this.easeOut = Curves.easeOutCubic,
+    this.easeIn = Curves.easeInCubic,
+    this.easeInOut = Curves.easeInOutCubic,
+    this.spring = Curves.easeOutBack,
+    this.emphasized = Curves.easeInOutCubicEmphasized,
+  });
+
+  /// 100 ms — pressed-state feedback, icon swaps.
+  final Duration instant;
+
+  /// 150 ms — hover/focus, checkbox/toggle, chip selection.
+  final Duration fast;
+
+  /// 250 ms — most transitions: fades, tab indicator, snackbars.
+  final Duration base;
+
+  /// 400 ms — route transitions, sheets, skeleton → content swap.
+  final Duration slow;
+
+  /// 600 ms — one-off celebrations: login success, streak milestone.
+  final Duration hero;
+
+  /// 40 ms — per-item delay in staggered lists (cap at 8 items).
+  final Duration stagger;
+
+  /// Entrances (things arriving).
+  final Curve easeOut;
+
+  /// Exits (things leaving).
+  final Curve easeIn;
+
+  /// Moves/morphs (position/size change).
+  final Curve easeInOut;
+
+  /// Playful emphasis: habit checkoff, FAB, celebration.
+  final Curve spring;
+
+  /// Route/sheet transitions (M3 standard).
+  final Curve emphasized;
+
+  /// [duration] collapsed to zero when reduced motion is active.
+  Duration of(BuildContext context, Duration duration) =>
+      reduceMotion(context) ? Duration.zero : duration;
+
+  @override
+  AetherMotion copyWith({
+    Duration? instant,
+    Duration? fast,
+    Duration? base,
+    Duration? slow,
+    Duration? hero,
+    Duration? stagger,
+    Curve? easeOut,
+    Curve? easeIn,
+    Curve? easeInOut,
+    Curve? spring,
+    Curve? emphasized,
+  }) {
+    return AetherMotion(
+      instant: instant ?? this.instant,
+      fast: fast ?? this.fast,
+      base: base ?? this.base,
+      slow: slow ?? this.slow,
+      hero: hero ?? this.hero,
+      stagger: stagger ?? this.stagger,
+      easeOut: easeOut ?? this.easeOut,
+      easeIn: easeIn ?? this.easeIn,
+      easeInOut: easeInOut ?? this.easeInOut,
+      spring: spring ?? this.spring,
+      emphasized: emphasized ?? this.emphasized,
+    );
+  }
+
+  @override
+  AetherMotion lerp(ThemeExtension<AetherMotion>? other, double t) {
+    if (other is! AetherMotion) return this;
+    return AetherMotion(
+      instant: lerpDuration(instant, other.instant, t),
+      fast: lerpDuration(fast, other.fast, t),
+      base: lerpDuration(base, other.base, t),
+      slow: lerpDuration(slow, other.slow, t),
+      hero: lerpDuration(hero, other.hero, t),
+      stagger: lerpDuration(stagger, other.stagger, t),
+      easeOut: other.easeOut,
+      easeIn: other.easeIn,
+      easeInOut: other.easeInOut,
+      spring: other.spring,
+      emphasized: other.emphasized,
+    );
+  }
+}
+
+Duration lerpDuration(Duration a, Duration b, double t) =>
+    Duration(milliseconds: (a.inMilliseconds * (1 - t) + b.inMilliseconds * t).round());
+
+/// True when motion should be suppressed by the OS accessibility
+/// reduced-motion setting. The manual Settings toggle ("Reduce motion")
+/// is read via `reduceMotionProvider` at animation call sites (Stage 2).
+/// Progress indicators (spinners, rings) keep animating — they convey
+/// state, not decoration.
+bool reduceMotion(BuildContext context) =>
+    MediaQuery.maybeOf(context)?.disableAnimations ?? false;
 
 /// Builds the app's [ThemeData] for the given user selection.
 ThemeData buildAetherTheme(AppThemeState state) {
@@ -216,7 +339,7 @@ ThemeData buildAetherTheme(AppThemeState state) {
       surface: aether.surface,
       error: aether.danger,
     ),
-    extensions: [aether],
+    extensions: [aether, const AetherMotion()],
     snackBarTheme: SnackBarThemeData(
       backgroundColor: aether.surface,
       contentTextStyle: TextStyle(color: aether.text),

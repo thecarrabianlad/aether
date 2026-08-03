@@ -1,4 +1,6 @@
 import 'package:aether/core/theme/app_theme.dart';
+import 'package:aether/widgets/common/async_value_widget.dart';
+import 'package:aether/widgets/common/skeleton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -232,14 +234,15 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
                           setState(() => _dayOffset += 1),
                     ),
                     const SizedBox(height: 20),
-                    overviewMetricsAsync.when(
-                      data: (overviewMetrics) => OverviewMetricsSection(
-                        metrics: overviewMetrics,
-                        onViewCalendar: () => context.push('/habits/calendar'),
-                      ),
-                      loading: () => const Center(child: CircularProgressIndicator()),
-                      error: (err, stack) => Text('Error: $err'),
-                    ),
+                    AsyncValueWidget(
+                              value: overviewMetricsAsync,
+                              loadingSkeleton: const SkeletonCard(height: 72),
+                              data: (overviewMetrics) => OverviewMetricsSection(
+                                metrics: overviewMetrics,
+                                onViewCalendar: () => context.push('/habits/calendar'),
+                              ),
+                              onRetry: () => ref.invalidate(overviewMetricsProvider),
+                            ),
                     const SizedBox(height: 20),
                     CategoryFiltersRow(
                       selectedCategory: selectedCategory,
@@ -249,54 +252,55 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
                       onAddHabit: () => _showAddHabitDialog(),
                     ),
                     const SizedBox(height: 12),
-                    filteredHabitsAsync.when(
-                      data: (filteredHabits) {
-                        if (filteredHabits.isEmpty) {
-                          return const EmptyHabitsState();
-                        } else {
-                          return Column(
-                            children: filteredHabits.map(
-                              (habit) => Padding(
-                                padding: const EdgeInsets.only(bottom: 10),
-                                child: InkWell(
-                                  onTap: () => context.push('/habit-detail/${habit.id}'),
-                                  borderRadius: BorderRadius.circular(14),
-                                  child: HabitCard(
-                                    habit: habit,
-                                    onToggle: () => ref
-                                        .read(habitsServiceProvider)
-                                        .toggleCompletion(habit.id, !habit.isCompletedToday),
-                                    onEdit: () => _showEditHabitDialog(habit),
-                                    onDelete: () => _confirmDeleteHabit(habit),
-                                  ),
-                                ),
-                              ),
-                            ).toList(),
-                          );
-                        }
-                      },
-                      loading: () => const Center(child: CircularProgressIndicator()),
-                      error: (err, stack) => Text('Error: $err'),
-                    ),
+                    AsyncValueWidget(
+                              value: filteredHabitsAsync,
+                              data: (habits) {
+                                if (habits.isEmpty) return const EmptyHabitsState();
+                                return Column(
+                                  children: habits.map(
+                                    (habit) => Padding(
+                                      padding: const EdgeInsets.only(bottom: 10),
+                                      child: InkWell(
+                                        onTap: () => context.push('/habit-detail/${habit.id}'),
+                                        borderRadius: BorderRadius.circular(14),
+                                        child: HabitCard(
+                                          habit: habit,
+                                          onToggle: () => ref
+                                              .read(habitsServiceProvider)
+                                              .toggleCompletion(habit.id, !habit.isCompletedToday),
+                                          onEdit: () => _showEditHabitDialog(habit),
+                                          onDelete: () => _confirmDeleteHabit(habit),
+                                        ),
+                                      ),
+                                    ),
+                                  ).toList(),
+                                );
+                              },
+                              onRetry: () => ref.invalidate(habitsProvider),
+                            ),
                     const SizedBox(height: 16),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
-                          child: weeklyProgressAsync.when(
-                            data: (weeklyProgress) => WeeklyProgressCard(data: weeklyProgress),
-                            loading: () => const Center(child: CircularProgressIndicator()),
-                            error: (err, stack) => Text('Error: $err'),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: categoryStatsAsync.when(
-                            data: (categoryStats) => CategoryStatsCard(stats: categoryStats),
-                            loading: () => const Center(child: CircularProgressIndicator()),
-                            error: (err, stack) => Text('Error: $err'),
-                          ),
-                        ),
+                          child: AsyncValueWidget(
+                                value: weeklyProgressAsync,
+                                loadingSkeleton: const SkeletonCard(height: 160),
+                                data: (weeklyProgress) =>
+                                    WeeklyProgressCard(data: weeklyProgress),
+                                onRetry: () => ref.invalidate(weeklyProgressProvider),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: AsyncValueWidget(
+                                value: categoryStatsAsync,
+                                loadingSkeleton: const SkeletonCard(height: 160),
+                                data: (categoryStats) =>
+                                    CategoryStatsCard(stats: categoryStats),
+                                onRetry: () => ref.invalidate(categoryStatsProvider),
+                              ),
+                            ),
                       ],
                     ),
                     const SizedBox(height: 16),

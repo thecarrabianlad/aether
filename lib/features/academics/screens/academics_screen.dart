@@ -1,3 +1,5 @@
+import 'package:aether/widgets/common/async_value_widget.dart';
+import 'package:aether/widgets/common/skeleton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -156,7 +158,17 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
           ],
         ),
         const SizedBox(height: 12),
-        asyncCourses.when(
+        AsyncValueWidget(
+          value: asyncCourses,
+          loadingSkeleton: Row(
+            children: List.generate(
+              3,
+              (i) => const Padding(
+                padding: EdgeInsets.only(right: 12),
+                child: SkeletonCard(width: 140, height: 200),
+              ),
+            ),
+          ),
           data: (courses) => courses.isEmpty
               ? _buildEmptyCourses(aether)
               : SizedBox(
@@ -179,12 +191,7 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
                     },
                   ),
                 ),
-          loading: () => SizedBox(
-            height: 200,
-            child:
-                Center(child: CircularProgressIndicator(color: aether.accent)),
-          ),
-          error: (e, _) => _buildError('Error loading courses: $e', aether),
+          onRetry: () => ref.invalidate(coursesProvider),
         ),
       ],
     );

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:aether/core/database/database.dart';
 import 'package:aether/core/database/model_extensions.dart';
+import 'package:aether/core/errors/retry.dart';
 import 'package:aether/core/services/supabase_service.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
@@ -32,9 +33,39 @@ class SyncQueueService {
         ));
   }
 
+  /// Rows that have failed [poisonedRowThreshold]+ times. These are skipped
+  /// by [processQueue] and surfaced in Settings for a Keep-mine / Discard
+  /// decision.
+  Future<List<SyncQueueEntry>> poisonedRows() async {
+    return (_db.select(_db.syncQueue)
+          ..where((t) => t.retryCount.isBiggerOrEqualValue(poisonedRowThreshold)))
+        .get();
+  }
+
+  /// "Keep mine": reset a poisoned row's attempt counter so the processor
+  /// retries pushing the local version.
+  Future<void> retryPoisonedRow(int id) async {
+    await (_db.update(_db.syncQueue)..where((t) => t.id.equals(id))).write(
+      const SyncQueueCompanion(retryCount: Value(0), lastError: Value(null)),
+    );
+  }
+
+  /// "Discard": drop the queued local change entirely (the server version
+  /// wins on the next pull).
+  Future<void> discardRow(int id) async {
+    await (_db.delete(_db.syncQueue)..where((t) => t.id.equals(id))).go();
+  }
+
   /// Processes the sync queue, retrying operations.
+  ///
+  /// Poisoned rows (>= [poisonedRowThreshold] failures) are skipped —
+  /// they never block the rest of the queue and wait for an explicit user
+  /// decision in Settings.
   Future<void> processQueue() async {
-    final items = await _db.select(_db.syncQueue).get();
+    final items = await (_db.select(_db.syncQueue)
+          ..where((t) => t.retryCount.isSmallerThanValue(poisonedRowThreshold))
+          ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
+        .get();
 
     for (final item in items) {
       bool success = false;

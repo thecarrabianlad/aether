@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:aether/features/habits/models/habit.dart';
 import 'package:aether/features/habits/models/habit_repository.dart';
 
-class HabitCard extends StatelessWidget {
+class HabitCard extends StatefulWidget {
   final Habit habit;
   final VoidCallback onToggle;
   final VoidCallback onEdit;
@@ -17,16 +17,47 @@ class HabitCard extends StatelessWidget {
     required this.onDelete,
   });
 
+  @override
+  State<HabitCard> createState() => _HabitCardState();
+}
+
+class _HabitCardState extends State<HabitCard>
+    with SingleTickerProviderStateMixin {
   static const _dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+
+  late AnimationController _popCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _popCtrl = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 150),
+    );
+  }
+
+  @override
+  void dispose() {
+    _popCtrl.dispose();
+    super.dispose();
+  }
+
+  void _onToggle() {
+    _popCtrl.forward(from: 0).then((_) => _popCtrl.reverse());
+    widget.onToggle();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final habit = widget.habit;
+    final aether = context.aether;
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: context.aether.card,
+        color: aether.card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: context.aether.border),
+        border: Border.all(color: aether.border),
       ),
       child: Row(
         children: [
@@ -49,7 +80,7 @@ class HabitCard extends StatelessWidget {
                 Text(
                   habit.name,
                   style: TextStyle(
-                    color: context.aether.text,
+                    color: aether.text,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -60,7 +91,7 @@ class HabitCard extends StatelessWidget {
                     Text(
                       habit.category.label,
                       style: TextStyle(
-                        color: context.aether.textMuted,
+                        color: aether.textMuted,
                         fontSize: 12,
                       ),
                     ),
@@ -70,14 +101,14 @@ class HabitCard extends StatelessWidget {
                       const SizedBox(width: 8),
                       Icon(
                         Icons.notifications_outlined,
-                        color: context.aether.accent,
+                        color: aether.accent,
                         size: 12,
                       ),
                       const SizedBox(width: 3),
                       Text(
                         habit.reminderTime!,
                         style: TextStyle(
-                          color: context.aether.accent,
+                          color: aether.accent,
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                         ),
@@ -88,18 +119,15 @@ class HabitCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    // Day of week dots
                     ..._dayLabels.asMap().entries.map((entry) {
                       final dayIdx = entry.key;
                       final isCompleted = dayIdx < habit.dayCompletions.length &&
                           habit.dayCompletions[dayIdx];
-                      final isToday = dayIdx == 6; // Sunday = today marker
+                      final isToday = dayIdx == 6;
                       return Container(
                         width: 20,
                         height: 20,
-                        margin: EdgeInsets.only(
-                          right: dayIdx < 6 ? 4 : 0,
-                        ),
+                        margin: EdgeInsets.only(right: dayIdx < 6 ? 4 : 0),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: isCompleted
@@ -109,8 +137,8 @@ class HabitCard extends StatelessWidget {
                             color: isCompleted
                                 ? HabitRepository.greenAccent
                                 : isToday
-                                    ? context.aether.accent.withValues(alpha: 0.4)
-                                    : context.aether.border,
+                                    ? aether.accent.withValues(alpha: 0.4)
+                                    : aether.border,
                             width: 1.2,
                           ),
                         ),
@@ -121,8 +149,8 @@ class HabitCard extends StatelessWidget {
                               color: isCompleted
                                   ? HabitRepository.greenAccent
                                   : isToday
-                                      ? context.aether.accent
-                                      : context.aether.textMuted,
+                                      ? aether.accent
+                                      : aether.textMuted,
                               fontSize: 9,
                               fontWeight: FontWeight.w600,
                             ),
@@ -133,43 +161,44 @@ class HabitCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 6),
-                // Streak + weekly fraction
                 Row(
                   children: [
-                    Icon(Icons.local_fire_department,
+                    const Icon(Icons.local_fire_department,
                         color: HabitRepository.orangeAccent, size: 14),
                     const SizedBox(width: 4),
-                    Text(
-                      '${habit.currentStreak}',
-                      style: const TextStyle(
-                        color: HabitRepository.orangeAccent,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      child: Text(
+                        '${habit.currentStreak}',
+                        key: ValueKey(habit.currentStreak),
+                        style: const TextStyle(
+                          color: HabitRepository.orangeAccent,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 16),
-                    Icon(Icons.calendar_today,
-                        color: context.aether.textMuted, size: 12),
+                    const Icon(Icons.calendar_today,
+                        color: HabitRepository.greenAccent, size: 12),
                     const SizedBox(width: 4),
                     Text(
                       '${habit.weeklyCompletions}/${habit.weeklyTotal}',
-                      style: TextStyle(
-                        color: context.aether.textMuted,
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: aether.textMuted, fontSize: 12),
                     ),
                     const SizedBox(width: 5),
                     Container(
                       height: 3,
                       width: 40,
                       decoration: BoxDecoration(
-                        color: context.aether.surfaceAlt,
+                        color: aether.surfaceAlt,
                         borderRadius: BorderRadius.circular(2),
                       ),
                       child: FractionallySizedBox(
                         alignment: Alignment.centerLeft,
-                        widthFactor:
-                            habit.weeklyTotal > 0 ? habit.weeklyCompletions / habit.weeklyTotal : 0,
+                        widthFactor: habit.weeklyTotal > 0
+                            ? habit.weeklyCompletions / habit.weeklyTotal
+                            : 0,
                         child: Container(
                           decoration: BoxDecoration(
                             color: habit.color,
@@ -184,36 +213,45 @@ class HabitCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          // Completion toggle ring
-          GestureDetector(
-            onTap: onToggle,
-            child: Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: habit.isCompletedToday
-                    ? HabitRepository.greenAccent.withOpacity(0.15)
-                    : Colors.transparent,
-                border: Border.all(
-                  color: habit.isCompletedToday
-                      ? HabitRepository.greenAccent
-                      : context.aether.textMuted.withOpacity(0.4),
-                  width: 2,
+          // Completion toggle ring — spring-pop on toggle.
+          AnimatedBuilder(
+            animation: _popCtrl,
+            builder: (context, child) {
+              final scale = 1.0 + _popCtrl.value * 0.15;
+              return Transform.scale(
+                scale: scale,
+                child: GestureDetector(
+                  onTap: _onToggle,
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: habit.isCompletedToday
+                          ? HabitRepository.greenAccent.withValues(alpha: 0.15)
+                          : Colors.transparent,
+                      border: Border.all(
+                        color: habit.isCompletedToday
+                            ? HabitRepository.greenAccent
+                            : aether.textMuted.withValues(alpha: 0.4),
+                        width: 2,
+                      ),
+                    ),
+                    child: habit.isCompletedToday
+                        ? const Icon(Icons.check,
+                            color: HabitRepository.greenAccent, size: 18)
+                        : null,
+                  ),
                 ),
-              ),
-              child: habit.isCompletedToday
-                  ? const Icon(Icons.check,
-                      color: HabitRepository.greenAccent, size: 18)
-                  : null,
-            ),
+              );
+            },
           ),
           const SizedBox(width: 4),
           // 3-dot menu
           PopupMenuButton<String>(
             onSelected: (value) {
-              if (value == 'edit') onEdit();
-              if (value == 'delete') onDelete();
+              if (value == 'edit') widget.onEdit();
+              if (value == 'delete') widget.onDelete();
             },
             color: context.aether.surface,
             shape: RoundedRectangleBorder(
