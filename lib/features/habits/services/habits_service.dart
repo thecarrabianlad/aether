@@ -147,16 +147,16 @@ class HabitsService {
 
   // ── Habit Logs ──────────────────────────────────────
 
-  Future<void> toggleCompletion(String habitId, bool completed) async {
+  Future<void> toggleCompletion(String habitId, bool completed, {DateTime? date}) async {
     final userId = _userId;
     if (userId == null) throw Exception('Not authenticated');
 
-    final today = _normalizeDate(DateTime.now());
+    final targetDate = _normalizeDate(date ?? DateTime.now());
 
-    // Check for existing log for today
+    // Check for existing log for the target date
     final existingLogs = await (_db.select(_db.habitLogs)
           ..where((l) =>
-              l.habitId.equals(habitId) & l.date.equals(today)))
+              l.habitId.equals(habitId) & l.date.equals(targetDate)))
         .get();
 
     if (existingLogs.isNotEmpty) {
@@ -171,27 +171,27 @@ class HabitsService {
       await _db.into(_db.habitLogs).insert(HabitLog(
         id: logId,
         habitId: habitId,
-        date: today,
+        date: targetDate,
         isCompleted: completed,
       ));
     }
 
     // Update habit's updated_at field
     await (_db.update(_db.habits)..where((h) => h.id.equals(habitId))).write(HabitsCompanion(updatedAt: Value(DateTime.now())));
-
     // Push log to Supabase
-    // We get the log from the local DB after insert/update to ensure it has all fields
+    // Get the log from the local DB after insert/update so it has all fields
     final logRows = await (_db.select(_db.habitLogs)
           ..where((l) =>
-              l.habitId.equals(habitId) & l.date.equals(today)))
+              l.habitId.equals(habitId) & l.date.equals(targetDate)))
         .get();
+
     if (logRows.isNotEmpty) {
       final log = logRows.first;
       await _push(
         op: () => _supabase.from('habit_logs').upsert(_habitLogToRow(log)),
         entityType: SyncEntityType.habitLog,
         operation: SyncOperation.upsert,
-        entityId: log.id, // Use log.id for the entityId in the queue
+        entityId: log.id,
         payload: _habitLogToRow(log),
       );
     }

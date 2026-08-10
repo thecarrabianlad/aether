@@ -31,9 +31,6 @@ class HabitsScreen extends ConsumerStatefulWidget {
 }
 
 class _HabitsScreenState extends ConsumerState<HabitsScreen> {
-  static final DateTime _referenceDate = DateTime(2025, 8, 12);
-  int _dayOffset = 0;
-
   Future<void> _showAddHabitDialog() async {
     final result = await showAddHabitDialog(context);
     if (result == null || !mounted) return;
@@ -166,8 +163,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
     'July', 'August', 'September', 'October', 'November', 'December',
   ];
 
-  DateTime get _selectedDate =>
-      _referenceDate.add(Duration(days: _dayOffset));
+  DateTime get _today => DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
 
   String _ordinalSuffix(int day) {
     if (day >= 11 && day <= 13) return 'th';
@@ -183,17 +179,18 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
     }
   }
 
-  String get _dateNavigatorLabel {
-    if (_dayOffset == 0) return 'Today';
-    if (_dayOffset == -1) return 'Yesterday';
-    if (_dayOffset == 1) return 'Tomorrow';
-    return _weekdayNames[_selectedDate.weekday - 1];
+  String _dateNavigatorLabel(DateTime selectedDate) {
+    final dayOffset = selectedDate.difference(_today).inDays;
+    if (dayOffset == 0) return 'Today';
+    if (dayOffset == -1) return 'Yesterday';
+    if (dayOffset == 1) return 'Tomorrow';
+    return _weekdayNames[selectedDate.weekday - 1];
   }
 
-  String get _fullDateLabel {
-    final day = _selectedDate.day;
-    final month = _monthNames[_selectedDate.month - 1];
-    final year = _selectedDate.year;
+  String _fullDateLabel(DateTime selectedDate) {
+    final day = selectedDate.day;
+    final month = _monthNames[selectedDate.month - 1];
+    final year = selectedDate.year;
     return '$day${_ordinalSuffix(day)} $month $year';
   }
 
@@ -204,6 +201,8 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
     final categoryStatsAsync = ref.watch(categoryStatsProvider);
     final weeklyProgressAsync = ref.watch(weeklyProgressProvider);
     final selectedCategory = ref.watch(selectedCategoryProvider);
+    final selectedDate = ref.watch(selectedDateProvider);
+    final isFutureDate = selectedDate.isAfter(_today);
 
     return Container(
       color: context.aether.background,
@@ -226,12 +225,14 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
                   children: [
                     const SizedBox(height: 4),
                     DateNavigatorCard(
-                      label: _dateNavigatorLabel,
-                      subtitle: _fullDateLabel,
-                      onPrevious: () =>
-                          setState(() => _dayOffset -= 1),
-                      onNext: () =>
-                          setState(() => _dayOffset += 1),
+                      label: _dateNavigatorLabel(selectedDate),
+                      subtitle: _fullDateLabel(selectedDate),
+                      onPrevious: () => ref
+                          .read(selectedDateProvider.notifier)
+                          .state = selectedDate.subtract(const Duration(days: 1)),
+                      onNext: () => ref
+                          .read(selectedDateProvider.notifier)
+                          .state = selectedDate.add(const Duration(days: 1)),
                     ),
                     const SizedBox(height: 20),
                     AsyncValueWidget(
@@ -251,67 +252,44 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
                           .state = cat,
                       onAddHabit: () => _showAddHabitDialog(),
                     ),
-                    const SizedBox(height: 12),
-                    AsyncValueWidget(
-                              value: filteredHabitsAsync,
-                              data: (habits) {
-                                if (habits.isEmpty) return const EmptyHabitsState();
-                                return Column(
-                                  children: habits.map(
-                                    (habit) => Padding(
-                                      padding: const EdgeInsets.only(bottom: 10),
-                                      child: InkWell(
-                                        onTap: () => context.push('/habit-detail/${habit.id}'),
-                                        borderRadius: BorderRadius.circular(14),
-                                        child: HabitCard(
-                                          habit: habit,
-                                          onToggle: () => ref
-                                              .read(habitsServiceProvider)
-                                              .toggleCompletion(habit.id, !habit.isCompletedToday),
-                                          onEdit: () => _showEditHabitDialog(habit),
-                                          onDelete: () => _confirmDeleteHabit(habit),
-                                        ),
-                                      ),
-                                    ),
-                                  ).toList(),
-                                );
-                              },
-                              onRetry: () => ref.invalidate(habitsProvider),
-                            ),
-                    const SizedBox(height: 16),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: AsyncValueWidget(
-                                value: weeklyProgressAsync,
-                                loadingSkeleton: const SkeletonCard(height: 160),
-                                data: (weeklyProgress) =>
-                                    WeeklyProgressCard(data: weeklyProgress),
-                                onRetry: () => ref.invalidate(weeklyProgressProvider),
+                     AsyncValueWidget(
+                      value: filteredHabitsAsync,
+                      data: (habits) {
+                        if (habits.isEmpty) {
+                          return const EmptyHabitsState();
+                        }
+
+                        return Column(
+                          children: habits.map(
+                            (habit) => Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: InkWell(
+                                onTap: () => context.push('/habit-detail/${habit.id}'),
+                                borderRadius: BorderRadius.circular(14),
+                                child: HabitCard(
+                                  habit: habit,
+                                  onToggle: isFutureDate
+                                      ? () => ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                "Can't complete a habit for a future date",
+                                              ),
+                                            ),
+                                          )
+                                      : () => ref
+                                          .read(habitsServiceProvider)
+                                          .toggleCompletion(
+                                            habit.id,
+                                            !habit.isCompletedToday,
+                                            date: selectedDate,
+                                          ),
+                                  onEdit: () => _showEditHabitDialog(habit),
+                                  onDelete: () => _confirmDeleteHabit(habit),
+                                ),
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: AsyncValueWidget(
-                                value: categoryStatsAsync,
-                                loadingSkeleton: const SkeletonCard(height: 160),
-                                data: (categoryStats) =>
-                                    CategoryStatsCard(stats: categoryStats),
-                                onRetry: () => ref.invalidate(categoryStatsProvider),
-                              ),
-                            ),
-                      ],
+                          ).toList(),
+                        );
+                      },
+                      onRetry: () => ref.invalidate(habitsProvider),
                     ),
-                    const SizedBox(height: 16),
-                    AddHabitTile(onTap: () => _showAddHabitDialog()),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

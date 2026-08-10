@@ -51,7 +51,7 @@ class _HabitCardState extends State<HabitCard>
   Widget build(BuildContext context) {
     final habit = widget.habit;
     final aether = context.aether;
-
+    final todayIndex = DateTime.now().weekday - 1; // Monday = 0 ... Sunday = 6
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -123,7 +123,7 @@ class _HabitCardState extends State<HabitCard>
                       final dayIdx = entry.key;
                       final isCompleted = dayIdx < habit.dayCompletions.length &&
                           habit.dayCompletions[dayIdx];
-                      final isToday = dayIdx == 6;
+final isToday = dayIdx == todayIndex;
                       return Container(
                         width: 20,
                         height: 20,

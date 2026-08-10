@@ -13,6 +13,8 @@ import 'package:aether/features/tasks/providers/task_providers.dart';
 import 'package:aether/features/schedule/providers/schedule_providers.dart';
 import 'package:aether/features/schedule/widgets/schedule_options.dart';
 import 'package:aether/widgets/dashboard_top_bar.dart';
+import 'package:aether/features/habits/providers/habits_providers.dart';
+import 'package:aether/features/habits/models/habit.dart';
 /// ---------------------------------------------------------------------
 /// AETHER — Dashboard content
 /// ---------------------------------------------------------------------
@@ -114,41 +116,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   // DateTime _referenceDate = DateTime.now();
   int _dayOffset = 0;
 
-  // Static mock defaults for loading / initial state
-  static const double _progressPercent = 0.625;
-  static const int _tasksPending = 6;
-  static const int _classesToday = 3;
-  static const int _habitsCompleted = 4;
-  static const int _habitsTotal = 7;
-  static const int _healthScore = 72;
-
-  final List<_HabitItemData> _habits = const [
-    _HabitItemData(
-      icon: Icons.menu_book_outlined,
-      title: 'Study',
-      fraction: '5/7',
-      progress: 5 / 7,
-    ),
-    _HabitItemData(
-      icon: Icons.self_improvement,
-      title: 'Meditation',
-      fraction: '4/7',
-      progress: 4 / 7,
-    ),
-    _HabitItemData(
-      icon: Icons.water_drop_outlined,
-      title: 'No Sugar',
-      fraction: '5/7',
-      progress: 5 / 7,
-    ),
-    _HabitItemData(
-      icon: Icons.nightlight_outlined,
-      title: 'Sleep Early',
-      fraction: '3/7',
-      progress: 3 / 7,
-    ),
-  ];
-
   static const _UpcomingEventData _upcomingEvent = _UpcomingEventData(
     day: '18',
     month: 'AUG',
@@ -221,35 +188,41 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     return _fullDateLabel;
   }
 
-  String get _habitsCompletedFraction => '$_habitsCompleted/$_habitsTotal';
-  String get _healthScoreLabel => '$_healthScore%';
-
-  List<_GlanceItemData> get _glanceItems => [
-    _GlanceItemData(
-      icon: Icons.assignment_outlined,
-      iconColor: DashboardScreen.red,
-      value: '$_tasksPending',
-      label: 'Tasks pending',
-    ),
-    _GlanceItemData(
-      icon: Icons.menu_book_outlined,
-      iconColor: DashboardScreen.purple,
-      value: '$_classesToday',
-      label: 'Classes today',
-    ),
-    _GlanceItemData(
-      icon: Icons.check_circle_outline,
-      iconColor: DashboardScreen.green,
-      value: _habitsCompletedFraction,
-      label: 'Habits completed',
-    ),
-    _GlanceItemData(
-      icon: Icons.favorite_border,
-      iconColor: DashboardScreen.red,
-      value: _healthScoreLabel,
-      label: 'Health score',
-    ),
-  ];
+  /// Builds the 4 "at a glance" cards from real, currently-loaded data.
+  /// Health has no scoring model yet (that page is coming soon), so its
+  /// card shows a placeholder dash instead of a made-up number.
+  List<_GlanceItemData> _glanceItems({
+    required int tasksPending,
+    required int classesToday,
+    required int habitsCompleted,
+    required int habitsTotal,
+  }) =>
+      [
+        _GlanceItemData(
+          icon: Icons.assignment_outlined,
+          iconColor: DashboardScreen.red,
+          value: '$tasksPending',
+          label: 'Tasks pending',
+        ),
+        _GlanceItemData(
+          icon: Icons.menu_book_outlined,
+          iconColor: DashboardScreen.purple,
+          value: '$classesToday',
+          label: 'Classes today',
+        ),
+        _GlanceItemData(
+          icon: Icons.check_circle_outline,
+          iconColor: DashboardScreen.green,
+          value: '$habitsCompleted/$habitsTotal',
+          label: 'Habits completed',
+        ),
+        _GlanceItemData(
+          icon: Icons.favorite_border,
+          iconColor: DashboardScreen.red,
+          value: '—',
+          label: 'Health score',
+        ),
+      ];
 
   // ---------------------------------------------------------------------
   // Helper methods
@@ -327,6 +300,29 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         : ref.watch(scheduleBlocksProvider(matchedTemplate.id));
     final upcomingBlocks = _nextScheduleBlocks(blocksAsync.value ?? const []);
 
+    // "Today at a glance" — all four cards driven by real data.
+    final tasksPending =
+        allTasks.where((t) => t.status != 'Completed').length;
+    final normalizedSelectedDate = DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+    );
+    final classesToday =
+        ref.watch(classesOnDateProvider(normalizedSelectedDate));
+    final overviewMetrics = ref.watch(overviewMetricsProvider).value ??
+        const OverviewMetrics(
+          completedToday: 0,
+          totalToday: 0,
+          currentStreak: 0,
+          longestStreak: 0,
+          weeklyScore: 0,
+        );
+
+    // Habit Tracker card — top habits with this week's progress.
+    final habits = ref.watch(habitsProvider).value ?? const <Habit>[];
+    final trackedHabits = habits.take(4).toList();
+
     return Container(
       color: context.aether.background,
       child: SafeArea(
@@ -345,7 +341,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 periodText: _periodText,
                 weekdayLabel: _weekdayLabel,
                 fullDateLabel: _fullDateLabel,
-                progressPercent: _progressPercent,
               ),
               const SizedBox(height: 16),
               _DateNavigator(
@@ -354,7 +349,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 onNext: _goToNextDay,
               ),
               const SizedBox(height: 20),
-              _GlanceRow(items: _glanceItems),
+              _GlanceRow(
+                items: _glanceItems(
+                  tasksPending: tasksPending,
+                  classesToday: classesToday,
+                  habitsCompleted: overviewMetrics.completedToday,
+                  habitsTotal: overviewMetrics.totalToday,
+                ),
+              ),
               const SizedBox(height: 24),
               _SectionHeader(
                 title: "Today's Schedule",
@@ -391,7 +393,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: _HabitTrackerCard(
-                      habits: _habits,
+                      habits: trackedHabits
+                          .map((h) => _HabitItemData(
+                                icon: h.icon,
+                                title: h.name,
+                                fraction:
+                                    '${h.weeklyCompletions}/${h.weeklyTotal}',
+                                progress: h.weeklyTotal > 0
+                                    ? h.weeklyCompletions / h.weeklyTotal
+                                    : 0.0,
+                              ))
+                          .toList(),
                       onViewAll: _onViewAllHabits,
                     ),
                   ),
@@ -418,14 +430,12 @@ class _HeaderRow extends StatelessWidget {
   final String periodText;
   final String weekdayLabel;
   final String fullDateLabel;
-  final double progressPercent;
 
   const _HeaderRow({
     required this.timeText,
     required this.periodText,
     required this.weekdayLabel,
     required this.fullDateLabel,
-    required this.progressPercent,
   });
 
   @override
@@ -1174,51 +1184,80 @@ class _HabitTrackerCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          ...habits.map(
-            (h) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 7),
+          if (habits.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Icon(h.icon, size: 14, color: context.aether.textMuted),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          h.title,
-                          style: TextStyle(
-                            color: context.aether.text,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      Text(
-                        h.fraction,
-                        style: TextStyle(
-                          color: context.aether.textMuted,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
+                  Text(
+                    'No habits yet',
+                    style: TextStyle(
+                      color: context.aether.textMuted,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                  const SizedBox(height: 6),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: h.progress,
-                      minHeight: 3,
-                      backgroundColor: const Color(0xFF2A2A2A),
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        context.aether.accent,
+                  const SizedBox(height: 2),
+                  GestureDetector(
+                    onTap: onViewAll,
+                    child: Text(
+                      'Tap View All to add one',
+                      style: TextStyle(
+                        color: context.aether.textMuted,
+                        fontSize: 11,
                       ),
                     ),
                   ),
                 ],
               ),
+            )
+          else
+            ...habits.map(
+              (h) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 7),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(h.icon, size: 14, color: context.aether.textMuted),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            h.title,
+                            style: TextStyle(
+                              color: context.aether.text,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          h.fraction,
+                          style: TextStyle(
+                            color: context.aether.textMuted,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: h.progress,
+                        minHeight: 3,
+                        backgroundColor: const Color(0xFF2A2A2A),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          context.aether.accent,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
         ],
       ),
     );

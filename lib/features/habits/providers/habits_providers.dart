@@ -7,9 +7,20 @@ import 'package:aether/features/habits/models/habit.dart';
 /// Selected category filter. `null` means "All".
 final selectedCategoryProvider = StateProvider<HabitCategory?>((ref) => null);
 
+/// The date currently being viewed on the Habits screen (date navigator).
+/// Defaults to today, normalized to midnight.
+final selectedDateProvider = StateProvider<DateTime>((ref) => _normalizeDate(DateTime.now()));
+
 /// The full list of habits, transformed from Drift entries and logs into UI models.
 final habitsProvider = StreamProvider<List<Habit>>((ref) {
   final habitsService = ref.watch(habitsServiceProvider);
+  final selectedDate = ref.watch(selectedDateProvider);
+
+  // Pull any remote changes (habits/logs created on Supabase directly, on
+  // another device, or restored after reinstall) into the local Drift DB.
+  // Fire-and-forget: the Drift `watch()` stream below will automatically
+  // re-emit once these writes land, so we don't need to await it here.
+  habitsService.syncHabits().then((_) => habitsService.syncHabitLogs());
 
   // Watch for changes in HabitEntry table
   final habitEntriesStream = habitsService.watchHabits();
@@ -20,8 +31,8 @@ final habitsProvider = StreamProvider<List<Habit>>((ref) {
     for (final entry in habitEntries) {
       final logs = await habitsService.watchLogsForHabit(entry.id).first; // Get current logs once
 
-      // Calculate streak and completion metrics
-      final Habit calculatedHabit = _calculateHabitMetrics(entry, logs);
+      // Calculate streak and completion metrics relative to the selected date
+      final Habit calculatedHabit = _calculateHabitMetrics(entry, logs, selectedDate);
       habits.add(calculatedHabit);
     }
     return habits;
@@ -117,23 +128,26 @@ final weeklyProgressProvider = Provider<AsyncValue<WeeklyProgressData>>((ref) {
 // ── Helper methods for Habit model transformation ──────────────────────────
 // This could be moved into HabitsService or a dedicated transformer utility.
 
-Habit _calculateHabitMetrics(HabitEntry entry, List<HabitLog> logs) {
-  final todayDate = _normalizeDate(DateTime.now());
+Habit _calculateHabitMetrics(HabitEntry entry, List<HabitLog> logs, DateTime selectedDate) {
+  final viewDate = _normalizeDate(selectedDate);
+  final realToday = _normalizeDate(DateTime.now());
+  // Cutoff used for "how much of the week has elapsed" math — never count
+  // days beyond the real today, even if the user is browsing a future date.
+  final asOfDate = viewDate.isAfter(realToday) ? realToday : viewDate;
 
-  // Weekly completions
+  // Weekly completions — the Mon–Sun week that *contains the viewed date*.
   final dayCompletions = List.filled(7, false); // Mon-Sun
   int weeklyCompletions = 0;
+  final startOfWeek = viewDate.subtract(Duration(days: viewDate.weekday - 1));
+  final endOfWeek = startOfWeek.add(const Duration(days: 6));
 
   for (final log in logs) {
     final logDate = _normalizeDate(log.date);
-    // Adjusted weekday index calculation: Monday is 0, Sunday is 6
     final weekdayIndex = (logDate.weekday - 1);
 
-    // Check if log falls within the current week for dashboard display
-    final startOfWeek = todayDate.subtract(Duration(days: todayDate.weekday - 1)); // Assuming week starts Monday
-    if (logDate.isAfter(startOfWeek.subtract(const Duration(days: 1))) && logDate.isBefore(todayDate.add(const Duration(days: 1)))) {
+    if (!logDate.isBefore(startOfWeek) && !logDate.isAfter(endOfWeek)) {
       if (log.isCompleted) {
-        if (weekdayIndex >= 0 && weekdayIndex < 7) { // Ensure index is valid
+        if (weekdayIndex >= 0 && weekdayIndex < 7) {
           dayCompletions[weekdayIndex] = true;
         }
         weeklyCompletions++;
@@ -141,20 +155,16 @@ Habit _calculateHabitMetrics(HabitEntry entry, List<HabitLog> logs) {
     }
   }
 
-  // Current streak
+  // Current streak — consecutive completed days counting backwards from the
+  // viewed date (so browsing "yesterday" shows the streak as it stood then).
   int currentStreak = 0;
-  DateTime checkDate = todayDate;
-  bool completedToday = logs.any((l) => _normalizeDate(l.date) == todayDate && l.isCompleted);
-  if (completedToday) {
+  DateTime checkDate = viewDate;
+  bool completedOnViewDate = logs.any((l) => _normalizeDate(l.date) == viewDate && l.isCompleted);
+  if (completedOnViewDate) {
     currentStreak = 1;
-    checkDate = todayDate.subtract(const Duration(days: 1));
-  } else {
-    // If not completed today, streak starts from 0 (if user missed today).
-    // Or, if user completed yesterday but not today, streak resets.
-    // This is a strict consecutive day streak.
+    checkDate = viewDate.subtract(const Duration(days: 1));
   }
 
-  // Check previous days for streak
   for (int i = 0; i < 30; i++) { // Max streak of 30 days for calculation purpose
     final hasLog = logs.any((l) => _normalizeDate(l.date) == checkDate && l.isCompleted);
     if (hasLog) {
@@ -172,6 +182,12 @@ Habit _calculateHabitMetrics(HabitEntry entry, List<HabitLog> logs) {
     longestStreak = currentStreak;
   }
 
+  // How many days of *this* week the habit has actually existed for, capped
+  // at the real today — a habit created yesterday, or a week still in
+  // progress, shouldn't be scored against a full 7-day week.
+  final createdDate = _normalizeDate(entry.createdAt);
+  final weekStartForHabit = createdDate.isAfter(startOfWeek) ? createdDate : startOfWeek;
+  final weeklyTotal = asOfDate.difference(weekStartForHabit).inDays + 1;
 
   return Habit(
     id: entry.id,
@@ -183,9 +199,9 @@ Habit _calculateHabitMetrics(HabitEntry entry, List<HabitLog> logs) {
     currentStreak: currentStreak,
     longestStreak: longestStreak,
     weeklyCompletions: weeklyCompletions,
-    weeklyTotal: 7,
+    weeklyTotal: weeklyTotal.clamp(1, 7),
     dayCompletions: dayCompletions,
-    isCompletedToday: completedToday,
+    isCompletedToday: completedOnViewDate,
     createdAt: entry.createdAt,
     updatedAt: entry.updatedAt,
     reminderTime: entry.reminderTime,

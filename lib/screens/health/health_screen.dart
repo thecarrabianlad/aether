@@ -28,7 +28,14 @@ class _HealthScreenState extends ConsumerState<HealthScreen> {
     return Scaffold(
       backgroundColor: aether.background,
       body: Center(
-        child: Text('Health Screen', style: TextStyle(color: aether.text)),
+        child: Text(
+          'Will be coming soon',
+          style: TextStyle(
+            color: aether.text,
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ),
     );
   }

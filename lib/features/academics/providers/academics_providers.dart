@@ -47,6 +47,29 @@ final courseProgressProvider =
   return Stream.value(done / total);
 });
 
+/// Count of lectures (across all courses) scheduled on [date] — powers the
+/// dashboard's "Classes today" glance card. Lives here (not in a separate
+/// provider) since it composes coursesProvider + lecturesProvider, both of
+/// which already live in this file.
+final classesOnDateProvider = Provider.family<int, DateTime>((ref, date) {
+  final coursesAsync = ref.watch(coursesProvider);
+  final courses = coursesAsync.value ?? const <Course>[];
+
+  int count = 0;
+  for (final course in courses) {
+    final lecturesAsync = ref.watch(lecturesProvider(course.id));
+    final lectures = lecturesAsync.value ?? const <Lecture>[];
+    count += lectures.where((l) {
+      final scheduled = l.scheduledAt;
+      if (scheduled == null) return false;
+      return scheduled.year == date.year &&
+          scheduled.month == date.month &&
+          scheduled.day == date.day;
+    }).length;
+  }
+  return count;
+});
+
 /// Grades stream for a course — pure, no side effects.
 // TODO: Uncomment when Grade model and AcademicsService.watchGrades are implemented.
 // final gradesProvider = StreamProvider.family<List<Grade>, String>((ref, courseId) {
