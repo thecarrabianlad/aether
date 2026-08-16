@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
+
 import 'package:aether/core/database/database.dart';
 import 'package:aether/core/models/profile.dart';
 import 'package:aether/core/services/academics_service.dart';
@@ -46,8 +50,6 @@ final Provider<HabitsService> habitsServiceProvider =
   final notificationService = ref.watch(notificationServiceProvider);
   return HabitsService(db, syncQueueService, notificationService);
 });
-
-import 'package:connectivity_plus/connectivity_plus.dart';
 
 /// Stream of connectivity status changes.
 final connectivityProvider = StreamProvider<List<ConnectivityResult>>((ref) {
