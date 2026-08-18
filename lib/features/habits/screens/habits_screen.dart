@@ -293,3 +293,40 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
                       },
                       onRetry: () => ref.invalidate(habitsProvider),
                     ),
+                                        const SizedBox(height: 16),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: AsyncValueWidget(
+                            value: weeklyProgressAsync,
+                            loadingSkeleton: const SkeletonCard(height: 160),
+                            data: (weeklyProgress) =>
+                                WeeklyProgressCard(data: weeklyProgress),
+                            onRetry: () => ref.invalidate(weeklyProgressProvider),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: AsyncValueWidget(
+                            value: categoryStatsAsync,
+                            loadingSkeleton: const SkeletonCard(height: 160),
+                            data: (categoryStats) =>
+                                CategoryStatsCard(stats: categoryStats),
+                            onRetry: () => ref.invalidate(categoryStatsProvider),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    AddHabitTile(onTap: () => _showAddHabitDialog()),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
