@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:aether/core/database/database.dart';
-import 'package:aether/core/database/model_extensions.dart';
+import 'package:aether/core/database/model_extensions.dart'; // Import model extensions
 import 'package:aether/core/errors/retry.dart';
 import 'package:aether/core/services/supabase_service.dart';
 import 'package:drift/drift.dart';
@@ -8,7 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 enum SyncOperation { insert, update, delete, upsert }
-enum SyncEntityType { course, lecture, assignment, habit, habitLog }
+enum SyncEntityType { course, lecture, assignment, habit, habitLog, grade }
 
 class SyncQueueService {
   final AppDatabase _db;
@@ -95,6 +95,9 @@ class SyncQueueService {
           case SyncEntityType.habitLog:
             success = await _retryHabitLogOperation(operation, item.entityId, payload);
             break;
+          case SyncEntityType.grade:
+            success = await _retryGradeOperation(operation, item.entityId, payload);
+            break;
         }
       } on PostgrestException catch (e) {
         errorMessage = e.message;
@@ -131,7 +134,7 @@ class SyncQueueService {
       case SyncOperation.insert:
       case SyncOperation.upsert:
       case SyncOperation.update:
-        await _supabase.from('courses').upsert(_courseToRow(course));
+        await _supabase.from('courses').upsert(course.toSupabaseJson());
         return true;
       case SyncOperation.delete:
         await _supabase.from('courses').delete().eq('id', entityId);
@@ -147,7 +150,7 @@ class SyncQueueService {
       case SyncOperation.insert:
       case SyncOperation.upsert:
       case SyncOperation.update:
-        await _supabase.from('lectures').upsert(_lectureToRow(lecture));
+        await _supabase.from('lectures').upsert(lecture.toSupabaseJson());
         return true;
       case SyncOperation.delete:
         await _supabase.from('lectures').delete().eq('id', entityId);
@@ -163,7 +166,7 @@ class SyncQueueService {
       case SyncOperation.insert:
       case SyncOperation.upsert:
       case SyncOperation.update:
-        await _supabase.from('assignments').upsert(_assignmentToRow(assignment));
+        await _supabase.from('assignments').upsert(assignment.toSupabaseJson());
         return true;
       case SyncOperation.delete:
         await _supabase.from('assignments').delete().eq('id', entityId);
@@ -179,7 +182,7 @@ class SyncQueueService {
       case SyncOperation.insert:
       case SyncOperation.upsert:
       case SyncOperation.update:
-        await _supabase.from('habits').upsert(_habitToRow(habitEntry));
+        await _supabase.from('habits').upsert(habitEntry.toSupabaseJson());
         return true;
       case SyncOperation.delete:
         await _supabase.from('habits').delete().eq('id', entityId);
@@ -195,7 +198,7 @@ class SyncQueueService {
       case SyncOperation.insert:
       case SyncOperation.upsert:
       case SyncOperation.update:
-        await _supabase.from('habit_logs').upsert(_habitLogToRow(habitLog));
+        await _supabase.from('habit_logs').upsert(habitLog.toSupabaseJson());
         return true;
       case SyncOperation.delete:
         await _supabase.from('habit_logs').delete().eq('id', entityId);
@@ -203,72 +206,19 @@ class SyncQueueService {
     }
   }
 
-  // ── Data Mappers ────────────────────────────────────
-
-  Map<String, dynamic> _courseToRow(Course c) => {
-        'id': c.id,
-        'user_id': c.userId,
-        'name': c.name,
-        'code': c.code,
-        'professor': c.professor,
-        'color': c.color,
-        'icon': c.icon,
-        'semester': c.semester,
-        'location': c.location,
-        'credits': c.credits,
-        'schedule_days': c.scheduleDays,
-        'schedule_start': c.scheduleStart,
-        'schedule_end': c.scheduleEnd,
-        'created_at': c.createdAt.toIso8601String(),
-        'updated_at': c.updatedAt.toIso8601String(),
-      };
-
-  Map<String, dynamic> _lectureToRow(Lecture l) => {
-        'id': l.id,
-        'course_id': l.courseId,
-        'user_id': l.userId,
-        'title': l.title,
-        'chapter': l.chapter,
-        'tag': l.tag,
-        'scheduled_at': l.scheduledAt?.toIso8601String(),
-        'duration_minutes': l.durationMinutes,
-        'is_completed': l.isCompleted,
-        'completed_at': l.completedAt?.toIso8601String(),
-        'created_at': l.createdAt.toIso8601String(),
-        'updated_at': l.updatedAt.toIso8601String(),
-      };
-
-  Map<String, dynamic> _assignmentToRow(Assignment a) => {
-        'id': a.id,
-        'course_id': a.courseId,
-        'user_id': a.userId,
-        'title': a.title,
-        'description': a.description,
-        'due_date': a.dueDate?.toIso8601String(),
-        'is_completed': a.isCompleted,
-        'completed_at': a.completedAt?.toIso8601String(),
-        'created_at': a.createdAt.toIso8601String(),
-        'updated_at': a.updatedAt.toIso8601String(),
-      };
-
-  Map<String, dynamic> _habitToRow(HabitEntry h) => {
-        'id': h.id,
-        'user_id': h.userId,
-        'name': h.name,
-        'category': h.category,
-        'icon': h.icon,
-        'color': h.color,
-        'longest_streak': h.longestStreak,
-        'created_at': h.createdAt.toIso8601String(),
-        'updated_at': h.updatedAt.toIso8601String(),
-        'reminder_time': h.reminderTime,
-        'reminder_days': h.reminderDays,
-      };
-
-  Map<String, dynamic> _habitLogToRow(HabitLog l) => {
-        'id': l.id,
-        'habit_id': l.habitId,
-        'date': l.date.toIso8601String().split('T').first,
-        'is_completed': l.isCompleted,
-      };
+  // --- Grade Retry Operations ---
+  Future<bool> _retryGradeOperation(SyncOperation operation, String entityId, Map<String, dynamic>? payload) async {
+    if (payload == null) return false;
+    final grade = GradeExtension.fromJson(payload);
+    switch (operation) {
+      case SyncOperation.insert:
+      case SyncOperation.upsert:
+      case SyncOperation.update:
+        await _supabase.from('grades').upsert(grade.toSupabaseJson());
+        return true;
+      case SyncOperation.delete:
+        await _supabase.from('grades').delete().eq('id', entityId);
+        return true;
+    }
+  }
 }

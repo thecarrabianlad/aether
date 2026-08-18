@@ -917,6 +917,49 @@ class _CourseDetailView extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 20),
+        // Grades Section
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Grades',
+                style: TextStyle(
+                    color: context.aether.text,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600)),
+            GestureDetector(
+              onTap: () {
+                context.push('/academics/grades/${course.id}', extra: course.name);
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text('View Grades',
+                    style: TextStyle(
+                        color: color,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600)),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        // Placeholder for average grade or recent grades, for now just a spacer
+        Container(
+          height: 60, // Or some other appropriate height for a placeholder
+          decoration: BoxDecoration(
+            color: context.aether.surfaceAlt,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            'Average Grade: N/A', // Placeholder text
+            style: TextStyle(color: context.aether.textMuted),
+          ),
+        ),
+        const SizedBox(height: 20),
         // Lectures
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

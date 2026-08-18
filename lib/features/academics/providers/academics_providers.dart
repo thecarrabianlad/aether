@@ -71,8 +71,7 @@ final classesOnDateProvider = Provider.family<int, DateTime>((ref, date) {
 });
 
 /// Grades stream for a course — pure, no side effects.
-// TODO: Uncomment when Grade model and AcademicsService.watchGrades are implemented.
-// final gradesProvider = StreamProvider.family<List<Grade>, String>((ref, courseId) {
-//   final service = ref.watch(academicsServiceProvider);
-//   return service.watchGrades(courseId);
-// });
+final gradesProvider = StreamProvider.family<List<Grade>, String>((ref, courseId) {
+  final service = ref.watch(academicsServiceProvider);
+  return service.watchGrades(courseId);
+});

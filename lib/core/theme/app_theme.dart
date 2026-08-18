@@ -95,6 +95,9 @@ class AetherTheme extends ThemeExtension<AetherTheme> {
   /// Primary accent — highlights, active nav items, glows, CTAs.
   final Color accent;
 
+  /// Color that contrasts well with the accent color.
+  final Color onAccent;
+
   /// Scaffold / page background.
   final Color background;
 
@@ -133,6 +136,7 @@ class AetherTheme extends ThemeExtension<AetherTheme> {
     required this.textMuted,
     required this.success,
     required this.danger,
+    required this.onAccent,
   });
 
   /// Builds the token set for a given user selection.
@@ -149,6 +153,7 @@ class AetherTheme extends ThemeExtension<AetherTheme> {
       textMuted: const Color(0xFF8E8E93),
       success: const Color(0xFF34C759),
       danger: const Color(0xFFFF3B30),
+      onAccent: const Color(0xFFFFFFFF), // White color for text/icons on accent
     );
   }
 
@@ -176,6 +181,7 @@ class AetherTheme extends ThemeExtension<AetherTheme> {
       textMuted: textMuted ?? this.textMuted,
       success: success ?? this.success,
       danger: danger ?? this.danger,
+      onAccent: onAccent ?? this.onAccent,
     );
   }
 
@@ -193,6 +199,7 @@ class AetherTheme extends ThemeExtension<AetherTheme> {
       textMuted: Color.lerp(textMuted, other.textMuted, t)!,
       success: Color.lerp(success, other.success, t)!,
       danger: Color.lerp(danger, other.danger, t)!,
+      onAccent: Color.lerp(onAccent, other.onAccent, t)!,
     );
   }
 }

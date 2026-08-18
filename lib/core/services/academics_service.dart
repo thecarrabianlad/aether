@@ -2,9 +2,9 @@ import 'package:aether/core/database/database.dart';
 import 'package:aether/core/services/supabase_service.dart';
 import 'package:aether/core/services/sync_queue_service.dart';
 import 'package:drift/drift.dart';
-import 'package:supabase_flutter/supabase_flutter.dart'; // Unified Supabase import
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
-
+import 'package:aether/core/database/model_extensions.dart'; // Import model extensions
 
 /// Offline-first academics data layer.
 ///
@@ -32,7 +32,7 @@ class AcademicsService {
 
     final remote = await _supabase.from('courses').select().eq('user_id', userId);
     for (final row in remote) {
-      await _db.into(_db.courses).insertOnConflictUpdate(_courseFromRow(row, userId));
+      await _db.into(_db.courses).insertOnConflictUpdate(CourseExtension.fromJson(row));
     }
   }
 
@@ -74,24 +74,45 @@ class AcademicsService {
 
     await _db.into(_db.courses).insert(course);
     await _push(
-      op: () => _supabase.from('courses').upsert(_courseToRow(course)),
+      op: () => _supabase.from('courses').upsert(course.toSupabaseJson()),
       entityType: SyncEntityType.course,
       operation: SyncOperation.insert,
       entityId: course.id,
-      payload: _courseToRow(course),
+      payload: course.toSupabaseJson(),
     );
     return course;
+  }
+
+  /// Immediately pushes an operation to Supabase, or enqueues it if it fails.
+  Future<void> _push({
+    required Future<void> Function() op,
+    required SyncEntityType entityType,
+    required SyncOperation operation,
+    required String entityId,
+    Map<String, dynamic>? payload,
+  }) async {
+    try {
+      await op();
+    } catch (e) {
+      // If the direct push fails (e.g., network error), enqueue it for later.
+      await _syncQueueService.enqueue(
+        entityType: entityType,
+        operation: operation,
+        entityId: entityId,
+        payload: payload,
+      );
+    }
   }
 
   Future<void> updateCourse(Course course) async {
     final updated = course.copyWith(updatedAt: DateTime.now());
     await _db.update(_db.courses).replace(updated);
     await _push(
-      op: () => _supabase.from('courses').update(_courseToRow(updated)).eq('id', updated.id),
+      op: () => _supabase.from('courses').update(updated.toSupabaseJson()).eq('id', updated.id),
       entityType: SyncEntityType.course,
       operation: SyncOperation.update,
       entityId: updated.id,
-      payload: _courseToRow(updated),
+      payload: updated.toSupabaseJson(),
     );
   }
 
@@ -99,6 +120,7 @@ class AcademicsService {
     await (_db.delete(_db.courses)..where((c) => c.id.equals(courseId))).go();
     await (_db.delete(_db.lectures)..where((l) => l.courseId.equals(courseId))).go();
     await (_db.delete(_db.assignments)..where((a) => a.courseId.equals(courseId))).go();
+    await (_db.delete(_db.grades)..where((g) => g.courseId.equals(courseId))).go(); // Also delete grades for the course
     await _push(
       op: () => _supabase.from('courses').delete().eq('id', courseId),
       entityType: SyncEntityType.course,
@@ -127,7 +149,7 @@ class AcademicsService {
     }
     final remote = await query;
     for (final row in remote) {
-      await _db.into(_db.lectures).insertOnConflictUpdate(_lectureFromRow(row, userId));
+      await _db.into(_db.lectures).insertOnConflictUpdate(LectureExtension.fromJson(row));
     }
   }
 
@@ -162,11 +184,11 @@ class AcademicsService {
 
     await _db.into(_db.lectures).insert(lecture);
     await _push(
-      op: () => _supabase.from('lectures').upsert(_lectureToRow(lecture)),
+      op: () => _supabase.from('lectures').upsert(lecture.toSupabaseJson()),
       entityType: SyncEntityType.lecture,
       operation: SyncOperation.insert,
       entityId: lecture.id,
-      payload: _lectureToRow(lecture),
+      payload: lecture.toSupabaseJson(),
     );
     return lecture;
   }
@@ -175,11 +197,11 @@ class AcademicsService {
     final updated = lecture.copyWith(updatedAt: DateTime.now());
     await _db.update(_db.lectures).replace(updated);
     await _push(
-      op: () => _supabase.from('lectures').update(_lectureToRow(updated)).eq('id', updated.id),
+      op: () => _supabase.from('lectures').update(updated.toSupabaseJson()).eq('id', updated.id),
       entityType: SyncEntityType.lecture,
       operation: SyncOperation.update,
       entityId: updated.id,
-      payload: _lectureToRow(updated),
+      payload: updated.toSupabaseJson(),
     );
   }
 
@@ -213,7 +235,7 @@ class AcademicsService {
     }
     final remote = await query;
     for (final row in remote) {
-      await _db.into(_db.assignments).insertOnConflictUpdate(_assignmentFromRow(row, userId));
+      await _db.into(_db.assignments).insertOnConflictUpdate(AssignmentExtension.fromJson(row));
     }
   }
 
@@ -244,11 +266,11 @@ class AcademicsService {
 
     await _db.into(_db.assignments).insert(assignment);
     await _push(
-      op: () => _supabase.from('assignments').upsert(_assignmentToRow(assignment)),
+      op: () => _supabase.from('assignments').upsert(assignment.toSupabaseJson()),
       entityType: SyncEntityType.assignment,
       operation: SyncOperation.insert,
       entityId: assignment.id,
-      payload: _assignmentToRow(assignment),
+      payload: assignment.toSupabaseJson(),
     );
     return assignment;
   }
@@ -257,11 +279,11 @@ class AcademicsService {
     final updated = assignment.copyWith(updatedAt: DateTime.now());
     await _db.update(_db.assignments).replace(updated);
     await _push(
-      op: () => _supabase.from('assignments').update(_assignmentToRow(updated)).eq('id', updated.id),
+      op: () => _supabase.from('assignments').update(updated.toSupabaseJson()).eq('id', updated.id),
       entityType: SyncEntityType.assignment,
       operation: SyncOperation.update,
       entityId: updated.id,
-      payload: _assignmentToRow(updated),
+      payload: updated.toSupabaseJson(),
     );
   }
 
@@ -272,6 +294,88 @@ class AcademicsService {
       entityType: SyncEntityType.assignment,
       operation: SyncOperation.delete,
       entityId: assignmentId,
+    );
+  }
+
+  // ── Grades ──────────────────────────────────────────
+
+  Stream<List<Grade>> watchGrades(String courseId) =>
+      (_db.select(_db.grades)..where((g) => g.courseId.equals(courseId)))
+          .watch();
+
+  Future<void> syncGrades({String? courseId}) async {
+    final userId = _userId;
+    if (userId == null) return;
+
+    PostgrestFilterBuilder query = _supabase.from('grades').select();
+    if (courseId != null) {
+      query = query.eq('course_id', courseId);
+    } else {
+      query = query.eq('user_id', userId);
+    }
+    final remote = await query;
+    for (final row in remote) {
+      await _db.into(_db.grades).insertOnConflictUpdate(GradeExtension.fromJson(row));
+    }
+  }
+
+  Future<Grade> createGrade({
+    String? id,
+    required String courseId,
+    required String title,
+    double? gradeValue,
+    double? totalPoints,
+    double? weight,
+    String? feedback,
+    DateTime? gradedAt,
+  }) async {
+    final userId = _userId;
+    if (userId == null) throw Exception('Not authenticated');
+
+    final grade = Grade(
+      id: id ?? const Uuid().v4(),
+      courseId: courseId,
+      userId: userId,
+      title: title,
+      gradeValue: gradeValue,
+      totalPoints: totalPoints,
+      weight: weight ?? 1.0,
+      feedback: feedback,
+      gradedAt: gradedAt,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+
+    await _db.into(_db.grades).insert(grade);
+    await _push(
+      op: () => _supabase.from('grades').upsert(grade.toSupabaseJson()),
+      entityType: SyncEntityType.grade,
+      operation: SyncOperation.insert,
+      entityId: grade.id,
+      payload: grade.toSupabaseJson(),
+    );
+    return grade;
+  }
+
+  Future<void> updateGrade(Grade grade) async {
+    final updated = grade.copyWith(updatedAt: DateTime.now());
+    await _db.update(_db.grades).replace(updated);
+    await _push(
+      op: () => _supabase.from('grades').update(updated.toSupabaseJson()).eq('id', updated.id),
+      entityType: SyncEntityType.grade,
+      operation: SyncOperation.update,
+      entityId: updated.id,
+      payload: updated.toSupabaseJson(),
+    );
+  }
+
+  Future<void> deleteGrade(String gradeId) async {
+    await (_db.delete(_db.grades)..where((g) => g.id.equals(gradeId))).go();
+    await _push(
+      op: () => _supabase.from('grades').delete().eq('id', gradeId),
+      entityType: SyncEntityType.grade,
+      operation: SyncOperation.delete,
+      entityId: gradeId,
     );
   }
 
@@ -296,140 +400,5 @@ class AcademicsService {
         updatedAt: Value(DateTime.now()),
       ),
     );
-  }
-
-  // ── Helpers ──────────────────────────────────────────
-
-  /// Runs a remote push. If successful, returns true. If network/transient error,
-  /// enqueues for retry and returns false. Rethrows only AuthExceptions.
-  Future<void> _push({
-    required Future<void> Function() op,
-    required SyncEntityType entityType,
-    required SyncOperation operation,
-    required String entityId,
-    Map<String, dynamic>? payload,
-  }) async {
-    try {
-      await op();
-    } on PostgrestException catch (e) {
-      if (e.code == '401' || e.code == 'JWT expired') {
-        rethrow; // Re-throw auth errors
-      }
-      await _syncQueueService.enqueue(
-        entityType: entityType,
-        operation: operation,
-        entityId: entityId,
-        payload: payload,
-      );
-    } on AuthException catch (_) {
-      rethrow; // Re-throw auth errors
-    } catch (e) {
-      // Catch all other errors (e.g., network, transient) and enqueue
-      await _syncQueueService.enqueue(
-        entityType: entityType,
-        operation: operation,
-        entityId: entityId,
-        payload: payload,
-      );
-    }
-  }
-
-  // ── Data Mappers ────────────────────────────────────
-
-  Course _courseFromRow(Map<String, dynamic> r, String userId) => Course(
-        id: r['id'] as String,
-        userId: r['user_id'] as String? ?? userId,
-        name: r['name'] as String? ?? '',
-        code: r['code'] as String?,
-        professor: r['professor'] as String?,
-        color: r['color'] as String? ?? '#8B5CF6',
-        icon: r['icon'] as String?,
-        semester: r['semester'] as String?,
-        location: r['location'] as String?,
-        credits: r['credits'] as int?,
-        scheduleDays: r['schedule_days'] as String?, // comma-separated string
-        scheduleStart: r['schedule_start'] as String?,
-        scheduleEnd: r['schedule_end'] as String?,
-        createdAt: _parseDate(r['created_at']),
-        updatedAt: _parseDate(r['updated_at']),
-      );
-
-  Map<String, dynamic> _courseToRow(Course c) => {
-        'id': c.id,
-        'user_id': c.userId,
-        'name': c.name,
-        'code': c.code,
-        'professor': c.professor,
-        'color': c.color,
-        'icon': c.icon,
-        'semester': c.semester,
-        'location': c.location,
-        'credits': c.credits,
-        'schedule_days': c.scheduleDays,
-        'schedule_start': c.scheduleStart,
-        'schedule_end': c.scheduleEnd,
-        'created_at': c.createdAt.toIso8601String(),
-        'updated_at': c.updatedAt.toIso8601String(),
-      };
-
-  Lecture _lectureFromRow(Map<String, dynamic> r, String userId) => Lecture(
-        id: r['id'] as String,
-        courseId: r['course_id'] as String,
-        userId: r['user_id'] as String? ?? userId,
-        title: r['title'] as String? ?? '',
-        chapter: r['chapter'] as String?,
-        tag: r['tag'] as String?,
-        scheduledAt: _parseDate(r['scheduled_at']),
-        durationMinutes: r['duration_minutes'] as int? ?? 90,
-        isCompleted: r['is_completed'] as bool? ?? false,
-        completedAt: _parseDate(r['completed_at']),
-        createdAt: _parseDate(r['created_at']),
-        updatedAt: _parseDate(r['updated_at']),
-      );
-
-  Map<String, dynamic> _lectureToRow(Lecture l) => {
-        'id': l.id,
-        'course_id': l.courseId,
-        'user_id': l.userId,
-        'title': l.title,
-        'chapter': l.chapter,
-        'tag': l.tag,
-        'scheduled_at': l.scheduledAt?.toIso8601String(),
-        'duration_minutes': l.durationMinutes,
-        'is_completed': l.isCompleted,
-        'completed_at': l.completedAt?.toIso8601String(),
-        'created_at': l.createdAt.toIso8601String(),
-        'updated_at': l.updatedAt.toIso8601String(),
-      };
-
-  Assignment _assignmentFromRow(Map<String, dynamic> r, String userId) => Assignment(
-        id: r['id'] as String,
-        courseId: r['course_id'] as String,
-        userId: r['user_id'] as String? ?? userId,
-        title: r['title'] as String? ?? '',
-        description: r['description'] as String?,
-        dueDate: _parseDate(r['due_date']),
-        isCompleted: r['is_completed'] as bool? ?? false,
-        completedAt: _parseDate(r['completed_at']),
-        createdAt: _parseDate(r['created_at']),
-        updatedAt: _parseDate(r['updated_at']),
-      );
-
-  Map<String, dynamic> _assignmentToRow(Assignment a) => {
-        'id': a.id,
-        'course_id': a.courseId,
-        'user_id': a.userId,
-        'title': a.title,
-        'description': a.description,
-        'due_date': a.dueDate?.toIso8601String(),
-        'is_completed': a.isCompleted,
-        'completed_at': a.completedAt?.toIso8601String(),
-        'created_at': a.createdAt.toIso8601String(),
-        'updated_at': a.updatedAt.toIso8601String(),
-      };
-
-  DateTime _parseDate(dynamic v) {
-    if (v == null) return DateTime.now();
-    return v is String ? DateTime.parse(v) : DateTime.now();
   }
 }

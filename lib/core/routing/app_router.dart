@@ -24,6 +24,7 @@ import 'package:aether/features/habits/screens/habits_calendar_screen.dart';
 import 'package:aether/features/habits/screens/habits_screen.dart';
 import 'package:aether/screens/health/health_screen.dart';
 import 'package:aether/features/settings/screens/settings_screen.dart';
+import 'package:aether/features/academics/screens/grades_screen.dart';
 import 'package:aether/widgets/main_scaffold.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -112,6 +113,18 @@ final routerProvider = Provider<GoRouter>((ref) {
           name: state.name,
           child: const SettingsScreen(),
         ),
+      ),
+      GoRoute(
+        path: '/academics/grades/:courseId',
+        pageBuilder: (context, state) {
+          final courseId = state.pathParameters['courseId']!;
+          final courseName = state.extra as String?; // Pass course name as extra
+          return AetherPage(
+            key: state.pageKey,
+            name: state.name,
+            child: GradesScreen(courseId: courseId, courseName: courseName ?? 'Course'),
+          );
+        },
       ),
       GoRoute(
         path: '/notes',

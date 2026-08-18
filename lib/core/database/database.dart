@@ -19,6 +19,7 @@ import 'tables/notes.dart';
 import 'tables/past_papers.dart';
 import 'tables/pomodoro.dart';
 import 'tables/flashcards.dart';
+import 'tables/grades.dart';
 
 part 'database.g.dart';
 
@@ -37,12 +38,16 @@ part 'database.g.dart';
   PomodoroSessions,
   FlashcardDecks,
   Flashcards,
+  Grades,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
+  // Constructor for testing with a custom executor (e.g., in-memory)
+  AppDatabase.forTesting(QueryExecutor executor) : super(executor);
+
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
 @override
 MigrationStrategy get migration => MigrationStrategy(
@@ -75,6 +80,9 @@ MigrationStrategy get migration => MigrationStrategy(
       await m.createTable(pomodoroSessions);
       await m.createTable(flashcardDecks);
       await m.createTable(flashcards);
+    }
+    if (from < 7) {
+      await m.createTable(grades);
     }
   },
 );
