@@ -15,6 +15,9 @@ import 'package:aether/features/schedule/widgets/schedule_options.dart';
 import 'package:aether/widgets/dashboard_top_bar.dart';
 import 'package:aether/features/habits/providers/habits_providers.dart';
 import 'package:aether/features/habits/models/habit.dart';
+import 'package:aether/core/providers.dart';
+import 'package:aether/features/tasks/widgets/add_task_sheet.dart';
+
 /// ---------------------------------------------------------------------
 /// AETHER — Dashboard content
 /// ---------------------------------------------------------------------
@@ -58,9 +61,25 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _syncTasks();
-      ref.read(scheduleServiceProvider).syncTemplates();
+      if (mounted) {
+        _syncTasks();
+        ref.read(scheduleServiceProvider).syncTemplates();
+        ref.read(globalAddActionProvider.notifier).state = _addTaskAction;
+      }
     });
+  }
+
+  void _addTaskAction() => _openAddTaskSheet();
+
+  Future<void> _openAddTaskSheet() async {
+    final result = await showAddTaskSheet(context);
+    if (result == null) return;
+    await ref.read(taskServiceProvider).createTask(
+          dateKey: _dateKey,
+          title: result.title,
+          priority: result.priority,
+          category: result.category,
+        );
   }
 
   void _syncTasks() {
@@ -127,6 +146,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    
+    final notifier = ref.read(globalAddActionProvider.notifier);
+    final action = _addTaskAction;
+    Future.microtask(() {
+      if (notifier.state == action) notifier.state = null;
+    });
+    
     super.dispose();
   }
 

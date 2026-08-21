@@ -222,9 +222,9 @@ class _AddEditGradeDialogState extends ConsumerState<AddEditGradeDialog> {
           title: _titleController.text.trim(),
           gradeValue: gradeValue!= null? Value(gradeValue) : const Value.absent(),
           totalPoints: totalPoints!= null? Value(totalPoints) : const Value.absent(),
-          weight: Value(weight),
+          weight: weight,
           feedback: feedback!= null? Value(feedback) : const Value.absent(),
-          gradedAt: _gradedAt!= null? Value(_gradedAt) : const Value.absent(),
+          gradedAt: _gradedAt != null ? Value(_gradedAt!) : const Value.absent(),
         );
         await academicsService.updateGrade(updatedGrade);
       } else {
