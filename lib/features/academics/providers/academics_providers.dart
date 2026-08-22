@@ -75,3 +75,78 @@ final gradesProvider = StreamProvider.family<List<Grade>, String>((ref, courseId
   final service = ref.watch(academicsServiceProvider);
   return service.watchGrades(courseId);
 });
+
+/// Calculates the average grade for a specific course as a percentage.
+final courseAverageGradeProvider = Provider.family<double?, String>((ref, courseId) {
+  final gradesAsync = ref.watch(gradesProvider(courseId));
+  final grades = gradesAsync.value ?? const <Grade>[];
+  if (grades.isEmpty) return null;
+  
+  double totalWeightedScore = 0;
+  double totalWeight = 0;
+  
+  for (final grade in grades) {
+    final weight = grade.weight ?? 1.0;
+    if (grade.gradeValue != null) {
+      final maxPoints = grade.totalPoints ?? 100.0;
+      // Default to 100 if maxPoints is 0 to avoid division by zero
+      final safeMaxPoints = maxPoints == 0 ? 100.0 : maxPoints;
+      final percentage = (grade.gradeValue! / safeMaxPoints) * 100;
+      totalWeightedScore += percentage * weight;
+      totalWeight += weight;
+    }
+  }
+  
+  if (totalWeight == 0) return null;
+  return totalWeightedScore / totalWeight;
+});
+
+/// Calculates the overall average grade across all courses.
+final overallAverageGradeProvider = Provider<double?>((ref) {
+  final coursesAsync = ref.watch(coursesProvider);
+  final courses = coursesAsync.value ?? const <Course>[];
+  if (courses.isEmpty) return null;
+
+  double totalScore = 0;
+  int coursesWithGrades = 0;
+
+  for (final course in courses) {
+    final courseAvg = ref.watch(courseAverageGradeProvider(course.id));
+    if (courseAvg != null) {
+      totalScore += courseAvg;
+      coursesWithGrades++;
+    }
+  }
+
+  if (coursesWithGrades == 0) return null;
+  return totalScore / coursesWithGrades;
+});
+
+class UpcomingAssignment {
+  final Assignment assignment;
+  final Course course;
+  UpcomingAssignment({required this.assignment, required this.course});
+}
+
+/// Provides a flat list of upcoming assignments across all courses,
+/// sorted by due date (closest first).
+final upcomingAssignmentsProvider = Provider<List<UpcomingAssignment>>((ref) {
+  final coursesAsync = ref.watch(coursesProvider);
+  final courses = coursesAsync.value ?? const <Course>[];
+  if (courses.isEmpty) return [];
+
+  final List<UpcomingAssignment> upcoming = [];
+  for (final course in courses) {
+    final assignmentsAsync = ref.watch(assignmentsProvider(course.id));
+    final assignments = assignmentsAsync.value ?? const <Assignment>[];
+    for (final assignment in assignments) {
+      if (!assignment.isCompleted && assignment.dueDate != null) {
+        upcoming.add(UpcomingAssignment(assignment: assignment, course: course));
+      }
+    }
+  }
+
+  // Sort by due date
+  upcoming.sort((a, b) => a.assignment.dueDate!.compareTo(b.assignment.dueDate!));
+  return upcoming;
+});

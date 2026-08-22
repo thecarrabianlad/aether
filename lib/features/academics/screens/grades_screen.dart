@@ -41,7 +41,6 @@ class GradesScreen extends ConsumerWidget {
           IconButton(
             icon: Icon(Icons.add, color: aether.accent),
             onPressed: () {
-              // TODO: Implement add grade dialog
               _showAddGradeDialog(context, ref, courseId);
             },
           ),
@@ -76,7 +75,6 @@ class GradesScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
                     onPressed: () {
-                      // TODO: Implement add grade dialog
                       _showAddGradeDialog(context, ref, courseId);
                     },
                     icon: Icon(Icons.add, color: aether.onAccent),
@@ -104,11 +102,9 @@ class GradesScreen extends ConsumerWidget {
               return GradeTile(
                 grade: grade,
                 onEdit: () {
-                  // TODO: Implement edit grade dialog
                   _showEditGradeDialog(context, ref, grade);
                 },
                 onDelete: () {
-                  // TODO: Implement delete grade confirmation
                   _confirmDeleteGrade(context, ref, grade);
                 },
               );

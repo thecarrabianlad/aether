@@ -1,10 +1,10 @@
 import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
-/// Dialog shown to new users to collect their display name.
-/// Returns the entered name, or null if cancelled.
-Future<String?> showFirstLoginDialog(BuildContext context) async {
-  return showDialog<String>(
+/// Dialog shown to new users to collect their display name and profession.
+/// Returns the entered values, or null if cancelled.
+Future<Map<String, String>?> showFirstLoginDialog(BuildContext context) async {
+  return showDialog<Map<String, String>>(
     context: context,
     barrierDismissible: false,
     builder: (context) => const _FirstLoginDialog(),
@@ -19,8 +19,10 @@ class _FirstLoginDialog extends StatefulWidget {
 }
 
 class _FirstLoginDialogState extends State<_FirstLoginDialog> {
-  final _controller = TextEditingController();
-  final bool _isLoading = false;
+  final _nameController = TextEditingController();
+  final _roleController = TextEditingController();
+  bool _isLoading = false;
+  bool _isSubmitted = false;
 
   AetherTheme get _aether => context.aether;
   Color get _bgColor => _aether.surface;
@@ -31,25 +33,32 @@ class _FirstLoginDialogState extends State<_FirstLoginDialog> {
 
   @override
   void dispose() {
-    _controller.dispose();
+    _nameController.dispose();
+    _roleController.dispose();
     super.dispose();
   }
 
   void _submit() {
-    final name = _controller.text.trim();
-    if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a username'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-    Navigator.of(context).pop(name);
+    if (_isSubmitted) return;
+    setState(() {
+      _isSubmitted = true;
+    });
+
+    final name = _nameController.text.trim();
+    final role = _roleController.text.trim();
+    
+    // We allow submitting even if blank, they will use defaults.
+    Navigator.of(context).pop({
+      'name': name.isEmpty ? 'User' : name,
+      'role': role.isEmpty ? 'Student' : role,
+    });
   }
 
   void _skip() {
+    if (_isSubmitted) return;
+    setState(() {
+      _isSubmitted = true;
+    });
     Navigator.of(context).pop(null);
   }
 
@@ -87,12 +96,33 @@ class _FirstLoginDialogState extends State<_FirstLoginDialog> {
 
             // Input field
             TextField(
-              controller: _controller,
+              controller: _nameController,
               autofocus: true,
               textCapitalization: TextCapitalization.words,
               style: TextStyle(color: _textColor, fontSize: 16),
               decoration: InputDecoration(
                 hintText: 'Enter your name',
+                hintStyle: TextStyle(color: _mutedColor),
+                filled: true,
+                fillColor: _inputBgColor,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+              ),
+              textInputAction: TextInputAction.next,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _roleController,
+              textCapitalization: TextCapitalization.words,
+              style: TextStyle(color: _textColor, fontSize: 16),
+              decoration: InputDecoration(
+                hintText: 'Profession (e.g. Student)',
                 hintStyle: TextStyle(color: _mutedColor),
                 filled: true,
                 fillColor: _inputBgColor,

@@ -16,8 +16,7 @@ import 'package:aether/core/theme/app_theme.dart';
 import 'package:aether/widgets/dashboard_top_bar.dart';
 
 class AcademicsScreen extends ConsumerStatefulWidget {
-  final VoidCallback? onProfileTap;
-  const AcademicsScreen({super.key, this.onProfileTap});
+  const AcademicsScreen({super.key});
 
   @override
   ConsumerState<AcademicsScreen> createState() => _AcademicsScreenState();
@@ -71,9 +70,7 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
         bottom: false,
         child: Column(
           children: [
-            DashboardTopBar(
-              onProfileTap: widget.onProfileTap ?? () {},
-            ),
+            const DashboardTopBar(),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
@@ -293,19 +290,27 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
   }
 
   Widget _buildTimetableView(AetherTheme aether) {
-    return Container(
-      height: 400,
-      alignment: Alignment.center,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.calendar_month_outlined,
-              color: aether.textMuted, size: 48),
-          const SizedBox(height: 16),
-          Text('Timetable view coming soon.',
-              style: TextStyle(color: aether.textMuted, fontSize: 16)),
-        ],
-      ),
+    final coursesAsync = ref.watch(coursesProvider);
+    return coursesAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => _buildError(err.toString(), aether),
+      data: (courses) {
+        if (courses.isEmpty) {
+          return Container(
+            height: 300,
+            alignment: Alignment.center,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.calendar_month_outlined, color: aether.textMuted, size: 48),
+                const SizedBox(height: 16),
+                Text('No courses added yet.', style: TextStyle(color: aether.textMuted, fontSize: 16)),
+              ],
+            ),
+          );
+        }
+        return _TimetableTab(courses: courses);
+      },
     );
   }
 
@@ -826,6 +831,128 @@ class _ColorPicker extends StatelessWidget {
   }
 }
 
+class _TimetableTab extends StatelessWidget {
+  final List<Course> courses;
+
+  const _TimetableTab({required this.courses});
+
+  @override
+  Widget build(BuildContext context) {
+    final aether = context.aether;
+    final daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+    // Map each day to a list of courses that happen on that day
+    final Map<String, List<Course>> schedule = {};
+    for (var day in daysOfWeek) {
+      schedule[day] = [];
+    }
+
+    for (final course in courses) {
+      final daysString = course.scheduleDays;
+      if (daysString != null && daysString.trim().isNotEmpty) {
+        final days = daysString.split(',').map((d) => d.trim()).toList();
+        for (final d in days) {
+          if (d.isEmpty) continue;
+          // Attempt to match the string (e.g. "Mon", "Monday")
+          final matchedDay = daysOfWeek.firstWhere((dw) => dw.toLowerCase().startsWith(d.toLowerCase()), orElse: () => '');
+          if (matchedDay.isNotEmpty) {
+            schedule[matchedDay]!.add(course);
+          }
+        }
+      }
+    }
+
+    // Sort courses by start time within each day
+    for (var day in daysOfWeek) {
+      schedule[day]!.sort((a, b) {
+        final timeA = a.scheduleStart ?? '24:00';
+        final timeB = b.scheduleStart ?? '24:00';
+        return timeA.compareTo(timeB);
+      });
+    }
+
+    // Remove days with no courses to keep the list clean
+    final activeDays = daysOfWeek.where((d) => schedule[d]!.isNotEmpty).toList();
+
+    if (activeDays.isEmpty) {
+      return Container(
+        height: 300,
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.calendar_today, color: aether.textMuted, size: 48),
+            const SizedBox(height: 16),
+            Text('No classes scheduled.', style: TextStyle(color: aether.textMuted, fontSize: 16)),
+            const SizedBox(height: 8),
+            Text('Edit your courses to add schedule days.', style: TextStyle(color: aether.textMuted, fontSize: 14)),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: activeDays.map((day) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 16, bottom: 8),
+              child: Text(
+                day,
+                style: TextStyle(color: aether.text, fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+            ...schedule[day]!.map((course) {
+              final color = Color(int.parse(course.color.replaceFirst('#', '0xFF')));
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: aether.surfaceAlt,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border(left: BorderSide(color: color, width: 4)),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(course.name, style: TextStyle(color: aether.text, fontWeight: FontWeight.w600, fontSize: 16)),
+                          if (course.location != null && course.location!.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Icon(Icons.location_on_outlined, color: aether.textMuted, size: 14),
+                                const SizedBox(width: 4),
+                                Text(course.location!, style: TextStyle(color: aether.textMuted, fontSize: 13)),
+                              ],
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(course.scheduleStart ?? '', style: TextStyle(color: aether.text, fontWeight: FontWeight.w500)),
+                        if (course.scheduleEnd != null && course.scheduleEnd!.isNotEmpty)
+                          Text('to ${course.scheduleEnd}', style: TextStyle(color: aether.textMuted, fontSize: 12)),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ],
+        );
+      }).toList(),
+    );
+  }
+}
+
 class _CourseCardWithProgress extends ConsumerWidget {
   final Course course;
   final VoidCallback onTap;
@@ -946,18 +1073,26 @@ class _CourseDetailView extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 10),
-        // Placeholder for average grade or recent grades, for now just a spacer
-        Container(
-          height: 60, // Or some other appropriate height for a placeholder
-          decoration: BoxDecoration(
-            color: context.aether.surfaceAlt,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            'Average Grade: N/A', // Placeholder text
-            style: TextStyle(color: context.aether.textMuted),
-          ),
+        Consumer(
+          builder: (context, ref, _) {
+            final avgGrade = ref.watch(courseAverageGradeProvider(course.id));
+            final gradeText = avgGrade != null ? '${avgGrade.toStringAsFixed(1)}%' : 'N/A';
+            return Container(
+              height: 60,
+              decoration: BoxDecoration(
+                color: context.aether.surfaceAlt,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                'Average Grade: $gradeText',
+                style: TextStyle(
+                    color: avgGrade != null ? color : context.aether.textMuted,
+                    fontWeight: avgGrade != null ? FontWeight.bold : FontWeight.normal,
+                    fontSize: 16),
+              ),
+            );
+          },
         ),
         const SizedBox(height: 20),
         // Lectures

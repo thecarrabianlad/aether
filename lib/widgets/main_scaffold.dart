@@ -51,7 +51,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
     // Navigate based on item id
     switch (itemId) {
       case 'profile':
-        GoRouter.of(context).go('/profile');
+        GoRouter.of(context).push('/profile');
         break;
       case 'premium':
         // TODO: Navigate to premium screen
@@ -78,14 +78,18 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
     if (profile == null) {
       debugPrint('MainScaffold: Profile is null, showing first login dialog.');
       // Show the first login dialog
-      final name = await showFirstLoginDialog(context);
+      final result = await showFirstLoginDialog(context);
 
       // Create/update profile with the entered name or default
       final service = ref.read(profileServiceProvider);
       final defaultName = ref.read(authProvider).currentUser?.email?.split('@').first ?? 'User';
 
+      final name = result?['name'] ?? defaultName;
+      final role = result?['role'] ?? 'Student';
+
       await service.upsertProfile(
-        name: name ?? defaultName,
+        name: name,
+        role: role,
         avatarUrl: ProfileService.generateRandomAvatarUrl(),
       );
 

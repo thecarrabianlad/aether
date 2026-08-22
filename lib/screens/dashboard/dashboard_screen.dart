@@ -28,12 +28,7 @@ import 'package:aether/features/tasks/widgets/add_task_sheet.dart';
 /// ---------------------------------------------------------------------
 
 class DashboardScreen extends ConsumerStatefulWidget {
-  final VoidCallback? onProfileTap;
-
-  const DashboardScreen({
-    super.key,
-    this.onProfileTap,
-  });
+  const DashboardScreen({super.key});
 
   // Fixed category colors for the glance cards — semantic, not themed.
   static const red = Color(0xFFFF3B30);
@@ -134,14 +129,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
   // DateTime _referenceDate = DateTime.now();
   int _dayOffset = 0;
-
-  static const _UpcomingEventData _upcomingEvent = _UpcomingEventData(
-    day: '18',
-    month: 'AUG',
-    title: 'Maths Test',
-    subtitle: 'Calculus • 5 Chapters',
-    daysLeftLabel: '6 Days Left',
-  );
 
   @override
   void dispose() {
@@ -359,9 +346,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              DashboardTopBar(
-                onProfileTap: widget.onProfileTap ?? () {},
-              ),
+              const DashboardTopBar(),
               _HeaderRow(
                 timeText: _timeText,
                 periodText: _periodText,
@@ -438,7 +423,49 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               const SizedBox(height: 20),
               _SectionHeader(title: 'Upcoming', onViewAll: () {}),
               const SizedBox(height: 12),
-              _UpcomingCard(event: _upcomingEvent),
+              Consumer(
+                builder: (context, ref, child) {
+                  final upcoming = ref.watch(upcomingAssignmentsProvider);
+                  if (upcoming.isEmpty) {
+                    return Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: context.aether.card,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: context.aether.border),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'No upcoming assignments',
+                          style: TextStyle(
+                            color: context.aether.textMuted,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+                  final first = upcoming.first;
+                  final dueDate = first.assignment.dueDate!;
+                  final daysLeft = dueDate.difference(DateTime.now()).inDays;
+                  
+                  final monthNames = [
+                    'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
+                    'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'
+                  ];
+                  
+                  return _UpcomingCard(
+                    event: _UpcomingEventData(
+                      day: dueDate.day.toString(),
+                      month: monthNames[dueDate.month - 1],
+                      title: first.assignment.title,
+                      subtitle: first.course.name,
+                      daysLeftLabel: daysLeft < 0 ? 'Overdue' : (daysLeft == 0 ? 'Today' : '$daysLeft Days Left'),
+                    ),
+                  );
+                },
+              ),
             ],
           ),
         ),

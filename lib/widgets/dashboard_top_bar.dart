@@ -4,14 +4,10 @@ import 'package:aether/core/providers.dart';
 import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 class DashboardTopBar extends ConsumerWidget {
-  final VoidCallback onProfileTap;
-
-  const DashboardTopBar({
-    super.key,
-    required this.onProfileTap,
-  });
+  const DashboardTopBar({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -55,7 +51,7 @@ class DashboardTopBar extends ConsumerWidget {
                 ),
                 _TopBarIconButton(
                   icon: Icons.person_outline_rounded,
-                  onTap: onProfileTap,
+                  onTap: () => context.push('/profile'),
                 ),
               ],
             ),

@@ -151,6 +151,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
+        path: '/profile',
+        pageBuilder: (context, state) => AetherPage(
+          key: state.pageKey,
+          name: state.name,
+          child: const ProfileScreen(),
+        ),
+      ),
+      GoRoute(
         path: '/flashcards',
         pageBuilder: (context, state) => AetherPage(
           key: state.pageKey,
@@ -206,14 +214,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               child: const HabitsCalendarScreen(),
             ),
           ),
-          GoRoute(
-            path: '/profile',
-            pageBuilder: (context, state) => AetherPage(
-              key: state.pageKey,
-              name: state.name,
-              child: const ProfileScreen(),
-            ),
-          ),
+
           GoRoute(
             path: '/health',
             pageBuilder: (context, state) => AetherPage(

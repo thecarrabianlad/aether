@@ -2,9 +2,12 @@ import 'package:aether/core/providers.dart';
 import 'package:aether/core/theme/app_theme.dart';
 import 'package:aether/features/habits/models/habit.dart';
 import 'package:aether/features/habits/providers/habits_providers.dart';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:aether/core/models/profile.dart';
 
 /// User profile screen — avatar, stats, account actions.
 ///
@@ -82,7 +85,7 @@ class ProfileScreen extends ConsumerWidget {
 }
 
 class _ProfileContent extends ConsumerWidget {
-  final dynamic profile;
+  final Profile? profile;
   final AsyncValue<OverviewMetrics> overviewMetricsAsync;
   final String email;
 
@@ -117,9 +120,9 @@ class _ProfileContent extends ConsumerWidget {
       );
     }
 
-    final name = profile.name as String? ?? 'User';
-    final role = profile.role as String? ?? 'Student';
-    final isPremium = profile.isPremium as bool? ?? false;
+    final name = profile!.name;
+    final role = profile!.role;
+    final isPremium = profile!.isPremium;
 
     // Grab stats from the overview provider.
     final overview = overviewMetricsAsync.valueOrNull;
@@ -131,26 +134,63 @@ class _ProfileContent extends ConsumerWidget {
         Center(
           child: Column(
             children: [
-              CircleAvatar(
-                radius: 48,
-                backgroundColor: aether.surfaceAlt,
-                child: Text(
-                  name.isNotEmpty ? name[0].toUpperCase() : '?',
-                  style: TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.w700,
-                    color: aether.accent,
-                  ),
+              GestureDetector(
+                onTap: () => _pickProfileImage(context, ref),
+                child: Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 48,
+                      backgroundColor: aether.surfaceAlt,
+                      backgroundImage: profile!.avatarUrl != null && profile!.avatarUrl!.startsWith('/')
+                          ? FileImage(File(profile!.avatarUrl!)) as ImageProvider
+                          : (profile!.avatarUrl != null && profile!.avatarUrl!.startsWith('http')
+                              ? NetworkImage(profile!.avatarUrl!)
+                              : null),
+                      child: profile!.avatarUrl == null || profile!.avatarUrl!.isEmpty
+                          ? Text(
+                              name.isNotEmpty ? name[0].toUpperCase() : '?',
+                              style: TextStyle(
+                                fontSize: 36,
+                                fontWeight: FontWeight.w700,
+                                color: aether.accent,
+                              ),
+                            )
+                          : null,
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: aether.accent,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: aether.background, width: 2),
+                        ),
+                        child: Icon(Icons.camera_alt, size: 16, color: aether.onAccent),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 16),
-              Text(
-                name,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: aether.text,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    name,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: aether.text,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () => _editProfileDetails(context, ref, name, role),
+                    child: Icon(Icons.edit, size: 16, color: aether.textMuted),
+                  ),
+                ],
               ),
               const SizedBox(height: 4),
               Text(
@@ -257,6 +297,100 @@ class _ProfileContent extends ConsumerWidget {
         ),
       ],
     );
+  }
+
+  Future<void> _pickProfileImage(BuildContext context, WidgetRef ref) async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        final service = ref.read(profileServiceProvider);
+        await service.upsertProfile(
+          name: profile!.name,
+          avatarUrl: pickedFile.path,
+        );
+        ref.read(profileProvider.notifier).refresh();
+      }
+    } catch (e) {
+      debugPrint('Error picking image: $e');
+    }
+  }
+
+  Future<void> _editProfileDetails(BuildContext context, WidgetRef ref, String currentName, String currentRole) async {
+    final aether = context.aether;
+    final nameController = TextEditingController(text: currentName);
+    final roleController = TextEditingController(text: currentRole);
+    
+    final result = await showDialog<Map<String, String>>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: aether.surface,
+        title: Text('Edit Profile', style: TextStyle(color: aether.text)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              style: TextStyle(color: aether.text),
+              decoration: InputDecoration(
+                hintText: 'Enter new username',
+                hintStyle: TextStyle(color: aether.textMuted),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: aether.border),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: aether.accent),
+                ),
+              ),
+              textInputAction: TextInputAction.next,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: roleController,
+              style: TextStyle(color: aether.text),
+              decoration: InputDecoration(
+                hintText: 'Profession (e.g. Student)',
+                hintStyle: TextStyle(color: aether.textMuted),
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: aether.border),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: aether.accent),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(null),
+            child: Text('Cancel', style: TextStyle(color: aether.textMuted)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop({
+              'name': nameController.text.trim(),
+              'role': roleController.text.trim(),
+            }),
+            child: Text('Save', style: TextStyle(color: aether.accent)),
+          ),
+        ],
+      ),
+    );
+    
+    if (result != null) {
+      final newName = result['name']!;
+      final newRole = result['role']!;
+      
+      if (newName != currentName || newRole != currentRole) {
+        final service = ref.read(profileServiceProvider);
+        await service.upsertProfile(
+          name: newName.isNotEmpty ? newName : currentName,
+          role: newRole.isNotEmpty ? newRole : currentRole,
+          avatarUrl: profile!.avatarUrl,
+        );
+        ref.read(profileProvider.notifier).refresh();
+      }
+    }
   }
 
   Future<void> _confirmLogout(BuildContext context, WidgetRef ref) async {
