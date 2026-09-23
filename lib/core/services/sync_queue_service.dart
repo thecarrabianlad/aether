@@ -8,7 +8,11 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 enum SyncOperation { insert, update, delete, upsert }
+<<<<<<< HEAD
 enum SyncEntityType { course, lecture, assignment, habit, habitLog, grade }
+=======
+enum SyncEntityType { course, lecture, assignment, habit, habitLog, workoutExercise }
+>>>>>>> 3973aa2 (app completed for apk)
 
 class SyncQueueService {
   final AppDatabase _db;
@@ -95,8 +99,13 @@ class SyncQueueService {
           case SyncEntityType.habitLog:
             success = await _retryHabitLogOperation(operation, item.entityId, payload);
             break;
+<<<<<<< HEAD
           case SyncEntityType.grade:
             success = await _retryGradeOperation(operation, item.entityId, payload);
+=======
+          case SyncEntityType.workoutExercise:
+            success = await _retryWorkoutExerciseOperation(operation, item.entityId, payload);
+>>>>>>> 3973aa2 (app completed for apk)
             break;
         }
       } on PostgrestException catch (e) {
@@ -206,14 +215,22 @@ class SyncQueueService {
     }
   }
 
+<<<<<<< HEAD
   // --- Grade Retry Operations ---
   Future<bool> _retryGradeOperation(SyncOperation operation, String entityId, Map<String, dynamic>? payload) async {
     if (payload == null) return false;
     final grade = GradeExtension.fromJson(payload);
+=======
+  // --- WorkoutExercise Retry Operations ---
+  Future<bool> _retryWorkoutExerciseOperation(SyncOperation operation, String entityId, Map<String, dynamic>? payload) async {
+    if (payload == null) return false;
+    final exercise = WorkoutExerciseExtension.fromJson(payload);
+>>>>>>> 3973aa2 (app completed for apk)
     switch (operation) {
       case SyncOperation.insert:
       case SyncOperation.upsert:
       case SyncOperation.update:
+<<<<<<< HEAD
         await _supabase.from('grades').upsert(grade.toSupabaseJson());
         return true;
       case SyncOperation.delete:
@@ -221,4 +238,94 @@ class SyncQueueService {
         return true;
     }
   }
+=======
+        await _supabase.from('workout_exercises').upsert(_workoutExerciseToRow(exercise));
+        return true;
+      case SyncOperation.delete:
+        await _supabase.from('workout_exercises').delete().eq('id', entityId);
+        return true;
+    }
+  }
+
+  // ── Data Mappers ────────────────────────────────────
+
+  Map<String, dynamic> _courseToRow(Course c) => {
+        'id': c.id,
+        'user_id': c.userId,
+        'name': c.name,
+        'code': c.code,
+        'professor': c.professor,
+        'color': c.color,
+        'icon': c.icon,
+        'semester': c.semester,
+        'location': c.location,
+        'credits': c.credits,
+        'schedule_days': c.scheduleDays,
+        'schedule_start': c.scheduleStart,
+        'schedule_end': c.scheduleEnd,
+        'created_at': c.createdAt.toIso8601String(),
+        'updated_at': c.updatedAt.toIso8601String(),
+      };
+
+  Map<String, dynamic> _lectureToRow(Lecture l) => {
+        'id': l.id,
+        'course_id': l.courseId,
+        'user_id': l.userId,
+        'title': l.title,
+        'chapter': l.chapter,
+        'tag': l.tag,
+        'scheduled_at': l.scheduledAt?.toIso8601String(),
+        'duration_minutes': l.durationMinutes,
+        'is_completed': l.isCompleted,
+        'completed_at': l.completedAt?.toIso8601String(),
+        'created_at': l.createdAt.toIso8601String(),
+        'updated_at': l.updatedAt.toIso8601String(),
+      };
+
+  Map<String, dynamic> _assignmentToRow(Assignment a) => {
+        'id': a.id,
+        'course_id': a.courseId,
+        'user_id': a.userId,
+        'title': a.title,
+        'description': a.description,
+        'due_date': a.dueDate?.toIso8601String(),
+        'is_completed': a.isCompleted,
+        'completed_at': a.completedAt?.toIso8601String(),
+        'created_at': a.createdAt.toIso8601String(),
+        'updated_at': a.updatedAt.toIso8601String(),
+      };
+
+  Map<String, dynamic> _habitToRow(HabitEntry h) => {
+        'id': h.id,
+        'user_id': h.userId,
+        'name': h.name,
+        'category': h.category,
+        'icon': h.icon,
+        'color': h.color,
+        'longest_streak': h.longestStreak,
+        'created_at': h.createdAt.toIso8601String(),
+        'updated_at': h.updatedAt.toIso8601String(),
+        'reminder_time': h.reminderTime,
+        'reminder_days': h.reminderDays,
+      };
+
+  Map<String, dynamic> _habitLogToRow(HabitLog l) => {
+        'id': l.id,
+        'habit_id': l.habitId,
+        'date': l.date.toIso8601String().split('T').first,
+        'is_completed': l.isCompleted,
+      };
+
+  Map<String, dynamic> _workoutExerciseToRow(WorkoutExercise e) => {
+        'id': e.id,
+        'user_id': e.userId,
+        'weekday': e.weekday,
+        'name': e.name,
+        'type': e.type,
+        'sets_json': e.setsJson,
+        'is_completed': e.isCompleted,
+        'created_at': e.createdAt.toIso8601String(),
+        'updated_at': e.updatedAt.toIso8601String(),
+      };
+>>>>>>> 3973aa2 (app completed for apk)
 }

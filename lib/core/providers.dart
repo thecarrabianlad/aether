@@ -6,6 +6,7 @@ import 'package:aether/core/database/database.dart';
 import 'package:aether/core/models/profile.dart';
 import 'package:aether/core/services/academics_service.dart';
 import 'package:aether/core/services/auth_service.dart';
+import 'package:aether/core/services/health_service.dart';
 import 'package:aether/core/services/profile_service.dart';
 import 'package:aether/core/services/settings_service.dart';
 import 'package:aether/core/services/notification_service.dart';
@@ -51,6 +52,13 @@ final Provider<HabitsService> habitsServiceProvider =
   return HabitsService(db, syncQueueService, notificationService);
 });
 
+final Provider<HealthService> healthServiceProvider =
+    Provider<HealthService>((ref) {
+  final db = ref.watch(databaseProvider);
+  final syncQueueService = ref.watch(syncQueueServiceProvider);
+  return HealthService(db, syncQueueService);
+});
+
 /// Stream of connectivity status changes.
 final connectivityProvider = StreamProvider<List<ConnectivityResult>>((ref) {
   return Connectivity().onConnectivityChanged;
@@ -74,8 +82,9 @@ final Provider<SyncQueueService> syncQueueServiceProvider =
 final syncServiceProvider = Provider<SyncService>((ref) {
   final academicsService = ref.watch(academicsServiceProvider);
   final habitsService = ref.watch(habitsServiceProvider);
+  final healthService = ref.watch(healthServiceProvider);
   final syncQueueService = ref.watch(syncQueueServiceProvider);
-  return SyncService(academicsService, habitsService, syncQueueService);
+  return SyncService(academicsService, habitsService, healthService, syncQueueService);
 });
 
 /// Live sync status for UI indicators (top bar spinner / warning icon).

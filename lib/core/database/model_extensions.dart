@@ -174,6 +174,7 @@ extension HabitLogExtension on HabitLog {
       };
 }
 
+<<<<<<< HEAD
 extension GradeExtension on Grade { // New GradeExtension
   static Grade fromJson(Map<String, dynamic> json) {
     return Grade(
@@ -186,11 +187,24 @@ extension GradeExtension on Grade { // New GradeExtension
       weight: (json['weight'] as num?)?.toDouble() ?? 1.0,
       feedback: json['feedback'] as String?,
       gradedAt: json['graded_at'] != null ? DateTime.parse(json['graded_at'] as String) : null,
+=======
+extension WorkoutExerciseExtension on WorkoutExercise {
+  static WorkoutExercise fromJson(Map<String, dynamic> json) {
+    return WorkoutExercise(
+      id: json['id'] as String,
+      userId: json['user_id'] as String,
+      weekday: json['weekday'] as int,
+      name: json['name'] as String,
+      type: json['type'] as String,
+      setsJson: json['sets_json'] as String? ?? '[]',
+      isCompleted: json['is_completed'] as bool? ?? false,
+>>>>>>> 3973aa2 (app completed for apk)
       createdAt: _parseDate(json['created_at']),
       updatedAt: _parseDate(json['updated_at']),
     );
   }
 
+<<<<<<< HEAD
   Map<String, dynamic> toSupabaseJson() => { // New toJson method
         'id': id,
         'user_id': userId,
@@ -205,8 +219,14 @@ extension GradeExtension on Grade { // New GradeExtension
         'updated_at': updatedAt.toIso8601String(),
       };
 
+=======
+>>>>>>> 3973aa2 (app completed for apk)
   static DateTime _parseDate(dynamic v) {
     if (v == null) return DateTime.now();
     return v is String ? DateTime.parse(v) : DateTime.now();
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 3973aa2 (app completed for apk)

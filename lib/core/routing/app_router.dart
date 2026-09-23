@@ -22,7 +22,7 @@ import 'package:aether/features/flashcards/screens/flashcards_screen.dart';
 import 'package:aether/features/habits/screens/habit_detail_screen.dart';
 import 'package:aether/features/habits/screens/habits_calendar_screen.dart';
 import 'package:aether/features/habits/screens/habits_screen.dart';
-import 'package:aether/screens/health/health_screen.dart';
+import 'package:aether/features/health/screens/health_screen.dart';
 import 'package:aether/features/settings/screens/settings_screen.dart';
 import 'package:aether/features/academics/screens/grades_screen.dart';
 import 'package:aether/widgets/main_scaffold.dart';

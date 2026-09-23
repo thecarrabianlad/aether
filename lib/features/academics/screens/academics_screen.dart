@@ -545,11 +545,16 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
     );
   }
 
+  // Number of weekly occurrences created when "Repeat weekly" is on
+  // (~ one semester). Adjust to taste.
+  static const int _repeatWeeksCount = 15;
+
   void _showAddLectureDialog(String courseId) {
     final titleCtrl = TextEditingController();
     final chapterCtrl = TextEditingController();
     final formKey = GlobalKey<FormState>();
     DateTime? scheduledAt;
+    bool repeatWeekly = false;
 
     showDialog(
       context: context,
@@ -573,6 +578,24 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
                     if (picked != null) setDialogState(() => scheduledAt = picked);
                   },
                 ),
+                CheckboxListTile(
+                  value: repeatWeekly,
+                  onChanged: scheduledAt == null
+                      ? null
+                      : (v) => setDialogState(() => repeatWeekly = v ?? false),
+                  contentPadding: EdgeInsets.zero,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  activeColor: _aether.accent,
+                  title: Text('Repeat weekly',
+                      style: TextStyle(color: _aether.text, fontSize: 14)),
+                  subtitle: Text(
+                    scheduledAt == null
+                        ? 'Pick a date first'
+                        : 'Repeats every ${DateFormat('EEEE').format(scheduledAt!)} for $_repeatWeeksCount weeks',
+                    style:
+                        TextStyle(color: _aether.textMuted, fontSize: 12),
+                  ),
+                ),
               ],
             ),
           ),
@@ -584,13 +607,28 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
               onPressed: () async {
                 if (!mounted) return;
                 if (!formKey.currentState!.validate()) return;
+                final title = titleCtrl.text.trim();
+                final chapter =
+                    chapterCtrl.text.isEmpty ? null : chapterCtrl.text.trim();
                 try {
-                  await ref.read(academicsServiceProvider).createLecture(
+                  final service = ref.read(academicsServiceProvider);
+                  if (repeatWeekly && scheduledAt != null) {
+                    for (var i = 0; i < _repeatWeeksCount; i++) {
+                      await service.createLecture(
                         courseId: courseId,
-                        title: titleCtrl.text.trim(),
-                        chapter: chapterCtrl.text.isEmpty ? null : chapterCtrl.text.trim(),
-                        scheduledAt: scheduledAt,
+                        title: title,
+                        chapter: chapter,
+                        scheduledAt: scheduledAt!.add(Duration(days: 7 * i)),
                       );
+                    }
+                  } else {
+                    await service.createLecture(
+                      courseId: courseId,
+                      title: title,
+                      chapter: chapter,
+                      scheduledAt: scheduledAt,
+                    );
+                  }
                   if (mounted) Navigator.pop(context);
                 } catch (e) {
                   if (mounted) _showSnack('Failed to add lecture: $e');

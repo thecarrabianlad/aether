@@ -4,6 +4,7 @@ import 'package:aether/core/errors/app_exception.dart';
 import 'package:aether/core/errors/app_logger.dart';
 import 'package:aether/core/errors/retry.dart';
 import 'package:aether/core/services/academics_service.dart';
+import 'package:aether/core/services/health_service.dart';
 import 'package:aether/core/services/sync_queue_service.dart';
 import 'package:aether/features/habits/services/habits_service.dart';
 import 'package:flutter/foundation.dart';
@@ -52,9 +53,10 @@ class SyncStatus {
 class SyncService {
   final AcademicsService _academicsService;
   final HabitsService _habitsService;
+  final HealthService _healthService;
   final SyncQueueService _syncQueueService;
 
-  SyncService(this._academicsService, this._habitsService, this._syncQueueService);
+  SyncService(this._academicsService, this._habitsService, this._healthService, this._syncQueueService);
 
   /// Live sync status for the UI.
   final ValueNotifier<SyncStatus> status =
@@ -111,6 +113,7 @@ class SyncService {
       'assignments': _academicsService.syncAssignments,
       'habits': _habitsService.syncHabits,
       'habitLogs': _habitsService.syncHabitLogs,
+      'workoutExercises': _healthService.syncExercises,
     };
 
     for (final entry in targets.entries) {
