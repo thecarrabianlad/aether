@@ -19,11 +19,8 @@ import 'tables/notes.dart';
 import 'tables/past_papers.dart';
 import 'tables/pomodoro.dart';
 import 'tables/flashcards.dart';
-<<<<<<< HEAD
 import 'tables/grades.dart';
-=======
 import 'tables/workout_exercises.dart';
->>>>>>> 3973aa2 (app completed for apk)
 
 part 'database.g.dart';
 
@@ -42,11 +39,8 @@ part 'database.g.dart';
   PomodoroSessions,
   FlashcardDecks,
   Flashcards,
-<<<<<<< HEAD
   Grades,
-=======
   WorkoutExercises,
->>>>>>> 3973aa2 (app completed for apk)
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
@@ -89,14 +83,10 @@ MigrationStrategy get migration => MigrationStrategy(
       await m.createTable(flashcardDecks);
       await m.createTable(flashcards);
     }
-<<<<<<< HEAD
-    if (from < 7) {
-      await m.createTable(grades);
-=======
 
     if (from < 7) {
+      await m.createTable(grades);
       await m.createTable(workoutExercises);
->>>>>>> 3973aa2 (app completed for apk)
     }
   },
 );

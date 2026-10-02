@@ -8,11 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 enum SyncOperation { insert, update, delete, upsert }
-<<<<<<< HEAD
-enum SyncEntityType { course, lecture, assignment, habit, habitLog, grade }
-=======
-enum SyncEntityType { course, lecture, assignment, habit, habitLog, workoutExercise }
->>>>>>> 3973aa2 (app completed for apk)
+enum SyncEntityType { course, lecture, assignment, habit, habitLog, grade, workoutExercise }
 
 class SyncQueueService {
   final AppDatabase _db;
@@ -99,13 +95,11 @@ class SyncQueueService {
           case SyncEntityType.habitLog:
             success = await _retryHabitLogOperation(operation, item.entityId, payload);
             break;
-<<<<<<< HEAD
           case SyncEntityType.grade:
             success = await _retryGradeOperation(operation, item.entityId, payload);
-=======
+            break;
           case SyncEntityType.workoutExercise:
             success = await _retryWorkoutExerciseOperation(operation, item.entityId, payload);
->>>>>>> 3973aa2 (app completed for apk)
             break;
         }
       } on PostgrestException catch (e) {
@@ -215,22 +209,14 @@ class SyncQueueService {
     }
   }
 
-<<<<<<< HEAD
   // --- Grade Retry Operations ---
   Future<bool> _retryGradeOperation(SyncOperation operation, String entityId, Map<String, dynamic>? payload) async {
     if (payload == null) return false;
     final grade = GradeExtension.fromJson(payload);
-=======
-  // --- WorkoutExercise Retry Operations ---
-  Future<bool> _retryWorkoutExerciseOperation(SyncOperation operation, String entityId, Map<String, dynamic>? payload) async {
-    if (payload == null) return false;
-    final exercise = WorkoutExerciseExtension.fromJson(payload);
->>>>>>> 3973aa2 (app completed for apk)
     switch (operation) {
       case SyncOperation.insert:
       case SyncOperation.upsert:
       case SyncOperation.update:
-<<<<<<< HEAD
         await _supabase.from('grades').upsert(grade.toSupabaseJson());
         return true;
       case SyncOperation.delete:
@@ -238,7 +224,15 @@ class SyncQueueService {
         return true;
     }
   }
-=======
+
+  // --- WorkoutExercise Retry Operations ---
+  Future<bool> _retryWorkoutExerciseOperation(SyncOperation operation, String entityId, Map<String, dynamic>? payload) async {
+    if (payload == null) return false;
+    final exercise = WorkoutExerciseExtension.fromJson(payload);
+    switch (operation) {
+      case SyncOperation.insert:
+      case SyncOperation.upsert:
+      case SyncOperation.update:
         await _supabase.from('workout_exercises').upsert(_workoutExerciseToRow(exercise));
         return true;
       case SyncOperation.delete:
@@ -327,5 +321,4 @@ class SyncQueueService {
         'created_at': e.createdAt.toIso8601String(),
         'updated_at': e.updatedAt.toIso8601String(),
       };
->>>>>>> 3973aa2 (app completed for apk)
 }

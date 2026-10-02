@@ -60,7 +60,7 @@ class _HealthScreenState extends ConsumerState<HealthScreen> {
         bottom: false,
         child: Column(
           children: [
-            DashboardTopBar(onProfileTap: widget.onProfileTap ?? () {}),
+            const DashboardTopBar(),
             Expanded(
               child: planAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator()),

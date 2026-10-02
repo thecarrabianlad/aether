@@ -8255,20 +8255,11 @@ class FlashcardsCompanion extends UpdateCompanion<Flashcard> {
   }
 }
 
-<<<<<<< HEAD
 class $GradesTable extends Grades with TableInfo<$GradesTable, Grade> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $GradesTable(this.attachedDatabase, [this._alias]);
-=======
-class $WorkoutExercisesTable extends WorkoutExercises
-    with TableInfo<$WorkoutExercisesTable, WorkoutExercise> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $WorkoutExercisesTable(this.attachedDatabase, [this._alias]);
->>>>>>> 3973aa2 (app completed for apk)
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -8276,12 +8267,7 @@ class $WorkoutExercisesTable extends WorkoutExercises
     aliasedName,
     false,
     type: DriftSqlType.string,
-<<<<<<< HEAD
     requiredDuringInsert: true,
-=======
-    requiredDuringInsert: false,
-    clientDefault: () => const Uuid().v4(),
->>>>>>> 3973aa2 (app completed for apk)
   );
   static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
   @override
@@ -8292,35 +8278,16 @@ class $WorkoutExercisesTable extends WorkoutExercises
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-<<<<<<< HEAD
   static const VerificationMeta _courseIdMeta = const VerificationMeta(
     'courseId',
   );
   @override
   late final GeneratedColumn<String> courseId = GeneratedColumn<String>(
     'course_id',
-=======
-  static const VerificationMeta _weekdayMeta = const VerificationMeta(
-    'weekday',
-  );
-  @override
-  late final GeneratedColumn<int> weekday = GeneratedColumn<int>(
-    'weekday',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _nameMeta = const VerificationMeta('name');
-  @override
-  late final GeneratedColumn<String> name = GeneratedColumn<String>(
-    'name',
->>>>>>> 3973aa2 (app completed for apk)
     aliasedName,
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
-<<<<<<< HEAD
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'REFERENCES courses (id)',
     ),
@@ -8391,43 +8358,6 @@ class $WorkoutExercisesTable extends WorkoutExercises
     true,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
-=======
-  );
-  static const VerificationMeta _typeMeta = const VerificationMeta('type');
-  @override
-  late final GeneratedColumn<String> type = GeneratedColumn<String>(
-    'type',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _setsJsonMeta = const VerificationMeta(
-    'setsJson',
-  );
-  @override
-  late final GeneratedColumn<String> setsJson = GeneratedColumn<String>(
-    'sets_json',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _isCompletedMeta = const VerificationMeta(
-    'isCompleted',
-  );
-  @override
-  late final GeneratedColumn<bool> isCompleted = GeneratedColumn<bool>(
-    'is_completed',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_completed" IN (0, 1))',
-    ),
-    defaultValue: const Constant(false),
->>>>>>> 3973aa2 (app completed for apk)
   );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
@@ -8438,12 +8368,8 @@ class $WorkoutExercisesTable extends WorkoutExercises
     aliasedName,
     false,
     type: DriftSqlType.dateTime,
-<<<<<<< HEAD
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
-=======
-    requiredDuringInsert: true,
->>>>>>> 3973aa2 (app completed for apk)
   );
   static const VerificationMeta _updatedAtMeta = const VerificationMeta(
     'updatedAt',
@@ -8454,18 +8380,13 @@ class $WorkoutExercisesTable extends WorkoutExercises
     aliasedName,
     false,
     type: DriftSqlType.dateTime,
-<<<<<<< HEAD
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
-=======
-    requiredDuringInsert: true,
->>>>>>> 3973aa2 (app completed for apk)
   );
   @override
   List<GeneratedColumn> get $columns => [
     id,
     userId,
-<<<<<<< HEAD
     courseId,
     title,
     gradeValue,
@@ -8473,13 +8394,6 @@ class $WorkoutExercisesTable extends WorkoutExercises
     weight,
     feedback,
     gradedAt,
-=======
-    weekday,
-    name,
-    type,
-    setsJson,
-    isCompleted,
->>>>>>> 3973aa2 (app completed for apk)
     createdAt,
     updatedAt,
   ];
@@ -8487,28 +8401,18 @@ class $WorkoutExercisesTable extends WorkoutExercises
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-<<<<<<< HEAD
   static const String $name = 'grades';
   @override
   VerificationContext validateIntegrity(
     Insertable<Grade> instance, {
-=======
-  static const String $name = 'workout_exercises';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<WorkoutExercise> instance, {
->>>>>>> 3973aa2 (app completed for apk)
     bool isInserting = false,
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-<<<<<<< HEAD
     } else if (isInserting) {
       context.missing(_idMeta);
-=======
->>>>>>> 3973aa2 (app completed for apk)
     }
     if (data.containsKey('user_id')) {
       context.handle(
@@ -8518,7 +8422,6 @@ class $WorkoutExercisesTable extends WorkoutExercises
     } else if (isInserting) {
       context.missing(_userIdMeta);
     }
-<<<<<<< HEAD
     if (data.containsKey('course_id')) {
       context.handle(
         _courseIdMeta,
@@ -8568,7 +8471,588 @@ class $WorkoutExercisesTable extends WorkoutExercises
         gradedAt.isAcceptableOrUnknown(data['graded_at']!, _gradedAtMeta),
       );
     }
-=======
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Grade map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Grade(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      courseId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}course_id'],
+      )!,
+      title: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title'],
+      )!,
+      gradeValue: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}grade_value'],
+      ),
+      totalPoints: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}total_points'],
+      ),
+      weight: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}weight'],
+      )!,
+      feedback: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}feedback'],
+      ),
+      gradedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}graded_at'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $GradesTable createAlias(String alias) {
+    return $GradesTable(attachedDatabase, alias);
+  }
+}
+
+class Grade extends DataClass implements Insertable<Grade> {
+  final String id;
+  final String userId;
+  final String courseId;
+  final String title;
+  final double? gradeValue;
+  final double? totalPoints;
+  final double weight;
+  final String? feedback;
+  final DateTime? gradedAt;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const Grade({
+    required this.id,
+    required this.userId,
+    required this.courseId,
+    required this.title,
+    this.gradeValue,
+    this.totalPoints,
+    required this.weight,
+    this.feedback,
+    this.gradedAt,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    map['course_id'] = Variable<String>(courseId);
+    map['title'] = Variable<String>(title);
+    if (!nullToAbsent || gradeValue != null) {
+      map['grade_value'] = Variable<double>(gradeValue);
+    }
+    if (!nullToAbsent || totalPoints != null) {
+      map['total_points'] = Variable<double>(totalPoints);
+    }
+    map['weight'] = Variable<double>(weight);
+    if (!nullToAbsent || feedback != null) {
+      map['feedback'] = Variable<String>(feedback);
+    }
+    if (!nullToAbsent || gradedAt != null) {
+      map['graded_at'] = Variable<DateTime>(gradedAt);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  GradesCompanion toCompanion(bool nullToAbsent) {
+    return GradesCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      courseId: Value(courseId),
+      title: Value(title),
+      gradeValue: gradeValue == null && nullToAbsent
+          ? const Value.absent()
+          : Value(gradeValue),
+      totalPoints: totalPoints == null && nullToAbsent
+          ? const Value.absent()
+          : Value(totalPoints),
+      weight: Value(weight),
+      feedback: feedback == null && nullToAbsent
+          ? const Value.absent()
+          : Value(feedback),
+      gradedAt: gradedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(gradedAt),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory Grade.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Grade(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      courseId: serializer.fromJson<String>(json['courseId']),
+      title: serializer.fromJson<String>(json['title']),
+      gradeValue: serializer.fromJson<double?>(json['gradeValue']),
+      totalPoints: serializer.fromJson<double?>(json['totalPoints']),
+      weight: serializer.fromJson<double>(json['weight']),
+      feedback: serializer.fromJson<String?>(json['feedback']),
+      gradedAt: serializer.fromJson<DateTime?>(json['gradedAt']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'courseId': serializer.toJson<String>(courseId),
+      'title': serializer.toJson<String>(title),
+      'gradeValue': serializer.toJson<double?>(gradeValue),
+      'totalPoints': serializer.toJson<double?>(totalPoints),
+      'weight': serializer.toJson<double>(weight),
+      'feedback': serializer.toJson<String?>(feedback),
+      'gradedAt': serializer.toJson<DateTime?>(gradedAt),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  Grade copyWith({
+    String? id,
+    String? userId,
+    String? courseId,
+    String? title,
+    Value<double?> gradeValue = const Value.absent(),
+    Value<double?> totalPoints = const Value.absent(),
+    double? weight,
+    Value<String?> feedback = const Value.absent(),
+    Value<DateTime?> gradedAt = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => Grade(
+    id: id ?? this.id,
+    userId: userId ?? this.userId,
+    courseId: courseId ?? this.courseId,
+    title: title ?? this.title,
+    gradeValue: gradeValue.present ? gradeValue.value : this.gradeValue,
+    totalPoints: totalPoints.present ? totalPoints.value : this.totalPoints,
+    weight: weight ?? this.weight,
+    feedback: feedback.present ? feedback.value : this.feedback,
+    gradedAt: gradedAt.present ? gradedAt.value : this.gradedAt,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  Grade copyWithCompanion(GradesCompanion data) {
+    return Grade(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      courseId: data.courseId.present ? data.courseId.value : this.courseId,
+      title: data.title.present ? data.title.value : this.title,
+      gradeValue: data.gradeValue.present
+          ? data.gradeValue.value
+          : this.gradeValue,
+      totalPoints: data.totalPoints.present
+          ? data.totalPoints.value
+          : this.totalPoints,
+      weight: data.weight.present ? data.weight.value : this.weight,
+      feedback: data.feedback.present ? data.feedback.value : this.feedback,
+      gradedAt: data.gradedAt.present ? data.gradedAt.value : this.gradedAt,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Grade(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('courseId: $courseId, ')
+          ..write('title: $title, ')
+          ..write('gradeValue: $gradeValue, ')
+          ..write('totalPoints: $totalPoints, ')
+          ..write('weight: $weight, ')
+          ..write('feedback: $feedback, ')
+          ..write('gradedAt: $gradedAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    userId,
+    courseId,
+    title,
+    gradeValue,
+    totalPoints,
+    weight,
+    feedback,
+    gradedAt,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Grade &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.courseId == this.courseId &&
+          other.title == this.title &&
+          other.gradeValue == this.gradeValue &&
+          other.totalPoints == this.totalPoints &&
+          other.weight == this.weight &&
+          other.feedback == this.feedback &&
+          other.gradedAt == this.gradedAt &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class GradesCompanion extends UpdateCompanion<Grade> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String> courseId;
+  final Value<String> title;
+  final Value<double?> gradeValue;
+  final Value<double?> totalPoints;
+  final Value<double> weight;
+  final Value<String?> feedback;
+  final Value<DateTime?> gradedAt;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const GradesCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.courseId = const Value.absent(),
+    this.title = const Value.absent(),
+    this.gradeValue = const Value.absent(),
+    this.totalPoints = const Value.absent(),
+    this.weight = const Value.absent(),
+    this.feedback = const Value.absent(),
+    this.gradedAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  GradesCompanion.insert({
+    required String id,
+    required String userId,
+    required String courseId,
+    required String title,
+    this.gradeValue = const Value.absent(),
+    this.totalPoints = const Value.absent(),
+    this.weight = const Value.absent(),
+    this.feedback = const Value.absent(),
+    this.gradedAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       userId = Value(userId),
+       courseId = Value(courseId),
+       title = Value(title);
+  static Insertable<Grade> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? courseId,
+    Expression<String>? title,
+    Expression<double>? gradeValue,
+    Expression<double>? totalPoints,
+    Expression<double>? weight,
+    Expression<String>? feedback,
+    Expression<DateTime>? gradedAt,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (courseId != null) 'course_id': courseId,
+      if (title != null) 'title': title,
+      if (gradeValue != null) 'grade_value': gradeValue,
+      if (totalPoints != null) 'total_points': totalPoints,
+      if (weight != null) 'weight': weight,
+      if (feedback != null) 'feedback': feedback,
+      if (gradedAt != null) 'graded_at': gradedAt,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  GradesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String>? courseId,
+    Value<String>? title,
+    Value<double?>? gradeValue,
+    Value<double?>? totalPoints,
+    Value<double>? weight,
+    Value<String?>? feedback,
+    Value<DateTime?>? gradedAt,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return GradesCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      courseId: courseId ?? this.courseId,
+      title: title ?? this.title,
+      gradeValue: gradeValue ?? this.gradeValue,
+      totalPoints: totalPoints ?? this.totalPoints,
+      weight: weight ?? this.weight,
+      feedback: feedback ?? this.feedback,
+      gradedAt: gradedAt ?? this.gradedAt,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (courseId.present) {
+      map['course_id'] = Variable<String>(courseId.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (gradeValue.present) {
+      map['grade_value'] = Variable<double>(gradeValue.value);
+    }
+    if (totalPoints.present) {
+      map['total_points'] = Variable<double>(totalPoints.value);
+    }
+    if (weight.present) {
+      map['weight'] = Variable<double>(weight.value);
+    }
+    if (feedback.present) {
+      map['feedback'] = Variable<String>(feedback.value);
+    }
+    if (gradedAt.present) {
+      map['graded_at'] = Variable<DateTime>(gradedAt.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GradesCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('courseId: $courseId, ')
+          ..write('title: $title, ')
+          ..write('gradeValue: $gradeValue, ')
+          ..write('totalPoints: $totalPoints, ')
+          ..write('weight: $weight, ')
+          ..write('feedback: $feedback, ')
+          ..write('gradedAt: $gradedAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $WorkoutExercisesTable extends WorkoutExercises
+    with TableInfo<$WorkoutExercisesTable, WorkoutExercise> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WorkoutExercisesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    clientDefault: () => const Uuid().v4(),
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _weekdayMeta = const VerificationMeta(
+    'weekday',
+  );
+  @override
+  late final GeneratedColumn<int> weekday = GeneratedColumn<int>(
+    'weekday',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _setsJsonMeta = const VerificationMeta(
+    'setsJson',
+  );
+  @override
+  late final GeneratedColumn<String> setsJson = GeneratedColumn<String>(
+    'sets_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isCompletedMeta = const VerificationMeta(
+    'isCompleted',
+  );
+  @override
+  late final GeneratedColumn<bool> isCompleted = GeneratedColumn<bool>(
+    'is_completed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_completed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    userId,
+    weekday,
+    name,
+    type,
+    setsJson,
+    isCompleted,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'workout_exercises';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<WorkoutExercise> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
     if (data.containsKey('weekday')) {
       context.handle(
         _weekdayMeta,
@@ -8610,28 +9094,21 @@ class $WorkoutExercisesTable extends WorkoutExercises
         ),
       );
     }
->>>>>>> 3973aa2 (app completed for apk)
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
         createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
       );
-<<<<<<< HEAD
-=======
     } else if (isInserting) {
       context.missing(_createdAtMeta);
->>>>>>> 3973aa2 (app completed for apk)
     }
     if (data.containsKey('updated_at')) {
       context.handle(
         _updatedAtMeta,
         updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
       );
-<<<<<<< HEAD
-=======
     } else if (isInserting) {
       context.missing(_updatedAtMeta);
->>>>>>> 3973aa2 (app completed for apk)
     }
     return context;
   }
@@ -8639,15 +9116,9 @@ class $WorkoutExercisesTable extends WorkoutExercises
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-<<<<<<< HEAD
-  Grade map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Grade(
-=======
   WorkoutExercise map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return WorkoutExercise(
->>>>>>> 3973aa2 (app completed for apk)
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -8656,36 +9127,6 @@ class $WorkoutExercisesTable extends WorkoutExercises
         DriftSqlType.string,
         data['${effectivePrefix}user_id'],
       )!,
-<<<<<<< HEAD
-      courseId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}course_id'],
-      )!,
-      title: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}title'],
-      )!,
-      gradeValue: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}grade_value'],
-      ),
-      totalPoints: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}total_points'],
-      ),
-      weight: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}weight'],
-      )!,
-      feedback: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}feedback'],
-      ),
-      gradedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}graded_at'],
-      ),
-=======
       weekday: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}weekday'],
@@ -8706,7 +9147,6 @@ class $WorkoutExercisesTable extends WorkoutExercises
         DriftSqlType.bool,
         data['${effectivePrefix}is_completed'],
       )!,
->>>>>>> 3973aa2 (app completed for apk)
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -8719,35 +9159,6 @@ class $WorkoutExercisesTable extends WorkoutExercises
   }
 
   @override
-<<<<<<< HEAD
-  $GradesTable createAlias(String alias) {
-    return $GradesTable(attachedDatabase, alias);
-  }
-}
-
-class Grade extends DataClass implements Insertable<Grade> {
-  final String id;
-  final String userId;
-  final String courseId;
-  final String title;
-  final double? gradeValue;
-  final double? totalPoints;
-  final double weight;
-  final String? feedback;
-  final DateTime? gradedAt;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  const Grade({
-    required this.id,
-    required this.userId,
-    required this.courseId,
-    required this.title,
-    this.gradeValue,
-    this.totalPoints,
-    required this.weight,
-    this.feedback,
-    this.gradedAt,
-=======
   $WorkoutExercisesTable createAlias(String alias) {
     return $WorkoutExercisesTable(attachedDatabase, alias);
   }
@@ -8771,7 +9182,6 @@ class WorkoutExercise extends DataClass implements Insertable<WorkoutExercise> {
     required this.type,
     required this.setsJson,
     required this.isCompleted,
->>>>>>> 3973aa2 (app completed for apk)
     required this.createdAt,
     required this.updatedAt,
   });
@@ -8780,55 +9190,16 @@ class WorkoutExercise extends DataClass implements Insertable<WorkoutExercise> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['user_id'] = Variable<String>(userId);
-<<<<<<< HEAD
-    map['course_id'] = Variable<String>(courseId);
-    map['title'] = Variable<String>(title);
-    if (!nullToAbsent || gradeValue != null) {
-      map['grade_value'] = Variable<double>(gradeValue);
-    }
-    if (!nullToAbsent || totalPoints != null) {
-      map['total_points'] = Variable<double>(totalPoints);
-    }
-    map['weight'] = Variable<double>(weight);
-    if (!nullToAbsent || feedback != null) {
-      map['feedback'] = Variable<String>(feedback);
-    }
-    if (!nullToAbsent || gradedAt != null) {
-      map['graded_at'] = Variable<DateTime>(gradedAt);
-    }
-=======
     map['weekday'] = Variable<int>(weekday);
     map['name'] = Variable<String>(name);
     map['type'] = Variable<String>(type);
     map['sets_json'] = Variable<String>(setsJson);
     map['is_completed'] = Variable<bool>(isCompleted);
->>>>>>> 3973aa2 (app completed for apk)
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
   }
 
-<<<<<<< HEAD
-  GradesCompanion toCompanion(bool nullToAbsent) {
-    return GradesCompanion(
-      id: Value(id),
-      userId: Value(userId),
-      courseId: Value(courseId),
-      title: Value(title),
-      gradeValue: gradeValue == null && nullToAbsent
-          ? const Value.absent()
-          : Value(gradeValue),
-      totalPoints: totalPoints == null && nullToAbsent
-          ? const Value.absent()
-          : Value(totalPoints),
-      weight: Value(weight),
-      feedback: feedback == null && nullToAbsent
-          ? const Value.absent()
-          : Value(feedback),
-      gradedAt: gradedAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(gradedAt),
-=======
   WorkoutExercisesCompanion toCompanion(bool nullToAbsent) {
     return WorkoutExercisesCompanion(
       id: Value(id),
@@ -8838,33 +9209,16 @@ class WorkoutExercise extends DataClass implements Insertable<WorkoutExercise> {
       type: Value(type),
       setsJson: Value(setsJson),
       isCompleted: Value(isCompleted),
->>>>>>> 3973aa2 (app completed for apk)
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
   }
 
-<<<<<<< HEAD
-  factory Grade.fromJson(
-=======
   factory WorkoutExercise.fromJson(
->>>>>>> 3973aa2 (app completed for apk)
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-<<<<<<< HEAD
-    return Grade(
-      id: serializer.fromJson<String>(json['id']),
-      userId: serializer.fromJson<String>(json['userId']),
-      courseId: serializer.fromJson<String>(json['courseId']),
-      title: serializer.fromJson<String>(json['title']),
-      gradeValue: serializer.fromJson<double?>(json['gradeValue']),
-      totalPoints: serializer.fromJson<double?>(json['totalPoints']),
-      weight: serializer.fromJson<double>(json['weight']),
-      feedback: serializer.fromJson<String?>(json['feedback']),
-      gradedAt: serializer.fromJson<DateTime?>(json['gradedAt']),
-=======
     return WorkoutExercise(
       id: serializer.fromJson<String>(json['id']),
       userId: serializer.fromJson<String>(json['userId']),
@@ -8873,7 +9227,6 @@ class WorkoutExercise extends DataClass implements Insertable<WorkoutExercise> {
       type: serializer.fromJson<String>(json['type']),
       setsJson: serializer.fromJson<String>(json['setsJson']),
       isCompleted: serializer.fromJson<bool>(json['isCompleted']),
->>>>>>> 3973aa2 (app completed for apk)
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -8884,68 +9237,16 @@ class WorkoutExercise extends DataClass implements Insertable<WorkoutExercise> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'userId': serializer.toJson<String>(userId),
-<<<<<<< HEAD
-      'courseId': serializer.toJson<String>(courseId),
-      'title': serializer.toJson<String>(title),
-      'gradeValue': serializer.toJson<double?>(gradeValue),
-      'totalPoints': serializer.toJson<double?>(totalPoints),
-      'weight': serializer.toJson<double>(weight),
-      'feedback': serializer.toJson<String?>(feedback),
-      'gradedAt': serializer.toJson<DateTime?>(gradedAt),
-=======
       'weekday': serializer.toJson<int>(weekday),
       'name': serializer.toJson<String>(name),
       'type': serializer.toJson<String>(type),
       'setsJson': serializer.toJson<String>(setsJson),
       'isCompleted': serializer.toJson<bool>(isCompleted),
->>>>>>> 3973aa2 (app completed for apk)
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
   }
 
-<<<<<<< HEAD
-  Grade copyWith({
-    String? id,
-    String? userId,
-    String? courseId,
-    String? title,
-    Value<double?> gradeValue = const Value.absent(),
-    Value<double?> totalPoints = const Value.absent(),
-    double? weight,
-    Value<String?> feedback = const Value.absent(),
-    Value<DateTime?> gradedAt = const Value.absent(),
-    DateTime? createdAt,
-    DateTime? updatedAt,
-  }) => Grade(
-    id: id ?? this.id,
-    userId: userId ?? this.userId,
-    courseId: courseId ?? this.courseId,
-    title: title ?? this.title,
-    gradeValue: gradeValue.present ? gradeValue.value : this.gradeValue,
-    totalPoints: totalPoints.present ? totalPoints.value : this.totalPoints,
-    weight: weight ?? this.weight,
-    feedback: feedback.present ? feedback.value : this.feedback,
-    gradedAt: gradedAt.present ? gradedAt.value : this.gradedAt,
-    createdAt: createdAt ?? this.createdAt,
-    updatedAt: updatedAt ?? this.updatedAt,
-  );
-  Grade copyWithCompanion(GradesCompanion data) {
-    return Grade(
-      id: data.id.present ? data.id.value : this.id,
-      userId: data.userId.present ? data.userId.value : this.userId,
-      courseId: data.courseId.present ? data.courseId.value : this.courseId,
-      title: data.title.present ? data.title.value : this.title,
-      gradeValue: data.gradeValue.present
-          ? data.gradeValue.value
-          : this.gradeValue,
-      totalPoints: data.totalPoints.present
-          ? data.totalPoints.value
-          : this.totalPoints,
-      weight: data.weight.present ? data.weight.value : this.weight,
-      feedback: data.feedback.present ? data.feedback.value : this.feedback,
-      gradedAt: data.gradedAt.present ? data.gradedAt.value : this.gradedAt,
-=======
   WorkoutExercise copyWith({
     String? id,
     String? userId,
@@ -8978,7 +9279,6 @@ class WorkoutExercise extends DataClass implements Insertable<WorkoutExercise> {
       isCompleted: data.isCompleted.present
           ? data.isCompleted.value
           : this.isCompleted,
->>>>>>> 3973aa2 (app completed for apk)
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -8986,18 +9286,6 @@ class WorkoutExercise extends DataClass implements Insertable<WorkoutExercise> {
 
   @override
   String toString() {
-<<<<<<< HEAD
-    return (StringBuffer('Grade(')
-          ..write('id: $id, ')
-          ..write('userId: $userId, ')
-          ..write('courseId: $courseId, ')
-          ..write('title: $title, ')
-          ..write('gradeValue: $gradeValue, ')
-          ..write('totalPoints: $totalPoints, ')
-          ..write('weight: $weight, ')
-          ..write('feedback: $feedback, ')
-          ..write('gradedAt: $gradedAt, ')
-=======
     return (StringBuffer('WorkoutExercise(')
           ..write('id: $id, ')
           ..write('userId: $userId, ')
@@ -9006,7 +9294,6 @@ class WorkoutExercise extends DataClass implements Insertable<WorkoutExercise> {
           ..write('type: $type, ')
           ..write('setsJson: $setsJson, ')
           ..write('isCompleted: $isCompleted, ')
->>>>>>> 3973aa2 (app completed for apk)
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -9017,39 +9304,17 @@ class WorkoutExercise extends DataClass implements Insertable<WorkoutExercise> {
   int get hashCode => Object.hash(
     id,
     userId,
-<<<<<<< HEAD
-    courseId,
-    title,
-    gradeValue,
-    totalPoints,
-    weight,
-    feedback,
-    gradedAt,
-=======
     weekday,
     name,
     type,
     setsJson,
     isCompleted,
->>>>>>> 3973aa2 (app completed for apk)
     createdAt,
     updatedAt,
   );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-<<<<<<< HEAD
-      (other is Grade &&
-          other.id == this.id &&
-          other.userId == this.userId &&
-          other.courseId == this.courseId &&
-          other.title == this.title &&
-          other.gradeValue == this.gradeValue &&
-          other.totalPoints == this.totalPoints &&
-          other.weight == this.weight &&
-          other.feedback == this.feedback &&
-          other.gradedAt == this.gradedAt &&
-=======
       (other is WorkoutExercise &&
           other.id == this.id &&
           other.userId == this.userId &&
@@ -9058,36 +9323,10 @@ class WorkoutExercise extends DataClass implements Insertable<WorkoutExercise> {
           other.type == this.type &&
           other.setsJson == this.setsJson &&
           other.isCompleted == this.isCompleted &&
->>>>>>> 3973aa2 (app completed for apk)
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
 
-<<<<<<< HEAD
-class GradesCompanion extends UpdateCompanion<Grade> {
-  final Value<String> id;
-  final Value<String> userId;
-  final Value<String> courseId;
-  final Value<String> title;
-  final Value<double?> gradeValue;
-  final Value<double?> totalPoints;
-  final Value<double> weight;
-  final Value<String?> feedback;
-  final Value<DateTime?> gradedAt;
-  final Value<DateTime> createdAt;
-  final Value<DateTime> updatedAt;
-  final Value<int> rowid;
-  const GradesCompanion({
-    this.id = const Value.absent(),
-    this.userId = const Value.absent(),
-    this.courseId = const Value.absent(),
-    this.title = const Value.absent(),
-    this.gradeValue = const Value.absent(),
-    this.totalPoints = const Value.absent(),
-    this.weight = const Value.absent(),
-    this.feedback = const Value.absent(),
-    this.gradedAt = const Value.absent(),
-=======
 class WorkoutExercisesCompanion extends UpdateCompanion<WorkoutExercise> {
   final Value<String> id;
   final Value<String> userId;
@@ -9107,40 +9346,10 @@ class WorkoutExercisesCompanion extends UpdateCompanion<WorkoutExercise> {
     this.type = const Value.absent(),
     this.setsJson = const Value.absent(),
     this.isCompleted = const Value.absent(),
->>>>>>> 3973aa2 (app completed for apk)
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-<<<<<<< HEAD
-  GradesCompanion.insert({
-    required String id,
-    required String userId,
-    required String courseId,
-    required String title,
-    this.gradeValue = const Value.absent(),
-    this.totalPoints = const Value.absent(),
-    this.weight = const Value.absent(),
-    this.feedback = const Value.absent(),
-    this.gradedAt = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       userId = Value(userId),
-       courseId = Value(courseId),
-       title = Value(title);
-  static Insertable<Grade> custom({
-    Expression<String>? id,
-    Expression<String>? userId,
-    Expression<String>? courseId,
-    Expression<String>? title,
-    Expression<double>? gradeValue,
-    Expression<double>? totalPoints,
-    Expression<double>? weight,
-    Expression<String>? feedback,
-    Expression<DateTime>? gradedAt,
-=======
   WorkoutExercisesCompanion.insert({
     this.id = const Value.absent(),
     required String userId,
@@ -9167,7 +9376,6 @@ class WorkoutExercisesCompanion extends UpdateCompanion<WorkoutExercise> {
     Expression<String>? type,
     Expression<String>? setsJson,
     Expression<bool>? isCompleted,
->>>>>>> 3973aa2 (app completed for apk)
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -9175,39 +9383,17 @@ class WorkoutExercisesCompanion extends UpdateCompanion<WorkoutExercise> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (userId != null) 'user_id': userId,
-<<<<<<< HEAD
-      if (courseId != null) 'course_id': courseId,
-      if (title != null) 'title': title,
-      if (gradeValue != null) 'grade_value': gradeValue,
-      if (totalPoints != null) 'total_points': totalPoints,
-      if (weight != null) 'weight': weight,
-      if (feedback != null) 'feedback': feedback,
-      if (gradedAt != null) 'graded_at': gradedAt,
-=======
       if (weekday != null) 'weekday': weekday,
       if (name != null) 'name': name,
       if (type != null) 'type': type,
       if (setsJson != null) 'sets_json': setsJson,
       if (isCompleted != null) 'is_completed': isCompleted,
->>>>>>> 3973aa2 (app completed for apk)
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
-<<<<<<< HEAD
-  GradesCompanion copyWith({
-    Value<String>? id,
-    Value<String>? userId,
-    Value<String>? courseId,
-    Value<String>? title,
-    Value<double?>? gradeValue,
-    Value<double?>? totalPoints,
-    Value<double>? weight,
-    Value<String?>? feedback,
-    Value<DateTime?>? gradedAt,
-=======
   WorkoutExercisesCompanion copyWith({
     Value<String>? id,
     Value<String>? userId,
@@ -9216,23 +9402,10 @@ class WorkoutExercisesCompanion extends UpdateCompanion<WorkoutExercise> {
     Value<String>? type,
     Value<String>? setsJson,
     Value<bool>? isCompleted,
->>>>>>> 3973aa2 (app completed for apk)
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<int>? rowid,
   }) {
-<<<<<<< HEAD
-    return GradesCompanion(
-      id: id ?? this.id,
-      userId: userId ?? this.userId,
-      courseId: courseId ?? this.courseId,
-      title: title ?? this.title,
-      gradeValue: gradeValue ?? this.gradeValue,
-      totalPoints: totalPoints ?? this.totalPoints,
-      weight: weight ?? this.weight,
-      feedback: feedback ?? this.feedback,
-      gradedAt: gradedAt ?? this.gradedAt,
-=======
     return WorkoutExercisesCompanion(
       id: id ?? this.id,
       userId: userId ?? this.userId,
@@ -9241,7 +9414,6 @@ class WorkoutExercisesCompanion extends UpdateCompanion<WorkoutExercise> {
       type: type ?? this.type,
       setsJson: setsJson ?? this.setsJson,
       isCompleted: isCompleted ?? this.isCompleted,
->>>>>>> 3973aa2 (app completed for apk)
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -9257,28 +9429,6 @@ class WorkoutExercisesCompanion extends UpdateCompanion<WorkoutExercise> {
     if (userId.present) {
       map['user_id'] = Variable<String>(userId.value);
     }
-<<<<<<< HEAD
-    if (courseId.present) {
-      map['course_id'] = Variable<String>(courseId.value);
-    }
-    if (title.present) {
-      map['title'] = Variable<String>(title.value);
-    }
-    if (gradeValue.present) {
-      map['grade_value'] = Variable<double>(gradeValue.value);
-    }
-    if (totalPoints.present) {
-      map['total_points'] = Variable<double>(totalPoints.value);
-    }
-    if (weight.present) {
-      map['weight'] = Variable<double>(weight.value);
-    }
-    if (feedback.present) {
-      map['feedback'] = Variable<String>(feedback.value);
-    }
-    if (gradedAt.present) {
-      map['graded_at'] = Variable<DateTime>(gradedAt.value);
-=======
     if (weekday.present) {
       map['weekday'] = Variable<int>(weekday.value);
     }
@@ -9293,7 +9443,6 @@ class WorkoutExercisesCompanion extends UpdateCompanion<WorkoutExercise> {
     }
     if (isCompleted.present) {
       map['is_completed'] = Variable<bool>(isCompleted.value);
->>>>>>> 3973aa2 (app completed for apk)
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -9309,18 +9458,6 @@ class WorkoutExercisesCompanion extends UpdateCompanion<WorkoutExercise> {
 
   @override
   String toString() {
-<<<<<<< HEAD
-    return (StringBuffer('GradesCompanion(')
-          ..write('id: $id, ')
-          ..write('userId: $userId, ')
-          ..write('courseId: $courseId, ')
-          ..write('title: $title, ')
-          ..write('gradeValue: $gradeValue, ')
-          ..write('totalPoints: $totalPoints, ')
-          ..write('weight: $weight, ')
-          ..write('feedback: $feedback, ')
-          ..write('gradedAt: $gradedAt, ')
-=======
     return (StringBuffer('WorkoutExercisesCompanion(')
           ..write('id: $id, ')
           ..write('userId: $userId, ')
@@ -9329,7 +9466,6 @@ class WorkoutExercisesCompanion extends UpdateCompanion<WorkoutExercise> {
           ..write('type: $type, ')
           ..write('setsJson: $setsJson, ')
           ..write('isCompleted: $isCompleted, ')
->>>>>>> 3973aa2 (app completed for apk)
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -9358,13 +9494,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $FlashcardDecksTable flashcardDecks = $FlashcardDecksTable(this);
   late final $FlashcardsTable flashcards = $FlashcardsTable(this);
-<<<<<<< HEAD
   late final $GradesTable grades = $GradesTable(this);
-=======
   late final $WorkoutExercisesTable workoutExercises = $WorkoutExercisesTable(
     this,
   );
->>>>>>> 3973aa2 (app completed for apk)
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -9384,11 +9517,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     pomodoroSessions,
     flashcardDecks,
     flashcards,
-<<<<<<< HEAD
     grades,
-=======
     workoutExercises,
->>>>>>> 3973aa2 (app completed for apk)
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -15322,7 +15452,6 @@ typedef $$FlashcardsTableProcessedTableManager =
       Flashcard,
       PrefetchHooks Function({bool deckId})
     >;
-<<<<<<< HEAD
 typedef $$GradesTableCreateCompanionBuilder =
     GradesCompanion Function({
       required String id,
@@ -15349,36 +15478,11 @@ typedef $$GradesTableUpdateCompanionBuilder =
       Value<double> weight,
       Value<String?> feedback,
       Value<DateTime?> gradedAt,
-=======
-typedef $$WorkoutExercisesTableCreateCompanionBuilder =
-    WorkoutExercisesCompanion Function({
-      Value<String> id,
-      required String userId,
-      required int weekday,
-      required String name,
-      required String type,
-      required String setsJson,
-      Value<bool> isCompleted,
-      required DateTime createdAt,
-      required DateTime updatedAt,
-      Value<int> rowid,
-    });
-typedef $$WorkoutExercisesTableUpdateCompanionBuilder =
-    WorkoutExercisesCompanion Function({
-      Value<String> id,
-      Value<String> userId,
-      Value<int> weekday,
-      Value<String> name,
-      Value<String> type,
-      Value<String> setsJson,
-      Value<bool> isCompleted,
->>>>>>> 3973aa2 (app completed for apk)
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> rowid,
     });
 
-<<<<<<< HEAD
 final class $$GradesTableReferences
     extends BaseReferences<_$AppDatabase, $GradesTable, Grade> {
   $$GradesTableReferences(super.$_db, super.$_table, super.$_typedResult);
@@ -15404,11 +15508,6 @@ final class $$GradesTableReferences
 class $$GradesTableFilterComposer
     extends Composer<_$AppDatabase, $GradesTable> {
   $$GradesTableFilterComposer({
-=======
-class $$WorkoutExercisesTableFilterComposer
-    extends Composer<_$AppDatabase, $WorkoutExercisesTable> {
-  $$WorkoutExercisesTableFilterComposer({
->>>>>>> 3973aa2 (app completed for apk)
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -15425,7 +15524,6 @@ class $$WorkoutExercisesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-<<<<<<< HEAD
   ColumnFilters<String> get title => $composableBuilder(
     column: $table.title,
     builder: (column) => ColumnFilters(column),
@@ -15453,30 +15551,6 @@ class $$WorkoutExercisesTableFilterComposer
 
   ColumnFilters<DateTime> get gradedAt => $composableBuilder(
     column: $table.gradedAt,
-=======
-  ColumnFilters<int> get weekday => $composableBuilder(
-    column: $table.weekday,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get type => $composableBuilder(
-    column: $table.type,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get setsJson => $composableBuilder(
-    column: $table.setsJson,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get isCompleted => $composableBuilder(
-    column: $table.isCompleted,
->>>>>>> 3973aa2 (app completed for apk)
     builder: (column) => ColumnFilters(column),
   );
 
@@ -15489,7 +15563,6 @@ class $$WorkoutExercisesTableFilterComposer
     column: $table.updatedAt,
     builder: (column) => ColumnFilters(column),
   );
-<<<<<<< HEAD
 
   $$CoursesTableFilterComposer get courseId {
     final $$CoursesTableFilterComposer composer = $composerBuilder(
@@ -15518,13 +15591,6 @@ class $$WorkoutExercisesTableFilterComposer
 class $$GradesTableOrderingComposer
     extends Composer<_$AppDatabase, $GradesTable> {
   $$GradesTableOrderingComposer({
-=======
-}
-
-class $$WorkoutExercisesTableOrderingComposer
-    extends Composer<_$AppDatabase, $WorkoutExercisesTable> {
-  $$WorkoutExercisesTableOrderingComposer({
->>>>>>> 3973aa2 (app completed for apk)
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -15541,7 +15607,6 @@ class $$WorkoutExercisesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-<<<<<<< HEAD
   ColumnOrderings<String> get title => $composableBuilder(
     column: $table.title,
     builder: (column) => ColumnOrderings(column),
@@ -15569,30 +15634,6 @@ class $$WorkoutExercisesTableOrderingComposer
 
   ColumnOrderings<DateTime> get gradedAt => $composableBuilder(
     column: $table.gradedAt,
-=======
-  ColumnOrderings<int> get weekday => $composableBuilder(
-    column: $table.weekday,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get type => $composableBuilder(
-    column: $table.type,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get setsJson => $composableBuilder(
-    column: $table.setsJson,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get isCompleted => $composableBuilder(
-    column: $table.isCompleted,
->>>>>>> 3973aa2 (app completed for apk)
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -15605,7 +15646,6 @@ class $$WorkoutExercisesTableOrderingComposer
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
   );
-<<<<<<< HEAD
 
   $$CoursesTableOrderingComposer get courseId {
     final $$CoursesTableOrderingComposer composer = $composerBuilder(
@@ -15634,13 +15674,6 @@ class $$WorkoutExercisesTableOrderingComposer
 class $$GradesTableAnnotationComposer
     extends Composer<_$AppDatabase, $GradesTable> {
   $$GradesTableAnnotationComposer({
-=======
-}
-
-class $$WorkoutExercisesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $WorkoutExercisesTable> {
-  $$WorkoutExercisesTableAnnotationComposer({
->>>>>>> 3973aa2 (app completed for apk)
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -15653,7 +15686,6 @@ class $$WorkoutExercisesTableAnnotationComposer
   GeneratedColumn<String> get userId =>
       $composableBuilder(column: $table.userId, builder: (column) => column);
 
-<<<<<<< HEAD
   GeneratedColumn<String> get title =>
       $composableBuilder(column: $table.title, builder: (column) => column);
 
@@ -15676,31 +15708,11 @@ class $$WorkoutExercisesTableAnnotationComposer
   GeneratedColumn<DateTime> get gradedAt =>
       $composableBuilder(column: $table.gradedAt, builder: (column) => column);
 
-=======
-  GeneratedColumn<int> get weekday =>
-      $composableBuilder(column: $table.weekday, builder: (column) => column);
-
-  GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
-
-  GeneratedColumn<String> get type =>
-      $composableBuilder(column: $table.type, builder: (column) => column);
-
-  GeneratedColumn<String> get setsJson =>
-      $composableBuilder(column: $table.setsJson, builder: (column) => column);
-
-  GeneratedColumn<bool> get isCompleted => $composableBuilder(
-    column: $table.isCompleted,
-    builder: (column) => column,
-  );
-
->>>>>>> 3973aa2 (app completed for apk)
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-<<<<<<< HEAD
 
   $$CoursesTableAnnotationComposer get courseId {
     final $$CoursesTableAnnotationComposer composer = $composerBuilder(
@@ -15743,58 +15755,19 @@ class $$GradesTableTableManager
         > {
   $$GradesTableTableManager(_$AppDatabase db, $GradesTable table)
     : super(
-=======
-}
-
-class $$WorkoutExercisesTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $WorkoutExercisesTable,
-          WorkoutExercise,
-          $$WorkoutExercisesTableFilterComposer,
-          $$WorkoutExercisesTableOrderingComposer,
-          $$WorkoutExercisesTableAnnotationComposer,
-          $$WorkoutExercisesTableCreateCompanionBuilder,
-          $$WorkoutExercisesTableUpdateCompanionBuilder,
-          (
-            WorkoutExercise,
-            BaseReferences<
-              _$AppDatabase,
-              $WorkoutExercisesTable,
-              WorkoutExercise
-            >,
-          ),
-          WorkoutExercise,
-          PrefetchHooks Function()
-        > {
-  $$WorkoutExercisesTableTableManager(
-    _$AppDatabase db,
-    $WorkoutExercisesTable table,
-  ) : super(
->>>>>>> 3973aa2 (app completed for apk)
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-<<<<<<< HEAD
               $$GradesTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
               $$GradesTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
               $$GradesTableAnnotationComposer($db: db, $table: table),
-=======
-              $$WorkoutExercisesTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$WorkoutExercisesTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$WorkoutExercisesTableAnnotationComposer($db: db, $table: table),
->>>>>>> 3973aa2 (app completed for apk)
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> userId = const Value.absent(),
-<<<<<<< HEAD
                 Value<String> courseId = const Value.absent(),
                 Value<String> title = const Value.absent(),
                 Value<double?> gradeValue = const Value.absent(),
@@ -15815,31 +15788,12 @@ class $$WorkoutExercisesTableTableManager
                 weight: weight,
                 feedback: feedback,
                 gradedAt: gradedAt,
-=======
-                Value<int> weekday = const Value.absent(),
-                Value<String> name = const Value.absent(),
-                Value<String> type = const Value.absent(),
-                Value<String> setsJson = const Value.absent(),
-                Value<bool> isCompleted = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime> updatedAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => WorkoutExercisesCompanion(
-                id: id,
-                userId: userId,
-                weekday: weekday,
-                name: name,
-                type: type,
-                setsJson: setsJson,
-                isCompleted: isCompleted,
->>>>>>> 3973aa2 (app completed for apk)
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
               ({
-<<<<<<< HEAD
                 required String id,
                 required String userId,
                 required String courseId,
@@ -15862,32 +15816,11 @@ class $$WorkoutExercisesTableTableManager
                 weight: weight,
                 feedback: feedback,
                 gradedAt: gradedAt,
-=======
-                Value<String> id = const Value.absent(),
-                required String userId,
-                required int weekday,
-                required String name,
-                required String type,
-                required String setsJson,
-                Value<bool> isCompleted = const Value.absent(),
-                required DateTime createdAt,
-                required DateTime updatedAt,
-                Value<int> rowid = const Value.absent(),
-              }) => WorkoutExercisesCompanion.insert(
-                id: id,
-                userId: userId,
-                weekday: weekday,
-                name: name,
-                type: type,
-                setsJson: setsJson,
-                isCompleted: isCompleted,
->>>>>>> 3973aa2 (app completed for apk)
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-<<<<<<< HEAD
               .map(
                 (e) =>
                     (e.readTable(table), $$GradesTableReferences(db, table, e)),
@@ -15934,16 +15867,10 @@ class $$WorkoutExercisesTableTableManager
               },
             );
           },
-=======
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
->>>>>>> 3973aa2 (app completed for apk)
         ),
       );
 }
 
-<<<<<<< HEAD
 typedef $$GradesTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
@@ -15957,7 +15884,274 @@ typedef $$GradesTableProcessedTableManager =
       (Grade, $$GradesTableReferences),
       Grade,
       PrefetchHooks Function({bool courseId})
-=======
+    >;
+typedef $$WorkoutExercisesTableCreateCompanionBuilder =
+    WorkoutExercisesCompanion Function({
+      Value<String> id,
+      required String userId,
+      required int weekday,
+      required String name,
+      required String type,
+      required String setsJson,
+      Value<bool> isCompleted,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$WorkoutExercisesTableUpdateCompanionBuilder =
+    WorkoutExercisesCompanion Function({
+      Value<String> id,
+      Value<String> userId,
+      Value<int> weekday,
+      Value<String> name,
+      Value<String> type,
+      Value<String> setsJson,
+      Value<bool> isCompleted,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$WorkoutExercisesTableFilterComposer
+    extends Composer<_$AppDatabase, $WorkoutExercisesTable> {
+  $$WorkoutExercisesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get weekday => $composableBuilder(
+    column: $table.weekday,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get setsJson => $composableBuilder(
+    column: $table.setsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isCompleted => $composableBuilder(
+    column: $table.isCompleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$WorkoutExercisesTableOrderingComposer
+    extends Composer<_$AppDatabase, $WorkoutExercisesTable> {
+  $$WorkoutExercisesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get weekday => $composableBuilder(
+    column: $table.weekday,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get setsJson => $composableBuilder(
+    column: $table.setsJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isCompleted => $composableBuilder(
+    column: $table.isCompleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$WorkoutExercisesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WorkoutExercisesTable> {
+  $$WorkoutExercisesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<int> get weekday =>
+      $composableBuilder(column: $table.weekday, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get setsJson =>
+      $composableBuilder(column: $table.setsJson, builder: (column) => column);
+
+  GeneratedColumn<bool> get isCompleted => $composableBuilder(
+    column: $table.isCompleted,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$WorkoutExercisesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $WorkoutExercisesTable,
+          WorkoutExercise,
+          $$WorkoutExercisesTableFilterComposer,
+          $$WorkoutExercisesTableOrderingComposer,
+          $$WorkoutExercisesTableAnnotationComposer,
+          $$WorkoutExercisesTableCreateCompanionBuilder,
+          $$WorkoutExercisesTableUpdateCompanionBuilder,
+          (
+            WorkoutExercise,
+            BaseReferences<
+              _$AppDatabase,
+              $WorkoutExercisesTable,
+              WorkoutExercise
+            >,
+          ),
+          WorkoutExercise,
+          PrefetchHooks Function()
+        > {
+  $$WorkoutExercisesTableTableManager(
+    _$AppDatabase db,
+    $WorkoutExercisesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WorkoutExercisesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WorkoutExercisesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WorkoutExercisesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<int> weekday = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> type = const Value.absent(),
+                Value<String> setsJson = const Value.absent(),
+                Value<bool> isCompleted = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => WorkoutExercisesCompanion(
+                id: id,
+                userId: userId,
+                weekday: weekday,
+                name: name,
+                type: type,
+                setsJson: setsJson,
+                isCompleted: isCompleted,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                required String userId,
+                required int weekday,
+                required String name,
+                required String type,
+                required String setsJson,
+                Value<bool> isCompleted = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => WorkoutExercisesCompanion.insert(
+                id: id,
+                userId: userId,
+                weekday: weekday,
+                name: name,
+                type: type,
+                setsJson: setsJson,
+                isCompleted: isCompleted,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
 typedef $$WorkoutExercisesTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
@@ -15974,7 +16168,6 @@ typedef $$WorkoutExercisesTableProcessedTableManager =
       ),
       WorkoutExercise,
       PrefetchHooks Function()
->>>>>>> 3973aa2 (app completed for apk)
     >;
 
 class $AppDatabaseManager {
@@ -16008,11 +16201,8 @@ class $AppDatabaseManager {
       $$FlashcardDecksTableTableManager(_db, _db.flashcardDecks);
   $$FlashcardsTableTableManager get flashcards =>
       $$FlashcardsTableTableManager(_db, _db.flashcards);
-<<<<<<< HEAD
   $$GradesTableTableManager get grades =>
       $$GradesTableTableManager(_db, _db.grades);
-=======
   $$WorkoutExercisesTableTableManager get workoutExercises =>
       $$WorkoutExercisesTableTableManager(_db, _db.workoutExercises);
->>>>>>> 3973aa2 (app completed for apk)
 }

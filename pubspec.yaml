@@ -40,17 +40,26 @@ dev_dependencies:
   drift_dev: ^2.20.0
   build_runner: ^2.4.11
   mocktail: ^1.0.3
+  flutter_launcher_icons: ^0.14.1
 
 flutter:
   uses-material-design: true
   assets:
     - .env
+    - assets/icon/
 
 flutter_launcher_icons:
-  android: "launcher_icon"
+  android: true
   ios: true
   image_path: "assets/icon/icon.png"
   min_sdk_android: 21
   remove_alpha_ios: true
   adaptive_icon_background: "#0D0D0D"
   adaptive_icon_foreground: "assets/icon/icon_foreground.png"
+  windows:
+    generate: true
+    image_path: "assets/icon/icon.png"
+    icon_size: 256
+  macos:
+    generate: true
+    image_path: "assets/icon/icon.png"
