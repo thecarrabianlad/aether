@@ -178,5 +178,3 @@ AETHER focuses on:
 Because apparently managing studies, habits, workouts, deadlines, classes, sleep, food, and life itself now requires its own operating system.
 
 ---
-
-Built with Flutter ❤️
