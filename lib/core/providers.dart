@@ -91,7 +91,7 @@ final syncServiceProvider = Provider<SyncService>((ref) {
 final syncStatusProvider = Provider<SyncStatus>((ref) {
   final service = ref.watch(syncServiceProvider);
   // Re-expose the ValueNotifier through Riverpod so widgets rebuild on change.
-  final listener = () => ref.state = service.status.value;
+  SyncStatus listener() => ref.state = service.status.value;
   service.status.addListener(listener);
   ref.onDispose(() => service.status.removeListener(listener));
   return service.status.value;

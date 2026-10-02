@@ -398,7 +398,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: templates.length + 1,
-            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            separatorBuilder: (_, _) => const SizedBox(width: 10),
             itemBuilder: (context, index) {
               final isCustomCard = index == templates.length;
 
@@ -616,8 +616,8 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: selected
-                          ? ScheduleScreen.red.withOpacity(0.15)
-                          : Colors.white.withOpacity(0.03),
+                          ? ScheduleScreen.red.withValues(alpha: 0.15)
+                          : Colors.white.withValues(alpha: 0.03),
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: selected
@@ -756,7 +756,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                           Container(
                             padding: const EdgeInsets.all(7),
                             decoration: BoxDecoration(
-                              color: color.withOpacity(0.15),
+                              color: color.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(9),
                             ),
                             child: Icon(iconForKey(block.icon),
@@ -788,7 +788,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.04),
+                              color: Colors.white.withValues(alpha: 0.04),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(

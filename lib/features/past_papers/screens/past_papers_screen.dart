@@ -53,7 +53,7 @@ class _PastPapersScreenState extends ConsumerState<PastPapersScreen> {
           return ListView.separated(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
             itemCount: papers.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            separatorBuilder: (_, _) => const SizedBox(height: 10),
             itemBuilder: (_, i) => _PaperCard(
               paper: papers[i],
               examColor: _examColors[papers[i].examType?.toLowerCase()] ??
@@ -347,7 +347,7 @@ class _AddPaperSheetState extends State<_AddPaperSheet> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: _examType,
+                    initialValue: _examType,
                     dropdownColor: aether.surface,
                     style: TextStyle(color: aether.text),
                     decoration: InputDecoration(

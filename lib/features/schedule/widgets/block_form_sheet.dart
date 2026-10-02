@@ -238,7 +238,7 @@ class _BlockFormSheetState extends State<_BlockFormSheet> {
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: selected
-                            ? swatch.withOpacity(0.15)
+                            ? swatch.withValues(alpha: 0.15)
                             : context.aether.background,
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(

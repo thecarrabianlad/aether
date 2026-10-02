@@ -47,3 +47,7 @@ app.*.map.json
 aether-windows-release.zip
 analyze*.txt
 build_log.txt
+
+*.zip
+
+/android/build/

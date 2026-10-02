@@ -181,7 +181,7 @@ class AetherTheme extends ThemeExtension<AetherTheme> {
       textMuted: textMuted ?? this.textMuted,
       success: success ?? this.success,
       danger: danger ?? this.danger,
-      onAccent: onAccent ?? this.onAccent,
+      onAccent: onAccent ?? onAccent,
     );
   }
 

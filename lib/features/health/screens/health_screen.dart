@@ -60,7 +60,7 @@ class _HealthScreenState extends ConsumerState<HealthScreen> {
         bottom: false,
         child: Column(
           children: [
-            DashboardTopBar(onProfileTap: widget.onProfileTap ?? () {}),
+            const DashboardTopBar(),
             Expanded(
               child: planAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
@@ -156,7 +156,7 @@ class _HealthScreenState extends ConsumerState<HealthScreen> {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: Weekday.values.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 10),
+        separatorBuilder: (_, _) => const SizedBox(width: 10),
         itemBuilder: (context, i) {
           final day = Weekday.values[i];
           final isSelected = day == selected;

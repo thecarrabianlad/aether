@@ -105,7 +105,7 @@ class GradeTile extends StatelessWidget {
                   Text(
                     '${((grade.gradeValue! / grade.totalPoints!) * 100).toStringAsFixed(0)}%',
                     style: TextStyle(
-                      color: gradeColor.withOpacity(0.8),
+                      color: gradeColor.withValues(alpha: 0.8),
                       fontSize: 12,
                     ),
                   ),

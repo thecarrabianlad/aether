@@ -41,7 +41,7 @@ extension HabitCategoryX on HabitCategory {
   }
 
   String get colorString {
-    return '#${color.value.toRadixString(16).substring(2).toUpperCase()}';
+    return '#${color.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
   }
 
   static HabitCategory fromLabel(String label) {

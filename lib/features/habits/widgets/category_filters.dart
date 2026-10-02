@@ -76,10 +76,10 @@ class CategoryFiltersRow extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.15) : context.aether.card,
+          color: isSelected ? color.withValues(alpha: 0.15) : context.aether.card,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? color.withOpacity(0.5) : context.aether.border,
+            color: isSelected ? color.withValues(alpha: 0.5) : context.aether.border,
           ),
         ),
         child: Row(

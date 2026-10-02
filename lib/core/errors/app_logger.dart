@@ -1,7 +1,5 @@
-import 'dart:convert';
 import 'dart:math';
 
-import 'package:uuid/uuid.dart';
 
 /// A single structured log entry held by [AppLogger.ring].
 class LogEntry {

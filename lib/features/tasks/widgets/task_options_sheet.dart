@@ -297,7 +297,7 @@ class _PickerSheet extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: selected
-                        ? color.withOpacity(0.15)
+                        ? color.withValues(alpha: 0.15)
                         : context.aether.background,
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(

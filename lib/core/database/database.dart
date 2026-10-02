@@ -46,7 +46,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   // Constructor for testing with a custom executor (e.g., in-memory)
-  AppDatabase.forTesting(QueryExecutor executor) : super(executor);
+  AppDatabase.forTesting(super.executor);
 
   @override
   int get schemaVersion => 7;
@@ -83,14 +83,9 @@ MigrationStrategy get migration => MigrationStrategy(
       await m.createTable(flashcardDecks);
       await m.createTable(flashcards);
     }
-<<<<<<< HEAD
     if (from < 7) {
       await m.createTable(grades);
-=======
-
-    if (from < 7) {
       await m.createTable(workoutExercises);
->>>>>>> 3973aa2 (app completed for apk)
     }
   },
 );

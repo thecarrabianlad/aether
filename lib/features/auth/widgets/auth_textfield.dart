@@ -71,7 +71,7 @@ class _AuthTextFieldState extends State<AuthTextField> {
               borderSide: BorderSide(
                 color: hasError
                     ? aether.danger
-                    : Colors.white.withOpacity(0.08),
+                    : Colors.white.withValues(alpha: 0.08),
               ),
             ),
             focusedBorder: OutlineInputBorder(
@@ -79,7 +79,7 @@ class _AuthTextFieldState extends State<AuthTextField> {
               borderSide: BorderSide(
                 color: hasError
                     ? aether.danger
-                    : Colors.white.withOpacity(0.25),
+                    : Colors.white.withValues(alpha: 0.25),
               ),
             ),
             contentPadding: const EdgeInsets.symmetric(vertical: 16),

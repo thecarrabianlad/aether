@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:drift/drift.dart' show Value;
 
@@ -46,7 +45,7 @@ class _AddEditGradeDialogState extends ConsumerState<AddEditGradeDialog> {
     _totalPointsController = TextEditingController(
         text: widget.gradeToEdit?.totalPoints?.toString() ?? '');
     _weightController = TextEditingController(
-        text: widget.gradeToEdit?.weight?.toString() ?? '1.0');
+        text: widget.gradeToEdit?.weight.toString() ?? '1.0');
     _feedbackController =
         TextEditingController(text: widget.gradeToEdit?.feedback ?? '');
     _gradedAt = widget.gradeToEdit?.gradedAt;

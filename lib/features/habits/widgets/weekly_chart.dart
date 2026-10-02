@@ -143,8 +143,8 @@ class _LineChartPainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          HabitRepository.blueAccent.withOpacity(0.25),
-          HabitRepository.blueAccent.withOpacity(0.0),
+          HabitRepository.blueAccent.withValues(alpha: 0.25),
+          HabitRepository.blueAccent.withValues(alpha: 0.0),
         ],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 
@@ -180,14 +180,14 @@ class _LineChartPainter extends CustomPainter {
       final dotPaint = Paint()
         ..color = i == points.length - 1
             ? HabitRepository.blueAccent
-            : HabitRepository.blueAccent.withOpacity(0.5)
+            : HabitRepository.blueAccent.withValues(alpha: 0.5)
         ..style = PaintingStyle.fill;
       canvas.drawCircle(points[i], i == points.length - 1 ? 4 : 2.5, dotPaint);
 
       // Highlight the last point
       if (i == points.length - 1) {
         final highlightPaint = Paint()
-          ..color = HabitRepository.blueAccent.withOpacity(0.25)
+          ..color = HabitRepository.blueAccent.withValues(alpha: 0.25)
           ..style = PaintingStyle.fill;
         canvas.drawCircle(points[i], 7, highlightPaint);
       }

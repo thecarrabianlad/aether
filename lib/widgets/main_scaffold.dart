@@ -136,7 +136,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
         (_) => _checkFirstLogin(profile),
       ),
       loading: () {},
-      error: (_, __) {},
+      error: (_, _) {},
     );
 
     // Default menu items

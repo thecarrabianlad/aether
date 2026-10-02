@@ -552,7 +552,7 @@ class _HeaderRow extends StatelessWidget {
 }
 
 class _ProgressRing extends ConsumerWidget {
-  const _ProgressRing({super.key});
+  const _ProgressRing();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -572,7 +572,7 @@ class _ProgressRing extends ConsumerWidget {
         return count > 0 ? totalProgress / count : 0.0;
       },
       loading: () => 0.0,
-      error: (_, __) => 0.0,
+      error: (_, _) => 0.0,
     );
 
     final displayPercent = calculatedProgress;

@@ -166,7 +166,7 @@ class _SideDrawerState extends State<SideDrawer>
             child: GestureDetector(
               onTap: _controller.isAnimating ? null : widget.onClose,
               child: Container(
-                color: _overlayColor.withOpacity(_fadeAnimation.value * 0.75),
+                color: _overlayColor.withValues(alpha: _fadeAnimation.value * 0.75),
                 child: GestureDetector(
                   onTap: () {}, // Prevent taps inside drawer from closing it
                   child: SlideTransition(
@@ -184,13 +184,13 @@ class _SideDrawerState extends State<SideDrawer>
                           ),
                           border: Border(
                             right: BorderSide(
-                              color: _borderColor.withOpacity(_fadeAnimation.value * 0.1),
+                              color: _borderColor.withValues(alpha: _fadeAnimation.value * 0.1),
                               width: 1,
                             ),
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(_fadeAnimation.value * 0.5),
+                              color: Colors.black.withValues(alpha: _fadeAnimation.value * 0.5),
                               blurRadius: 40,
                               spreadRadius: 5,
                               offset: const Offset(4, 0),
@@ -239,10 +239,10 @@ class _SideDrawerState extends State<SideDrawer>
                     height: 80,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: _accentColor.withOpacity(0.4), width: 2),
+                      border: Border.all(color: _accentColor.withValues(alpha: 0.4), width: 2),
                       boxShadow: [
                         BoxShadow(
-                          color: _accentColor.withOpacity(0.25),
+                          color: _accentColor.withValues(alpha: 0.25),
                           blurRadius: 12,
                           spreadRadius: 2,
                         ),
@@ -277,7 +277,7 @@ class _SideDrawerState extends State<SideDrawer>
                         border: Border.all(color: _bgColor, width: 3),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF4CD964).withOpacity(0.5),
+                            color: const Color(0xFF4CD964).withValues(alpha: 0.5),
                             blurRadius: 6,
                             spreadRadius: 1,
                           ),
@@ -322,12 +322,12 @@ class _SideDrawerState extends State<SideDrawer>
         color: _badgeBgColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: _badgeBorderColor.withOpacity(0.4),
+          color: _badgeBorderColor.withValues(alpha: 0.4),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: _badgeBorderColor.withOpacity(0.2),
+            color: _badgeBorderColor.withValues(alpha: 0.2),
             blurRadius: 8,
             spreadRadius: 1,
           ),
@@ -339,7 +339,7 @@ class _SideDrawerState extends State<SideDrawer>
           Icon(
             Icons.star_rounded,
             size: 16,
-            color: _badgeBorderColor.withOpacity(0.9),
+            color: _badgeBorderColor.withValues(alpha: 0.9),
           ),
           const SizedBox(width: 6),
           Text(
@@ -347,7 +347,7 @@ class _SideDrawerState extends State<SideDrawer>
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
-              color: _badgeBorderColor.withOpacity(0.9),
+              color: _badgeBorderColor.withValues(alpha: 0.9),
               letterSpacing: 0.8,
             ),
           ),
@@ -364,7 +364,7 @@ class _SideDrawerState extends State<SideDrawer>
         physics: const NeverScrollableScrollPhysics(),
         shrinkWrap: true,
         itemCount: widget.menuItems.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 4),
+        separatorBuilder: (_, _) => const SizedBox(height: 4),
         itemBuilder: (context, index) {
           final item = widget.menuItems[index];
           final isActive = item.id == widget.activeItemId;
@@ -429,7 +429,7 @@ class _SideDrawerState extends State<SideDrawer>
                 color: _logoutBgColor,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: _logoutBorderColor.withOpacity(0.5),
+                  color: _logoutBorderColor.withValues(alpha: 0.5),
                   width: 1,
                 ),
               ),
@@ -438,7 +438,7 @@ class _SideDrawerState extends State<SideDrawer>
                   Icon(
                     Icons.logout_rounded,
                     size: 20,
-                    color: _badgeBorderColor.withOpacity(0.8),
+                    color: _badgeBorderColor.withValues(alpha: 0.8),
                   ),
                   const SizedBox(width: 14),
                   Text(
@@ -446,7 +446,7 @@ class _SideDrawerState extends State<SideDrawer>
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
-                      color: _badgeBorderColor.withOpacity(0.8),
+                      color: _badgeBorderColor.withValues(alpha: 0.8),
                     ),
                   ),
                 ],

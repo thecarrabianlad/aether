@@ -21,7 +21,7 @@ class _FirstLoginDialog extends StatefulWidget {
 class _FirstLoginDialogState extends State<_FirstLoginDialog> {
   final _nameController = TextEditingController();
   final _roleController = TextEditingController();
-  bool _isLoading = false;
+  final bool _isLoading = false;
   bool _isSubmitted = false;
 
   AetherTheme get _aether => context.aether;

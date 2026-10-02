@@ -82,7 +82,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   fontSize: 32,
                   fontWeight: FontWeight.w400,
                   letterSpacing: 6,
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                 ),
               ),
               const SizedBox(height: 12),

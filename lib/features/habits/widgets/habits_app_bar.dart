@@ -23,7 +23,7 @@ class HabitsAppBar extends StatelessWidget {
             color: context.aether.surface.withValues(alpha: 0.65),
             border: Border(
               bottom: BorderSide(
-                color: Colors.white.withOpacity(0.08),
+                color: Colors.white.withValues(alpha: 0.08),
                 width: 1,
               ),
             ),
@@ -42,7 +42,7 @@ class HabitsAppBar extends StatelessWidget {
                       fontSize: 20,
                       fontWeight: FontWeight.w400,
                       letterSpacing: 4,
-                      color: Colors.white.withOpacity(0.85),
+                      color: Colors.white.withValues(alpha: 0.85),
                     ),
                   ),
                 ),
@@ -74,7 +74,7 @@ class _IconButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(12),
-          child: Icon(icon, size: 24, color: Colors.white.withOpacity(0.75)),
+          child: Icon(icon, size: 24, color: Colors.white.withValues(alpha: 0.75)),
         ),
       ),
     );

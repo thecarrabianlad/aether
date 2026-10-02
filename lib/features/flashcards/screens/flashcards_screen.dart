@@ -51,7 +51,7 @@ class _FlashcardsScreenState extends ConsumerState<FlashcardsScreen> {
           return ListView.separated(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
             itemCount: decks.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            separatorBuilder: (_, _) => const SizedBox(height: 12),
             itemBuilder: (_, i) => _DeckCard(
               deck: decks[i],
               onTap: () => Navigator.of(context).push(
@@ -207,7 +207,7 @@ class _DeckCard extends ConsumerWidget {
                       style:
                           TextStyle(color: aether.textMuted, fontSize: 12),
                     ),
-                    error: (_, __) => const SizedBox.shrink(),
+                    error: (_, _) => const SizedBox.shrink(),
                     loading: () => const SizedBox.shrink(),
                   ),
                 ],
@@ -316,7 +316,7 @@ class _DeckDetailScreenState extends ConsumerState<_DeckDetailScreen> {
               );
             },
             loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
+            error: (_, _) => const SizedBox.shrink(),
           ),
           // Card list
           Expanded(
@@ -337,7 +337,7 @@ class _DeckDetailScreenState extends ConsumerState<_DeckDetailScreen> {
                 return ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
                   itemCount: cards.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                  separatorBuilder: (_, _) => const SizedBox(height: 8),
                   itemBuilder: (_, i) => _CardTile(
                     card: cards[i],
                     onTap: () => _editCard(cards[i]),

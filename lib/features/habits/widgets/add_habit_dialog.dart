@@ -290,12 +290,12 @@ class _HabitFormDialogState extends State<_HabitFormDialog> {
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
                           color: selected
-                              ? cat.color.withOpacity(0.15)
+                              ? cat.color.withValues(alpha: 0.15)
                               : context.aether.surfaceAlt,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: selected
-                                ? cat.color.withOpacity(0.5)
+                                ? cat.color.withValues(alpha: 0.5)
                                 : Colors.transparent,
                           ),
                         ),

@@ -1,5 +1,4 @@
 import 'package:aether/widgets/common/async_value_widget.dart';
-import 'package:aether/widgets/common/skeleton.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,7 +6,6 @@ import 'package:aether/core/database/database.dart';
 import 'package:aether/core/theme/app_theme.dart';
 import 'package:aether/features/academics/providers/academics_providers.dart';
 import 'package:aether/features/academics/widgets/grade_tile.dart'; import 'package:aether/features/academics/widgets/add_edit_grade_dialog.dart';
-import 'package:aether/features/academics/widgets/grade_tile.dart';
 
 class GradesScreen extends ConsumerWidget {
   final String courseId;

@@ -24,10 +24,9 @@ class AetherPage extends CustomTransitionPage<void> {
   AetherPage({
     required super.key,
     super.name,
-    required Widget child,
+    required super.child,
     super.restorationId,
   }) : super(
-          child: child,
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return _AetherTransition(
               animation: animation,

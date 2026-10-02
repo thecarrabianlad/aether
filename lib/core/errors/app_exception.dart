@@ -95,6 +95,7 @@ final class ValidationError extends AppException {
     super.ref,
   });
 
+  @override
   ValidationError copyWith({String? ref}) => ValidationError(
         code: code,
         message: message,
@@ -117,6 +118,7 @@ final class AuthError extends AppException {
     super.ref,
   });
 
+  @override
   AuthError copyWith({String? ref}) => AuthError(
         code: code,
         message: message,
@@ -138,6 +140,7 @@ final class NetworkError extends AppException {
     super.ref,
   });
 
+  @override
   NetworkError copyWith({String? ref}) => NetworkError(
         code: code,
         message: message,
@@ -159,6 +162,7 @@ final class TimeoutError extends AppException {
     super.ref,
   });
 
+  @override
   TimeoutError copyWith({String? ref}) => TimeoutError(
         code: code,
         message: message,
@@ -180,6 +184,7 @@ final class SyncError extends AppException {
     super.ref,
   });
 
+  @override
   SyncError copyWith({String? ref}) => SyncError(
         code: code,
         message: message,
@@ -201,6 +206,7 @@ final class PermissionError extends AppException {
     super.ref,
   });
 
+  @override
   PermissionError copyWith({String? ref}) => PermissionError(
         code: code,
         message: message,
@@ -222,6 +228,7 @@ final class NotFoundError extends AppException {
     super.ref,
   });
 
+  @override
   NotFoundError copyWith({String? ref}) => NotFoundError(
         code: code,
         message: message,
@@ -243,6 +250,7 @@ final class ServerError extends AppException {
     super.ref,
   });
 
+  @override
   ServerError copyWith({String? ref}) => ServerError(
         code: code,
         message: message,
@@ -264,6 +272,7 @@ final class StorageError extends AppException {
     super.ref,
   });
 
+  @override
   StorageError copyWith({String? ref}) => StorageError(
         code: code,
         message: message,
@@ -286,6 +295,7 @@ final class UnknownError extends AppException {
     super.ref,
   });
 
+  @override
   UnknownError copyWith({String? ref}) => UnknownError(
         code: code,
         message: message,
@@ -308,7 +318,7 @@ AppException classify(Object error, {String? fallbackRef}) {
   if (error is AuthException) {
     final code = error.code ?? '';
     final status = error.statusCode;
-    final lower = (error.message + ' $code').toLowerCase();
+    final lower = ('${error.message} $code').toLowerCase();
 
     if (status == '429' || lower.contains('rate limit') || lower.contains('too many')) {
       return const AuthError(

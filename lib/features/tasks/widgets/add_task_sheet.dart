@@ -233,7 +233,7 @@ class _OptionChip extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 10),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: selected ? color.withOpacity(0.15) : context.aether.background,
+            color: selected ? color.withValues(alpha: 0.15) : context.aether.background,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: selected ? color : context.aether.border,

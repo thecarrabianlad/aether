@@ -66,7 +66,7 @@ class _HabitCardState extends State<HabitCard>
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: habit.color.withOpacity(0.15),
+              color: habit.color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(habit.icon, color: habit.color, size: 22),
@@ -131,7 +131,7 @@ final isToday = dayIdx == todayIndex;
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: isCompleted
-                              ? HabitRepository.greenAccent.withOpacity(0.2)
+                              ? HabitRepository.greenAccent.withValues(alpha: 0.2)
                               : Colors.transparent,
                           border: Border.all(
                             color: isCompleted

@@ -1,6 +1,5 @@
 import 'package:aether/core/errors/app_exception.dart';
 import 'package:aether/core/errors/app_logger.dart';
-import 'package:aether/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 /// The app's single snackbar helper. All feedback (success, info, errors)

@@ -173,7 +173,7 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: courses.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 12),
+                    separatorBuilder: (_, _) => const SizedBox(width: 12),
                     itemBuilder: (context, index) {
                       final c = courses[index];
                       return _CourseCardWithProgress(
@@ -423,7 +423,7 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
                         professor: profCtrl.text.trim().isEmpty ? null : profCtrl.text.trim(),
                         location: locCtrl.text.trim().isEmpty ? null : locCtrl.text.trim(),
                         semester: semCtrl.text.trim().isEmpty ? null : semCtrl.text.trim(),
-                        color: '#${selectedColor.value.toRadixString(16).substring(2).padLeft(6, '0').toUpperCase()}',
+                        color: '#${selectedColor.toARGB32().toRadixString(16).substring(2).padLeft(6, '0').toUpperCase()}',
                       );
                   if (mounted) Navigator.pop(context);
                 } catch (e) {
@@ -500,7 +500,7 @@ class _AcademicsScreenState extends ConsumerState<AcademicsScreen> {
                           ? const Value.absent()
                           : Value(semCtrl.text),
                       color:
-                          '#${selectedColor.value.toRadixString(16).substring(2)}',
+                          '#${selectedColor.toARGB32().toRadixString(16).substring(2)}',
                     ));
                 if (mounted) Navigator.pop(context);
               },
@@ -863,7 +863,7 @@ class _ColorPicker extends StatelessWidget {
                     ),
                   ),
                 ))
-            .toList(),
+            ,
       ],
     );
   }
@@ -1003,7 +1003,7 @@ class _CourseCardWithProgress extends ConsumerWidget {
     final progress = progressAsync.when(
       data: (p) => p,
       loading: () => 0.0,
-      error: (_, __) => 0.0,
+      error: (_, _) => 0.0,
     );
     final color = Color(int.parse(course.color.replaceFirst('#', '0xFF')));
 

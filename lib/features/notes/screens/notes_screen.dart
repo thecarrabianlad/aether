@@ -65,7 +65,7 @@ class _NotesScreenState extends ConsumerState<NotesScreen> {
           return ListView.separated(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
             itemCount: filtered.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            separatorBuilder: (_, _) => const SizedBox(height: 10),
             itemBuilder: (_, i) => _NoteCard(
               note: filtered[i],
               onTap: () => _openNoteEditor(filtered[i]),

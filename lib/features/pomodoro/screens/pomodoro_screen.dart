@@ -259,7 +259,7 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen> {
               return ListView.separated(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 itemCount: sessions.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                separatorBuilder: (_, _) => const SizedBox(height: 8),
                 itemBuilder: (_, i) => _SessionTile(session: sessions[i]),
               );
             },
